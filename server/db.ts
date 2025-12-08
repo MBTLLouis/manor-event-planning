@@ -1,11 +1,31 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc, asc, or, like, count, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import {
+  InsertUser,
+  users,
+  events,
+  InsertEvent,
+  guests,
+  InsertGuest,
+  floorPlans,
+  InsertFloorPlan,
+  tables,
+  InsertTable,
+  seats,
+  InsertSeat,
+  timelineDays,
+  InsertTimelineDay,
+  timelineEvents,
+  InsertTimelineEvent,
+  foodOptions,
+  InsertFoodOption,
+  messages,
+  InsertMessage,
+} from "../drizzle/schema";
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -35,7 +55,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     };
     const updateSet: Record<string, unknown> = {};
 
-    const textFields = ["name", "email", "loginMethod"] as const;
+    const textFields = ["name", "email", "loginMethod", "username", "password"] as const;
     type TextField = (typeof textFields)[number];
 
     const assignNullable = (field: TextField) => {
@@ -56,8 +76,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.role = user.role;
       updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
+      values.role = "admin";
+      updateSet.role = "admin";
     }
 
     if (!values.lastSignedIn) {
@@ -89,4 +109,369 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getUserByUsername(username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUser(user: InsertUser) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(users).values(user);
+  return Number(result[0].insertId);
+}
+
+// Events
+export async function createEvent(event: InsertEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(events).values(event);
+  return Number(result[0].insertId);
+}
+
+export async function getEventById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(events).where(eq(events.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllEvents() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(events).orderBy(desc(events.eventDate));
+}
+
+export async function getUpcomingEvents() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+  return await db
+    .select()
+    .from(events)
+    .where(sql`${events.eventDate} >= ${now}`)
+    .orderBy(asc(events.eventDate));
+}
+
+export async function getPastEvents() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const now = new Date();
+  return await db
+    .select()
+    .from(events)
+    .where(sql`${events.eventDate} < ${now}`)
+    .orderBy(desc(events.eventDate));
+}
+
+export async function searchEvents(query: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(events)
+    .where(
+      or(
+        like(events.title, `%${query}%`),
+        like(events.coupleName1, `%${query}%`),
+        like(events.coupleName2, `%${query}%`),
+        like(events.eventCode, `%${query}%`)
+      )
+    )
+    .orderBy(desc(events.eventDate));
+}
+
+export async function updateEvent(id: number, data: Partial<InsertEvent>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(events).set(data).where(eq(events.id, id));
+}
+
+export async function deleteEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(events).where(eq(events.id, id));
+}
+
+// Guests
+export async function createGuest(guest: InsertGuest) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(guests).values(guest);
+  return Number(result[0].insertId);
+}
+
+export async function getGuestsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(guests).where(eq(guests.eventId, eventId)).orderBy(asc(guests.name));
+}
+
+export async function getGuestById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(guests).where(eq(guests.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateGuest(id: number, data: Partial<InsertGuest>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(guests).set(data).where(eq(guests.id, id));
+}
+
+export async function deleteGuest(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(guests).where(eq(guests.id, id));
+}
+
+export async function getGuestStats(eventId: number) {
+  const db = await getDb();
+  if (!db) return { total: 0, confirmed: 0, pending: 0, declined: 0 };
+
+  const allGuests = await db.select().from(guests).where(eq(guests.eventId, eventId));
+
+  return {
+    total: allGuests.length,
+    confirmed: allGuests.filter((g) => g.rsvpStatus === "confirmed").length,
+    pending: allGuests.filter((g) => g.rsvpStatus === "pending").length,
+    declined: allGuests.filter((g) => g.rsvpStatus === "declined").length,
+  };
+}
+
+// Floor Plans
+export async function createFloorPlan(floorPlan: InsertFloorPlan) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(floorPlans).values(floorPlan);
+  return Number(result[0].insertId);
+}
+
+export async function getFloorPlansByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(floorPlans).where(eq(floorPlans.eventId, eventId)).orderBy(asc(floorPlans.orderIndex));
+}
+
+export async function getFloorPlanById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(floorPlans).where(eq(floorPlans.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateFloorPlan(id: number, data: Partial<InsertFloorPlan>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(floorPlans).set(data).where(eq(floorPlans.id, id));
+}
+
+export async function deleteFloorPlan(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(floorPlans).where(eq(floorPlans.id, id));
+}
+
+// Tables
+export async function createTable(table: InsertTable) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(tables).values(table);
+  return Number(result[0].insertId);
+}
+
+export async function getTablesByFloorPlanId(floorPlanId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(tables).where(eq(tables.floorPlanId, floorPlanId));
+}
+
+export async function updateTable(id: number, data: Partial<InsertTable>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(tables).set(data).where(eq(tables.id, id));
+}
+
+export async function deleteTable(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(tables).where(eq(tables.id, id));
+}
+
+// Seats
+export async function createSeat(seat: InsertSeat) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(seats).values(seat);
+  return Number(result[0].insertId);
+}
+
+export async function getSeatsByFloorPlanId(floorPlanId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(seats).where(eq(seats.floorPlanId, floorPlanId));
+}
+
+export async function updateSeat(id: number, data: Partial<InsertSeat>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(seats).set(data).where(eq(seats.id, id));
+}
+
+export async function deleteSeat(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(seats).where(eq(seats.id, id));
+}
+
+// Timeline Days
+export async function createTimelineDay(day: InsertTimelineDay) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(timelineDays).values(day);
+  return Number(result[0].insertId);
+}
+
+export async function getTimelineDaysByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(timelineDays).where(eq(timelineDays.eventId, eventId)).orderBy(asc(timelineDays.orderIndex));
+}
+
+export async function updateTimelineDay(id: number, data: Partial<InsertTimelineDay>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(timelineDays).set(data).where(eq(timelineDays.id, id));
+}
+
+export async function deleteTimelineDay(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(timelineDays).where(eq(timelineDays.id, id));
+}
+
+// Timeline Events
+export async function createTimelineEvent(event: InsertTimelineEvent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(timelineEvents).values(event);
+  return Number(result[0].insertId);
+}
+
+export async function getTimelineEventsByDayId(dayId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(timelineEvents).where(eq(timelineEvents.timelineDayId, dayId)).orderBy(asc(timelineEvents.orderIndex));
+}
+
+export async function updateTimelineEvent(id: number, data: Partial<InsertTimelineEvent>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(timelineEvents).set(data).where(eq(timelineEvents.id, id));
+}
+
+export async function deleteTimelineEvent(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(timelineEvents).where(eq(timelineEvents.id, id));
+}
+
+// Food Options
+export async function createFoodOption(option: InsertFoodOption) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(foodOptions).values(option);
+  return Number(result[0].insertId);
+}
+
+export async function getFoodOptionsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(foodOptions).where(eq(foodOptions.eventId, eventId));
+}
+
+export async function deleteFoodOption(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(foodOptions).where(eq(foodOptions.id, id));
+}
+
+// Messages
+export async function createMessage(message: InsertMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(messages).values(message);
+  return Number(result[0].insertId);
+}
+
+export async function getMessagesByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(messages).where(eq(messages.eventId, eventId)).orderBy(desc(messages.createdAt));
+}
+
+export async function getAllMessages() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(messages).orderBy(desc(messages.createdAt));
+}
+
+export async function updateMessage(id: number, data: Partial<InsertMessage>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(messages).set(data).where(eq(messages.id, id));
+}
+
+export async function getUnreadMessagesCount() {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db.select({ count: count() }).from(messages).where(eq(messages.isRead, false));
+  return result[0]?.count ?? 0;
+}

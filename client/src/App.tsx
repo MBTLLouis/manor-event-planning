@@ -1,35 +1,116 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import { useAuth } from "@/_core/hooks/useAuth";
+
+// Auth pages
+import RoleSelection from "./pages/auth/RoleSelection";
+import EmployeeLogin from "./pages/auth/EmployeeLogin";
+import CoupleLogin from "./pages/auth/CoupleLogin";
+
+// Employee pages
+import Dashboard from "./pages/Dashboard";
+import EventsList from "./pages/events/EventsList";
+import EventDetail from "./pages/events/EventDetail";
+import GuestList from "./pages/events/GuestList";
+import FloorPlans from "./pages/events/FloorPlans";
+import Timeline from "./pages/events/Timeline";
+import FoodChoices from "./pages/events/FoodChoices";
+import MessagesCenter from "./pages/MessagesCenter";
+import Calendar from "./pages/Calendar";
+import Vendors from "./pages/Vendors";
+
+function ProtectedRoute({ component: Component, ...rest }: any) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect to="/login" />;
+  }
+
+  return <Component {...rest} />;
+}
+
+function RootRedirect() {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+  
+  return <Redirect to={isAuthenticated ? "/dashboard" : "/login"} />;
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Auth routes */}
+      <Route path="/login" component={RoleSelection} />
+      <Route path="/login/employee" component={EmployeeLogin} />
+      <Route path="/login/couple" component={CoupleLogin} />
+
+      {/* Protected employee routes */}
+      <Route path="/dashboard">
+        {() => <ProtectedRoute component={Dashboard} />}
+      </Route>
+      <Route path="/events">
+        {() => <ProtectedRoute component={EventsList} />}
+      </Route>
+      <Route path="/events/:id">
+        {(params) => <ProtectedRoute component={EventDetail} params={params} />}
+      </Route>
+      <Route path="/events/:id/guests">
+        {(params) => <ProtectedRoute component={GuestList} params={params} />}
+      </Route>
+      <Route path="/events/:id/floor-plans">
+        {(params) => <ProtectedRoute component={FloorPlans} params={params} />}
+      </Route>
+      <Route path="/events/:id/timeline">
+        {(params) => <ProtectedRoute component={Timeline} params={params} />}
+      </Route>
+      <Route path="/events/:id/food-choices">
+        {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
+      </Route>
+      <Route path="/messages-center">
+        {() => <ProtectedRoute component={MessagesCenter} />}
+      </Route>
+      <Route path="/calendar">
+        {() => <ProtectedRoute component={Calendar} />}
+      </Route>
+      <Route path="/vendors">
+        {() => <ProtectedRoute component={Vendors} />}
+      </Route>
+
+      {/* Root redirect */}
+      <Route path="/">
+        {() => <RootRedirect />}
+      </Route>
+
+      {/* 404 */}
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />

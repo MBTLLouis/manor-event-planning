@@ -93,3 +93,6 @@
 - [x] Test drag-and-drop functionality
 - [x] Verify responsive design
 - [x] Create initial checkpoint
+
+## Bugs to Fix
+- [x] Fix employee login authentication - users cannot log in with employee credentials

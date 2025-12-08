@@ -17,7 +17,7 @@ async function seed() {
     `INSERT INTO users (openId, username, password, name, email, role, loginMethod) 
      VALUES (?, ?, ?, ?, ?, ?, ?) 
      ON DUPLICATE KEY UPDATE password = VALUES(password)`,
-    ["local-employee", "employee", employeePassword, "Staff Member", "staff@manor.com", "employee", "local"]
+    ["local-employee", "employee", employeePassword, "Employee User", "employee@manor.com", "employee", "local"]
   );
 
   // Create couple user

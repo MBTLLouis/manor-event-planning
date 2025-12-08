@@ -25,7 +25,7 @@ export const appRouter = router({
         password: z.string(),
         role: z.enum(["employee", "couple"]),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const user = await db.getUserByUsername(input.username);
         
         if (!user || !user.password) {
@@ -40,6 +40,18 @@ export const appRouter = router({
         if (user.role !== input.role) {
           throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid role" });
         }
+
+        // Create session token using SDK
+        const { sdk } = await import("./_core/sdk");
+        const { ONE_YEAR_MS } = await import("@shared/const");
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        // Set session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
         return { success: true, user };
       }),

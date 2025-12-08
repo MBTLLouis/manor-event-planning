@@ -96,3 +96,4 @@
 
 ## Bugs to Fix
 - [x] Fix employee login authentication - users cannot log in with employee credentials
+- [x] Fix login redirect loop - page goes blank and redirects back to login after successful authentication

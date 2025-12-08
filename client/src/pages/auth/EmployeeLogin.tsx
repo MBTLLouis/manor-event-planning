@@ -12,12 +12,14 @@ export default function EmployeeLogin() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const utils = trpc.useUtils();
   
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Login successful!");
+      // Invalidate the auth.me query to refresh user state
+      await utils.auth.me.invalidate();
       setLocation("/dashboard");
-      window.location.reload();
     },
     onError: (error) => {
       toast.error(error.message || "Invalid credentials");

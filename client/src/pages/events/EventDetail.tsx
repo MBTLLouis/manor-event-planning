@@ -30,7 +30,6 @@ export default function EventDetail() {
       path: `/events/${eventId}/budget`,
       color: "text-green-600",
       bgColor: "bg-green-100",
-      comingSoon: true,
     },
     {
       icon: Package,
@@ -39,7 +38,6 @@ export default function EventDetail() {
       path: `/events/${eventId}/vendors`,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
-      comingSoon: true,
     },
     {
       icon: Calendar,
@@ -56,7 +54,6 @@ export default function EventDetail() {
       path: `/events/${eventId}/checklist`,
       color: "text-pink-600",
       bgColor: "bg-pink-100",
-      comingSoon: true,
     },
     {
       icon: MapPin,
@@ -78,10 +75,9 @@ export default function EventDetail() {
       icon: Globe,
       title: "Wedding Website",
       description: "Create a beautiful website for your guests",
-      path: `/events/${eventId}/website`,
+      path: `/events/${eventId}/wedding-website`,
       color: "text-indigo-600",
       bgColor: "bg-indigo-100",
-      comingSoon: true,
     },
     {
       icon: FileText,
@@ -90,7 +86,6 @@ export default function EventDetail() {
       path: `/events/${eventId}/notes`,
       color: "text-gray-600",
       bgColor: "bg-gray-100",
-      comingSoon: true,
     },
     {
       icon: MessageSquare,
@@ -108,7 +103,6 @@ export default function EventDetail() {
       path: `/events/${eventId}/accommodations`,
       color: "text-rose-600",
       bgColor: "bg-rose-100",
-      comingSoon: true,
     },
   ];
 

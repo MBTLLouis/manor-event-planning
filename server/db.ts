@@ -21,6 +21,18 @@ import {
   InsertFoodOption,
   messages,
   InsertMessage,
+  budgetItems,
+  InsertBudgetItem,
+  vendors,
+  InsertVendor,
+  checklistItems,
+  InsertChecklistItem,
+  notes,
+  InsertNote,
+  accommodations,
+  InsertAccommodation,
+  weddingWebsites,
+  InsertWeddingWebsite,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -474,4 +486,178 @@ export async function getUnreadMessagesCount() {
 
   const result = await db.select({ count: count() }).from(messages).where(eq(messages.isRead, false));
   return result[0]?.count ?? 0;
+}
+
+// Budget Items
+export async function createBudgetItem(item: InsertBudgetItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(budgetItems).values(item);
+  return Number(result[0].insertId);
+}
+
+export async function getBudgetItemsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(budgetItems).where(eq(budgetItems.eventId, eventId)).orderBy(asc(budgetItems.category));
+}
+
+export async function updateBudgetItem(id: number, data: Partial<InsertBudgetItem>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(budgetItems).set(data).where(eq(budgetItems.id, id));
+}
+
+export async function deleteBudgetItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(budgetItems).where(eq(budgetItems.id, id));
+}
+
+// Vendors
+export async function createVendor(vendor: InsertVendor) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(vendors).values(vendor);
+  return Number(result[0].insertId);
+}
+
+export async function getVendorsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(vendors).where(eq(vendors.eventId, eventId)).orderBy(asc(vendors.category));
+}
+
+export async function updateVendor(id: number, data: Partial<InsertVendor>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(vendors).set(data).where(eq(vendors.id, id));
+}
+
+export async function deleteVendor(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(vendors).where(eq(vendors.id, id));
+}
+
+// Checklist Items
+export async function createChecklistItem(item: InsertChecklistItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(checklistItems).values(item);
+  return Number(result[0].insertId);
+}
+
+export async function getChecklistItemsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(checklistItems).where(eq(checklistItems.eventId, eventId)).orderBy(asc(checklistItems.orderIndex));
+}
+
+export async function updateChecklistItem(id: number, data: Partial<InsertChecklistItem>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(checklistItems).set(data).where(eq(checklistItems.id, id));
+}
+
+export async function deleteChecklistItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(checklistItems).where(eq(checklistItems.id, id));
+}
+
+// Notes
+export async function createNote(note: InsertNote) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(notes).values(note);
+  return Number(result[0].insertId);
+}
+
+export async function getNotesByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(notes).where(eq(notes.eventId, eventId)).orderBy(desc(notes.isPinned), desc(notes.updatedAt));
+}
+
+export async function updateNote(id: number, data: Partial<InsertNote>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(notes).set(data).where(eq(notes.id, id));
+}
+
+export async function deleteNote(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(notes).where(eq(notes.id, id));
+}
+
+// Accommodations
+export async function createAccommodation(accommodation: InsertAccommodation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(accommodations).values(accommodation);
+  return Number(result[0].insertId);
+}
+
+export async function getAccommodationsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(accommodations).where(eq(accommodations.eventId, eventId));
+}
+
+export async function updateAccommodation(id: number, data: Partial<InsertAccommodation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(accommodations).set(data).where(eq(accommodations.id, id));
+}
+
+export async function deleteAccommodation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(accommodations).where(eq(accommodations.id, id));
+}
+
+// Wedding Websites
+export async function createWeddingWebsite(website: InsertWeddingWebsite) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(weddingWebsites).values(website);
+  return Number(result[0].insertId);
+}
+
+export async function getWeddingWebsiteByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select().from(weddingWebsites).where(eq(weddingWebsites.eventId, eventId)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function updateWeddingWebsite(id: number, data: Partial<InsertWeddingWebsite>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(weddingWebsites).set(data).where(eq(weddingWebsites.id, id));
 }

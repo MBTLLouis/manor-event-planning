@@ -178,3 +178,130 @@ export const messages = mysqlTable("messages", {
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
+
+/**
+ * Budget Items table - stores budget line items for events
+ */
+export const budgetItems = mysqlTable("budgetItems", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  itemName: varchar("itemName", { length: 255 }).notNull(),
+  estimatedCost: int("estimatedCost").notNull(), // in cents
+  actualCost: int("actualCost"), // in cents
+  paidAmount: int("paidAmount").default(0).notNull(), // in cents
+  status: mysqlEnum("status", ["pending", "paid", "overdue"]).default("pending").notNull(),
+  vendorId: int("vendorId"),
+  notes: text("notes"),
+  dueDate: datetime("dueDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BudgetItem = typeof budgetItems.$inferSelect;
+export type InsertBudgetItem = typeof budgetItems.$inferInsert;
+
+/**
+ * Vendors table - stores vendor information for events
+ */
+export const vendors = mysqlTable("vendors", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // e.g., "Catering", "Photography", "Venue"
+  contactName: varchar("contactName", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  website: varchar("website", { length: 500 }),
+  status: mysqlEnum("status", ["pending", "contacted", "booked", "confirmed", "cancelled"]).default("pending").notNull(),
+  contractSigned: boolean("contractSigned").default(false).notNull(),
+  depositPaid: boolean("depositPaid").default(false).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Vendor = typeof vendors.$inferSelect;
+export type InsertVendor = typeof vendors.$inferInsert;
+
+/**
+ * Checklist Items table - stores task checklist items for events
+ */
+export const checklistItems = mysqlTable("checklistItems", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  completed: boolean("completed").default(false).notNull(),
+  priority: mysqlEnum("priority", ["low", "medium", "high"]).default("medium").notNull(),
+  assignedTo: varchar("assignedTo", { length: 255 }),
+  dueDate: datetime("dueDate"),
+  completedAt: timestamp("completedAt"),
+  orderIndex: int("orderIndex").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ChecklistItem = typeof checklistItems.$inferSelect;
+export type InsertChecklistItem = typeof checklistItems.$inferInsert;
+
+/**
+ * Notes table - stores event-specific notes
+ */
+export const notes = mysqlTable("notes", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 100 }),
+  createdById: int("createdById").notNull(),
+  isPinned: boolean("isPinned").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Note = typeof notes.$inferSelect;
+export type InsertNote = typeof notes.$inferInsert;
+
+/**
+ * Accommodations table - stores guest accommodation information
+ */
+export const accommodations = mysqlTable("accommodations", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  hotelName: varchar("hotelName", { length: 255 }).notNull(),
+  address: text("address"),
+  phone: varchar("phone", { length: 50 }),
+  website: varchar("website", { length: 500 }),
+  roomBlockCode: varchar("roomBlockCode", { length: 100 }),
+  roomRate: int("roomRate"), // in cents
+  checkInDate: datetime("checkInDate"),
+  checkOutDate: datetime("checkOutDate"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Accommodation = typeof accommodations.$inferSelect;
+export type InsertAccommodation = typeof accommodations.$inferInsert;
+
+/**
+ * Wedding Website Settings table - stores website configuration for events
+ */
+export const weddingWebsites = mysqlTable("weddingWebsites", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull().unique(),
+  slug: varchar("slug", { length: 100 }).unique(),
+  isPublished: boolean("isPublished").default(false).notNull(),
+  welcomeMessage: text("welcomeMessage"),
+  ourStory: text("ourStory"),
+  registryLinks: text("registryLinks"), // JSON array of links
+  rsvpEnabled: boolean("rsvpEnabled").default(true).notNull(),
+  theme: varchar("theme", { length: 50 }).default("classic").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeddingWebsite = typeof weddingWebsites.$inferSelect;
+export type InsertWeddingWebsite = typeof weddingWebsites.$inferInsert;

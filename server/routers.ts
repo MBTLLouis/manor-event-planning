@@ -525,6 +525,297 @@ export const appRouter = router({
       };
     }),
   }),
+
+  budget: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getBudgetItemsByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        category: z.string(),
+        itemName: z.string(),
+        estimatedCost: z.number(),
+        actualCost: z.number().optional(),
+        paidAmount: z.number().optional(),
+        status: z.enum(["pending", "paid", "overdue"]).optional(),
+        vendorId: z.number().optional(),
+        notes: z.string().optional(),
+        dueDate: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createBudgetItem(input);
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        category: z.string().optional(),
+        itemName: z.string().optional(),
+        estimatedCost: z.number().optional(),
+        actualCost: z.number().optional(),
+        paidAmount: z.number().optional(),
+        status: z.enum(["pending", "paid", "overdue"]).optional(),
+        notes: z.string().optional(),
+        dueDate: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateBudgetItem(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteBudgetItem(input.id);
+        return { success: true };
+      }),
+  }),
+
+  vendors: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getVendorsByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        name: z.string(),
+        category: z.string(),
+        contactName: z.string().optional(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        status: z.enum(["pending", "contacted", "booked", "confirmed", "cancelled"]).optional(),
+        contractSigned: z.boolean().optional(),
+        depositPaid: z.boolean().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createVendor(input);
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        category: z.string().optional(),
+        contactName: z.string().optional(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        status: z.enum(["pending", "contacted", "booked", "confirmed", "cancelled"]).optional(),
+        contractSigned: z.boolean().optional(),
+        depositPaid: z.boolean().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateVendor(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteVendor(input.id);
+        return { success: true };
+      }),
+  }),
+
+  checklist: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getChecklistItemsByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        category: z.string(),
+        title: z.string(),
+        description: z.string().optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
+        assignedTo: z.string().optional(),
+        dueDate: z.date().optional(),
+        orderIndex: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createChecklistItem(input);
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        category: z.string().optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        completed: z.boolean().optional(),
+        priority: z.enum(["low", "medium", "high"]).optional(),
+        assignedTo: z.string().optional(),
+        dueDate: z.date().optional(),
+        completedAt: z.date().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateChecklistItem(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteChecklistItem(input.id);
+        return { success: true };
+      }),
+  }),
+
+  notes: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getNotesByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        title: z.string(),
+        content: z.string(),
+        category: z.string().optional(),
+        isPinned: z.boolean().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const id = await db.createNote({
+          ...input,
+          createdById: ctx.user.id,
+        });
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        content: z.string().optional(),
+        category: z.string().optional(),
+        isPinned: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateNote(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteNote(input.id);
+        return { success: true };
+      }),
+  }),
+
+  accommodations: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAccommodationsByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        hotelName: z.string(),
+        address: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        roomBlockCode: z.string().optional(),
+        roomRate: z.number().optional(),
+        checkInDate: z.date().optional(),
+        checkOutDate: z.date().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createAccommodation(input);
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        hotelName: z.string().optional(),
+        address: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        roomBlockCode: z.string().optional(),
+        roomRate: z.number().optional(),
+        checkInDate: z.date().optional(),
+        checkOutDate: z.date().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateAccommodation(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteAccommodation(input.id);
+        return { success: true };
+      }),
+  }),
+
+  weddingWebsite: router({
+    get: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getWeddingWebsiteByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        slug: z.string(),
+        welcomeMessage: z.string().optional(),
+        ourStory: z.string().optional(),
+        registryLinks: z.string().optional(),
+        rsvpEnabled: z.boolean().optional(),
+        theme: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createWeddingWebsite(input);
+        return { id };
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        slug: z.string().optional(),
+        isPublished: z.boolean().optional(),
+        welcomeMessage: z.string().optional(),
+        ourStory: z.string().optional(),
+        registryLinks: z.string().optional(),
+        rsvpEnabled: z.boolean().optional(),
+        theme: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateWeddingWebsite(id, data);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

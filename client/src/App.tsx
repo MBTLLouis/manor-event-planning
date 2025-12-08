@@ -19,6 +19,12 @@ import GuestList from "./pages/events/GuestList";
 import FloorPlans from "./pages/events/FloorPlans";
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
+import Budget from "./pages/events/Budget";
+import VendorsModule from "./pages/events/Vendors";
+import Checklist from "./pages/events/Checklist";
+import Notes from "./pages/events/Notes";
+import Accommodations from "./pages/events/Accommodations";
+import WeddingWebsite from "./pages/events/WeddingWebsite";
 import MessagesCenter from "./pages/MessagesCenter";
 import Calendar from "./pages/Calendar";
 import Vendors from "./pages/Vendors";
@@ -84,6 +90,24 @@ function Router() {
       </Route>
       <Route path="/events/:id/food-choices">
         {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
+      </Route>
+      <Route path="/events/:id/budget">
+        {(params) => <ProtectedRoute component={Budget} params={params} />}
+      </Route>
+      <Route path="/events/:id/vendors">
+        {(params) => <ProtectedRoute component={VendorsModule} params={params} />}
+      </Route>
+      <Route path="/events/:id/checklist">
+        {(params) => <ProtectedRoute component={Checklist} params={params} />}
+      </Route>
+      <Route path="/events/:id/notes">
+        {(params) => <ProtectedRoute component={Notes} params={params} />}
+      </Route>
+      <Route path="/events/:id/accommodations">
+        {(params) => <ProtectedRoute component={Accommodations} params={params} />}
+      </Route>
+      <Route path="/events/:id/wedding-website">
+        {(params) => <ProtectedRoute component={WeddingWebsite} params={params} />}
       </Route>
       <Route path="/messages-center">
         {() => <ProtectedRoute component={MessagesCenter} />}

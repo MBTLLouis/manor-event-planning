@@ -97,3 +97,12 @@
 ## Bugs to Fix
 - [x] Fix employee login authentication - users cannot log in with employee credentials
 - [x] Fix login redirect loop - page goes blank and redirects back to login after successful authentication
+- [ ] Fix dashboard not displaying after successful login - user is logged in but dashboard doesn't render
+
+## New Module Implementation
+- [x] Build Budget module with expense tracking and budget management
+- [x] Build Vendors module with vendor contact management and status tracking
+- [x] Build Checklist module with task management and progress tracking
+- [x] Build Notes module for event-specific notes and documentation
+- [x] Build Accommodations module for guest hotel/lodging management
+- [x] Build Wedding Website module for couple's public event website

@@ -281,6 +281,21 @@ export const appRouter = router({
         await db.deleteFloorPlan(input.id);
         return { success: true };
       }),
+
+    getTables: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        const floorPlans = await db.getFloorPlansByEventId(input.eventId);
+        const allTables = [];
+        for (const plan of floorPlans) {
+          const tables = await db.getTablesByFloorPlanId(plan.id);
+          for (const table of tables) {
+            const seats = await db.getSeatsByTableId(table.id);
+            allTables.push({ ...table, seats });
+          }
+        }
+        return allTables;
+      }),
   }),
 
   tables: router({

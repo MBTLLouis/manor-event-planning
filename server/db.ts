@@ -353,6 +353,13 @@ export async function getSeatsByFloorPlanId(floorPlanId: number) {
   return await db.select().from(seats).where(eq(seats.floorPlanId, floorPlanId));
 }
 
+export async function getSeatsByTableId(tableId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(seats).where(eq(seats.tableId, tableId));
+}
+
 export async function updateSeat(id: number, data: Partial<InsertSeat>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

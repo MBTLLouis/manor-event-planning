@@ -106,3 +106,18 @@
 - [x] Build Notes module for event-specific notes and documentation
 - [x] Build Accommodations module for guest hotel/lodging management
 - [x] Build Wedding Website module for couple's public event website
+
+## Couple Portal Implementation
+- [x] Design visual mockup for couple portal matching Manor By The Lake branding (teal/green, elegant serif typography, photography-first)
+- [x] Create couple-specific layout component with elegant navigation
+- [x] Build couple dashboard with wedding countdown and progress overview
+- [x] Implement couple views for Guest List (RSVP management)
+- [x] Implement couple views for Floor Plans (seating preferences)
+- [x] Implement couple views for Timeline (day-of schedule viewing)
+- [x] Implement couple views for Food Choices (meal selection)
+- [x] Implement couple views for Notes (personal notes)
+- [x] Implement couple views for Accommodations (hotel information)
+- [x] Implement couple views for Wedding Website (preview and editing)
+- [x] Add personalization features (couple names, wedding date, photos)
+- [x] Apply warm color scheme (gold/cream/blush tones)
+- [x] Test couple login and portal access

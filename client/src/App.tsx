@@ -29,6 +29,16 @@ import MessagesCenter from "./pages/MessagesCenter";
 import Calendar from "./pages/Calendar";
 import Vendors from "./pages/Vendors";
 
+// Couple pages
+import CoupleDashboard from "./pages/couple/CoupleDashboard";
+import CoupleGuests from "./pages/couple/CoupleGuests";
+import CoupleSeating from "./pages/couple/CoupleSeating";
+import CoupleTimeline from "./pages/couple/CoupleTimeline";
+import CoupleMenu from "./pages/couple/CoupleMenu";
+import CoupleNotes from "./pages/couple/CoupleNotes";
+import CoupleHotels from "./pages/couple/CoupleHotels";
+import CoupleWebsite from "./pages/couple/CoupleWebsite";
+
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const { isAuthenticated, loading } = useAuth();
 
@@ -48,7 +58,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
 }
 
 function RootRedirect() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   
   if (loading) {
     return (
@@ -58,7 +68,16 @@ function RootRedirect() {
     );
   }
   
-  return <Redirect to={isAuthenticated ? "/dashboard" : "/login"} />;
+  if (!isAuthenticated) {
+    return <Redirect to="/login" />;
+  }
+  
+  // Redirect based on user role
+  if (user?.role === "couple") {
+    return <Redirect to="/couple/dashboard" />;
+  }
+  
+  return <Redirect to="/dashboard" />;
 }
 
 function Router() {
@@ -117,6 +136,32 @@ function Router() {
       </Route>
       <Route path="/vendors">
         {() => <ProtectedRoute component={Vendors} />}
+      </Route>
+
+      {/* Couple routes */}
+      <Route path="/couple/dashboard">
+        {() => <ProtectedRoute component={CoupleDashboard} />}
+      </Route>
+      <Route path="/couple/guests">
+        {() => <ProtectedRoute component={CoupleGuests} />}
+      </Route>
+      <Route path="/couple/seating">
+        {() => <ProtectedRoute component={CoupleSeating} />}
+      </Route>
+      <Route path="/couple/timeline">
+        {() => <ProtectedRoute component={CoupleTimeline} />}
+      </Route>
+      <Route path="/couple/menu">
+        {() => <ProtectedRoute component={CoupleMenu} />}
+      </Route>
+      <Route path="/couple/notes">
+        {() => <ProtectedRoute component={CoupleNotes} />}
+      </Route>
+      <Route path="/couple/hotels">
+        {() => <ProtectedRoute component={CoupleHotels} />}
+      </Route>
+      <Route path="/couple/website">
+        {() => <ProtectedRoute component={CoupleWebsite} />}
       </Route>
 
       {/* Root redirect */}

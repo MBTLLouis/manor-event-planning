@@ -121,3 +121,18 @@
 - [x] Add personalization features (couple names, wedding date, photos)
 - [x] Apply warm color scheme (gold/cream/blush tones)
 - [x] Test couple login and portal access
+
+## 3-Stage Guest Management System
+- [x] Update database schema to support guest stages (1: Save the Date, 2: RSVP Details, 3: Final Database)
+- [x] Add unique RSVP token field to guests table
+- [x] Add stage field to track guest progression
+- [x] Create Stage 1: Save the Date interface with Yes/No availability
+- [x] Create Stage 2: RSVP Details form with unique link access
+- [x] Implement name verification against guest list
+- [x] Add meal selection interface (starter/main/dessert)
+- [x] Add dietary requirements field
+- [x] Create Stage 3: Final Guest Database view with complete records
+- [x] Implement automated stage progression (Yes → Stage 2, Completed RSVP → Stage 3)
+- [x] Add CRUD operations for each stage
+- [x] Create public RSVP page accessible via unique token
+- [x] Test complete 3-stage workflow

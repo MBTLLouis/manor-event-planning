@@ -192,6 +192,8 @@ export const appRouter = router({
         name: z.string(),
         email: z.string().optional(),
         groupName: z.string().optional(),
+        stage: z.number().optional(),
+        saveTheDateResponse: z.enum(["yes", "no", "pending"]).optional(),
         rsvpStatus: z.enum(["confirmed", "pending", "declined"]).optional(),
         mealSelection: z.string().optional(),
         invitationSent: z.boolean().optional(),
@@ -230,6 +232,43 @@ export const appRouter = router({
       .input(z.object({ eventId: z.number() }))
       .query(async ({ input }) => {
         return await db.getGuestStats(input.eventId);
+      }),
+
+    // 3-Stage System Procedures
+    updateSaveTheDateResponse: protectedProcedure
+      .input(z.object({
+        guestId: z.number(),
+        response: z.enum(["yes", "no"]),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateGuestSaveTheDateResponse(input.guestId, input.response);
+        return { success: true };
+      }),
+
+    sendSaveTheDate: protectedProcedure
+      .input(z.object({ guestId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.markInvitationSent(input.guestId);
+        return { success: true };
+      }),
+
+    submitRSVP: publicProcedure
+      .input(z.object({
+        token: z.string(),
+        starterSelection: z.string().optional(),
+        mainSelection: z.string().optional(),
+        dessertSelection: z.string().optional(),
+        dietaryRestrictions: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.submitGuestRSVP(input);
+        return { success: true };
+      }),
+
+    getByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getGuestByToken(input.token);
       }),
   }),
 

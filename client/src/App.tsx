@@ -16,6 +16,8 @@ import Dashboard from "./pages/Dashboard";
 import EventsList from "./pages/events/EventsList";
 import EventDetail from "./pages/events/EventDetail";
 import GuestList from "./pages/events/GuestList";
+import SaveTheDate from "./pages/events/SaveTheDate";
+import FinalGuestDatabase from "./pages/events/FinalGuestDatabase";
 import FloorPlans from "./pages/events/FloorPlans";
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
@@ -38,6 +40,7 @@ import CoupleMenu from "./pages/couple/CoupleMenu";
 import CoupleNotes from "./pages/couple/CoupleNotes";
 import CoupleHotels from "./pages/couple/CoupleHotels";
 import CoupleWebsite from "./pages/couple/CoupleWebsite";
+import PublicRSVP from "./pages/PublicRSVP";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const { isAuthenticated, loading } = useAuth();
@@ -87,6 +90,7 @@ function Router() {
       <Route path="/login" component={RoleSelection} />
       <Route path="/login/employee" component={EmployeeLogin} />
       <Route path="/login/couple" component={CoupleLogin} />
+      <Route path="/rsvp" component={PublicRSVP} />
 
       {/* Protected employee routes */}
       <Route path="/dashboard">
@@ -100,6 +104,12 @@ function Router() {
       </Route>
       <Route path="/events/:id/guests">
         {(params) => <ProtectedRoute component={GuestList} params={params} />}
+      </Route>
+      <Route path="/events/:id/save-the-date">
+        {(params) => <ProtectedRoute component={SaveTheDate} params={params} />}
+      </Route>
+      <Route path="/events/:id/final-guests">
+        {(params) => <ProtectedRoute component={FinalGuestDatabase} params={params} />}
       </Route>
       <Route path="/events/:id/floor-plans">
         {(params) => <ProtectedRoute component={FloorPlans} params={params} />}

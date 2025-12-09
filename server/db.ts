@@ -269,6 +269,61 @@ export async function getGuestStats(eventId: number) {
   };
 }
 
+// 3-Stage Guest Management
+export async function updateGuestSaveTheDateResponse(guestId: number, response: "yes" | "no") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Generate RSVP token if responding yes
+  const rsvpToken = response === "yes" ? `rsvp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` : undefined;
+  
+  await db.update(guests).set({
+    saveTheDateResponse: response,
+    stage: response === "yes" ? 2 : 1, // Auto-advance to Stage 2 if yes
+    rsvpToken: rsvpToken,
+  }).where(eq(guests.id, guestId));
+}
+
+export async function markInvitationSent(guestId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(guests).set({
+    invitationSent: true,
+  }).where(eq(guests.id, guestId));
+}
+
+export async function getGuestByToken(token: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(guests).where(eq(guests.rsvpToken, token)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function submitGuestRSVP(data: {
+  token: string;
+  starterSelection?: string;
+  mainSelection?: string;
+  dessertSelection?: string;
+  dietaryRestrictions?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const guest = await getGuestByToken(data.token);
+  if (!guest) throw new Error("Invalid RSVP token");
+
+  await db.update(guests).set({
+    starterSelection: data.starterSelection,
+    mainSelection: data.mainSelection,
+    dessertSelection: data.dessertSelection,
+    dietaryRestrictions: data.dietaryRestrictions,
+    rsvpStatus: "confirmed",
+    stage: 3, // Auto-advance to Stage 3 after RSVP submission
+  }).where(eq(guests.id, guest.id));
+}
+
 // Floor Plans
 export async function createFloorPlan(floorPlan: InsertFloorPlan) {
   const db = await getDb();

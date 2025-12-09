@@ -49,10 +49,21 @@ export const guests = mysqlTable("guests", {
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 320 }),
   groupName: varchar("groupName", { length: 100 }),
+  // 3-Stage System: 1=Save the Date, 2=RSVP Details, 3=Final Database
+  stage: int("stage").default(1).notNull(),
+  // Stage 1: Save the Date response
+  saveTheDateResponse: mysqlEnum("saveTheDateResponse", ["yes", "no", "pending"]).default("pending"),
+  // Unique token for RSVP link access
+  rsvpToken: varchar("rsvpToken", { length: 64 }).unique(),
+  // Stage 2 & 3: RSVP details
   rsvpStatus: mysqlEnum("rsvpStatus", ["confirmed", "pending", "declined"]).default("pending").notNull(),
+  starterSelection: varchar("starterSelection", { length: 255 }),
+  mainSelection: varchar("mainSelection", { length: 255 }),
+  dessertSelection: varchar("dessertSelection", { length: 255 }),
+  dietaryRestrictions: text("dietaryRestrictions"),
+  // Legacy field for backward compatibility
   mealSelection: text("mealSelection"),
   invitationSent: boolean("invitationSent").default(false).notNull(),
-  dietaryRestrictions: text("dietaryRestrictions"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

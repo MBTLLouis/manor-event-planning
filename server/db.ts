@@ -303,6 +303,7 @@ export async function getGuestByToken(token: string) {
 
 export async function submitGuestRSVP(data: {
   token: string;
+  rsvpStatus?: "confirmed" | "declined";
   starterSelection?: string;
   mainSelection?: string;
   dessertSelection?: string;
@@ -314,14 +315,22 @@ export async function submitGuestRSVP(data: {
   const guest = await getGuestByToken(data.token);
   if (!guest) throw new Error("Invalid RSVP token");
 
-  await db.update(guests).set({
-    starterSelection: data.starterSelection,
-    mainSelection: data.mainSelection,
-    dessertSelection: data.dessertSelection,
-    dietaryRestrictions: data.dietaryRestrictions,
-    rsvpStatus: "confirmed",
-    stage: 3, // Auto-advance to Stage 3 after RSVP submission
-  }).where(eq(guests.id, guest.id));
+  const updateData: any = {
+    rsvpStatus: data.rsvpStatus || "confirmed",
+  };
+
+  // Only update meal selections if provided
+  if (data.starterSelection) updateData.starterSelection = data.starterSelection;
+  if (data.mainSelection) updateData.mainSelection = data.mainSelection;
+  if (data.dessertSelection) updateData.dessertSelection = data.dessertSelection;
+  if (data.dietaryRestrictions !== undefined) updateData.dietaryRestrictions = data.dietaryRestrictions;
+
+  // Auto-advance to Stage 3 if confirmed
+  if (data.rsvpStatus === "confirmed") {
+    updateData.stage = 3;
+  }
+
+  await db.update(guests).set(updateData).where(eq(guests.id, guest.id));
 }
 
 // Floor Plans

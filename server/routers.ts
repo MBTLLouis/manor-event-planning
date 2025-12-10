@@ -214,11 +214,27 @@ export const appRouter = router({
         mealSelection: z.string().optional(),
         invitationSent: z.boolean().optional(),
         dietaryRestrictions: z.string().optional(),
+        rsvpToken: z.string().optional(),
+        starterSelection: z.string().optional(),
+        mainSelection: z.string().optional(),
+        dessertSelection: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
         await db.updateGuest(id, data);
         return { success: true };
+      }),
+
+    getStats: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        const guests = await db.getGuestsByEventId(input.eventId);
+        return {
+          total: guests.length,
+          confirmed: guests.filter(g => g.rsvpStatus === "confirmed").length,
+          pending: guests.filter(g => g.rsvpStatus === "pending").length,
+          declined: guests.filter(g => g.rsvpStatus === "declined").length,
+        };
       }),
 
     delete: protectedProcedure
@@ -255,6 +271,7 @@ export const appRouter = router({
     submitRSVP: publicProcedure
       .input(z.object({
         token: z.string(),
+        rsvpStatus: z.enum(["confirmed", "declined"]).optional(),
         starterSelection: z.string().optional(),
         mainSelection: z.string().optional(),
         dessertSelection: z.string().optional(),

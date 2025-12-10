@@ -136,3 +136,14 @@
 - [x] Add CRUD operations for each stage
 - [x] Create public RSVP page accessible via unique token
 - [x] Test complete 3-stage workflow
+
+## Guest Management Refactoring
+- [x] Simplify guest list to single view (remove 3-stage system from UI)
+- [x] Update RSVP status to use Pending/Confirmed/Declined only
+- [x] Remove Save the Date and Final Guest Database pages
+- [x] Update guest list to show all invited guests
+- [x] Implement meal selection locking logic (requires food options configured + confirmed attendance)
+- [x] Update public RSVP form to check food options availability
+- [x] Show appropriate message when food options not configured
+- [x] Pull meal selection dropdowns from Food Choices module
+- [x] Test complete workflow with locking rules

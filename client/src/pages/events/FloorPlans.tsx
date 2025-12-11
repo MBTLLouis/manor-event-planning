@@ -208,8 +208,13 @@ const DroppableCanvas = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       ref={setNodeRef}
-      className="border-2 border-dashed border-border rounded-lg bg-secondary/20 p-8 min-h-[600px] relative overflow-hidden"
-      style={{ backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+      className="border-4 border-teal-600 rounded-lg bg-secondary/20 p-8 relative overflow-hidden"
+      style={{ 
+        backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)', 
+        backgroundSize: '20px 20px',
+        width: '1200px',
+        height: '600px'
+      }}
     >
       {children}
     </div>
@@ -367,19 +372,46 @@ export default function FloorPlans() {
 
     if (!data) return;
 
+    // Canvas boundaries (accounting for padding and element size)
+    const CANVAS_WIDTH = 1200;
+    const CANVAS_HEIGHT = 600;
+    const PADDING = 32; // 8 * 4 (p-8 = 2rem = 32px)
+
     if (data.type === 'table') {
       const table = data.table as TableData;
+      const isRound = table.tableType === "round";
+      const tableWidth = isRound ? 120 : 160;
+      const tableHeight = isRound ? 120 : 80;
+      
+      // Calculate new position with delta
+      let newX = table.positionX + delta.x;
+      let newY = table.positionY + delta.y;
+      
+      // Apply boundary constraints
+      newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - tableWidth - PADDING));
+      newY = Math.max(PADDING, Math.min(newY, CANVAS_HEIGHT - tableHeight - PADDING));
+      
       updateTableMutation.mutate({
         id: table.id,
-        positionX: table.positionX + delta.x,
-        positionY: table.positionY + delta.y,
+        positionX: Math.round(newX),
+        positionY: Math.round(newY),
       });
     } else if (data.type === 'seat') {
       const seat = data.seat as SeatData;
+      const SEAT_SIZE = 48; // 12 * 4 (w-12 = 3rem = 48px)
+      
+      // Calculate new position with delta
+      let newX = seat.positionX + delta.x;
+      let newY = seat.positionY + delta.y;
+      
+      // Apply boundary constraints
+      newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - SEAT_SIZE - PADDING));
+      newY = Math.max(PADDING, Math.min(newY, CANVAS_HEIGHT - SEAT_SIZE - PADDING));
+      
       updateSeatMutation.mutate({
         id: seat.id,
-        positionX: seat.positionX + delta.x,
-        positionY: seat.positionY + delta.y,
+        positionX: Math.round(newX),
+        positionY: Math.round(newY),
       });
     }
   }, [updateTableMutation, updateSeatMutation]);

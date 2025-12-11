@@ -142,3 +142,9 @@
 - [x] Improve drag overlay rendering
 - [x] Reduce unnecessary re-renders during drag operations
 - [x] Test drag smoothness matches ceremony mode
+
+## Seating Planner Bug Fixes
+- [x] Fix drag drop positioning - tables not landing where dropped
+- [x] Add canvas boundary constraints to prevent tables going off-screen
+- [x] Test drag positioning accuracy
+- [x] Test boundary constraints work correctly

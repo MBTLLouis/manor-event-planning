@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { toast } from "sonner";
-import { DndContext, DragEndEvent, useDraggable, useDroppable, DragOverlay, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
 type SeatData = {
@@ -33,7 +33,8 @@ type TableData = {
   rotation: number;
 };
 
-function DraggableSeat({ seat, guest, onClick }: { seat: SeatData; guest?: any; onClick: () => void }) {
+// Optimized draggable seat component with memoization
+const DraggableSeat = ({ seat, guest, onClick }: { seat: SeatData; guest?: any; onClick: () => void }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `seat-${seat.id}`,
     data: { type: 'seat', seat }
@@ -41,61 +42,62 @@ function DraggableSeat({ seat, guest, onClick }: { seat: SeatData; guest?: any; 
 
   const style = {
     transform: CSS.Translate.toString(transform),
+    position: 'absolute' as const,
+    left: `${seat.positionX}px`,
+    top: `${seat.positionY}px`,
     opacity: isDragging ? 0.5 : 1,
+    cursor: isDragging ? 'grabbing' : 'grab',
+    willChange: 'transform',
   };
 
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        position: 'absolute',
-        left: `${seat.positionX}px`,
-        top: `${seat.positionY}px`,
-      }}
+      style={style}
       {...listeners}
       {...attributes}
     >
       <div
-        onClick={onClick}
-        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick();
+        }}
+        className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110 ${
           guest ? 'bg-teal-100 border-teal-600' : 'bg-gray-100 border-gray-400'
         }`}
         title={guest ? guest.name : 'Click to assign guest'}
       >
         {guest ? (
-          <span className="text-xs font-semibold text-teal-800">{guest.name.split(' ').map((n: string) => n.charAt(0)).join('')}</span>
+          <span className="text-xs font-semibold text-teal-800 select-none">
+            {guest.name.split(' ').map((n: string) => n.charAt(0)).join('')}
+          </span>
         ) : (
-          <span className="text-xs text-gray-500">?</span>
+          <span className="text-xs text-gray-500 select-none">?</span>
         )}
       </div>
     </div>
   );
-}
+};
 
-function DraggableTable({ table, seats, guests, onSeatClick, onRotate, onDelete }: {
+// Optimized draggable table component
+const DraggableTable = ({ table, seats, guests, onSeatClick, onRotate, onDelete }: {
   table: TableData;
   seats: SeatData[];
   guests: any[];
   onSeatClick: (seatId: number) => void;
   onRotate: () => void;
   onDelete: () => void;
-}) {
+}) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `table-${table.id}`,
     data: { type: 'table', table }
   });
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  };
-
   const isRound = table.tableType === "round";
   const tableWidth = isRound ? 120 : 160;
   const tableHeight = isRound ? 120 : 80;
 
-  // Calculate seat positions around the table
+  // Memoize seat positions to avoid recalculation on every render
   const seatPositions = useMemo(() => {
     const positions = [];
     const radius = isRound ? 70 : 60;
@@ -110,28 +112,29 @@ function DraggableTable({ table, seats, guests, onSeatClick, onRotate, onDelete 
     return positions;
   }, [table.seatCount, isRound]);
 
+  const style = {
+    position: 'absolute' as const,
+    left: `${table.positionX}px`,
+    top: `${table.positionY}px`,
+    transform: `${CSS.Translate.toString(transform)} rotate(${table.rotation}deg)`,
+    opacity: isDragging ? 0.5 : 1,
+    cursor: isDragging ? 'grabbing' : 'grab',
+    willChange: 'transform',
+  };
+
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        ...style,
-        position: 'absolute',
-        left: `${table.positionX}px`,
-        top: `${table.positionY}px`,
-        transform: `rotate(${table.rotation}deg)`,
-      }}
-    >
+    <div ref={setNodeRef} style={style}>
       <div className="relative">
         {/* Table */}
         <div
           {...listeners}
           {...attributes}
-          className={`bg-amber-100 border-2 border-amber-600 shadow-lg cursor-move hover:shadow-xl transition-shadow ${
+          className={`bg-amber-100 border-2 border-amber-600 shadow-lg transition-shadow hover:shadow-xl ${
             isRound ? 'rounded-full' : 'rounded-lg'
           }`}
           style={{ width: `${tableWidth}px`, height: `${tableHeight}px` }}
         >
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-col items-center justify-center h-full select-none">
             <p className="text-sm font-bold text-amber-900">{table.name}</p>
             <p className="text-xs text-amber-700">{table.seatCount} seats</p>
           </div>
@@ -144,7 +147,10 @@ function DraggableTable({ table, seats, guests, onSeatClick, onRotate, onDelete 
           return (
             <div
               key={seat.id}
-              onClick={() => onSeatClick(seat.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSeatClick(seat.id);
+              }}
               className={`absolute w-10 h-10 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
                 guest ? 'bg-teal-100 border-teal-600' : 'bg-gray-100 border-gray-400'
               }`}
@@ -155,9 +161,11 @@ function DraggableTable({ table, seats, guests, onSeatClick, onRotate, onDelete 
               title={guest ? guest.name : 'Click to assign guest'}
             >
               {guest ? (
-                <span className="text-xs font-semibold text-teal-800">{guest.name.split(' ').map((n: string) => n.charAt(0)).join('')}</span>
+                <span className="text-xs font-semibold text-teal-800 select-none">
+                  {guest.name.split(' ').map((n: string) => n.charAt(0)).join('')}
+                </span>
               ) : (
-                <span className="text-xs text-gray-500">?</span>
+                <span className="text-xs text-gray-500 select-none">?</span>
               )}
             </div>
           );
@@ -165,19 +173,36 @@ function DraggableTable({ table, seats, guests, onSeatClick, onRotate, onDelete 
 
         {/* Control buttons */}
         <div className="absolute -top-10 left-0 flex gap-1">
-          <Button size="sm" variant="outline" onClick={onRotate} className="h-7 px-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onRotate();
+            }} 
+            className="h-7 px-2"
+          >
             <RotateCw className="w-3 h-3" />
           </Button>
-          <Button size="sm" variant="outline" onClick={onDelete} className="h-7 px-2 text-red-600 hover:text-red-700">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }} 
+            className="h-7 px-2 text-red-600 hover:text-red-700"
+          >
             <Trash2 className="w-3 h-3" />
           </Button>
         </div>
       </div>
     </div>
   );
-}
+};
 
-function DroppableCanvas({ children }: { children: React.ReactNode }) {
+// Droppable canvas
+const DroppableCanvas = ({ children }: { children: React.ReactNode }) => {
   const { setNodeRef } = useDroppable({ id: 'canvas' });
 
   return (
@@ -189,7 +214,7 @@ function DroppableCanvas({ children }: { children: React.ReactNode }) {
       {children}
     </div>
   );
-}
+};
 
 export default function FloorPlans() {
   const [, params] = useRoute("/events/:id/floor-plans");
@@ -219,7 +244,13 @@ export default function FloorPlans() {
   );
 
   const utils = trpc.useUtils();
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  
+  // Optimized sensor with activation constraint to prevent accidental drags
+  const sensors = useSensors(
+    useSensor(PointerSensor, { 
+      activationConstraint: { distance: 8 } // Require 8px movement before drag starts
+    })
+  );
 
   const createFloorPlanMutation = trpc.floorPlans.create.useMutation({
     onSuccess: (data) => {
@@ -250,7 +281,7 @@ export default function FloorPlans() {
           floorPlanId: selectedPlanId!,
           tableId: data.id,
           seatNumber: i + 1,
-          positionX: Math.round(300 + x), // Center of canvas
+          positionX: Math.round(300 + x),
           positionY: Math.round(300 + y),
         });
       }
@@ -284,15 +315,6 @@ export default function FloorPlans() {
   const deleteTableMutation = trpc.tables.delete.useMutation({
     onSuccess: () => {
       toast.success("Table deleted!");
-      if (selectedPlanId) {
-        utils.floorPlans.getById.invalidate({ id: selectedPlanId });
-      }
-    },
-  });
-
-  const deleteSeatMutation = trpc.seats.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Seat deleted!");
       if (selectedPlanId) {
         utils.floorPlans.getById.invalidate({ id: selectedPlanId });
       }
@@ -339,7 +361,7 @@ export default function FloorPlans() {
     }, 100);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, delta } = event;
     const data = active.data.current;
 
@@ -360,28 +382,28 @@ export default function FloorPlans() {
         positionY: seat.positionY + delta.y,
       });
     }
-  };
+  }, [updateTableMutation, updateSeatMutation]);
 
-  const handleRotateTable = (tableId: number, currentRotation: number) => {
+  const handleRotateTable = useCallback((tableId: number, currentRotation: number) => {
     const newRotation = (currentRotation + 15) % 360;
     updateTableMutation.mutate({
       id: tableId,
       rotation: newRotation,
     });
-  };
+  }, [updateTableMutation]);
 
-  const handleDeleteTable = (tableId: number) => {
+  const handleDeleteTable = useCallback((tableId: number) => {
     if (confirm("Delete this table and all its seats?")) {
       deleteTableMutation.mutate({ id: tableId });
     }
-  };
+  }, [deleteTableMutation]);
 
-  const handleSeatClick = (seatId: number) => {
+  const handleSeatClick = useCallback((seatId: number) => {
     setSelectedSeatId(seatId);
     setIsAssignGuestDialogOpen(true);
-  };
+  }, []);
 
-  const handleAssignGuest = (guestId: number | null) => {
+  const handleAssignGuest = useCallback((guestId: number | null) => {
     if (selectedSeatId) {
       updateSeatMutation.mutate({
         id: selectedSeatId,
@@ -390,7 +412,7 @@ export default function FloorPlans() {
       setIsAssignGuestDialogOpen(false);
       setSelectedSeatId(null);
     }
-  };
+  }, [selectedSeatId, updateSeatMutation]);
 
   // Auto-select first plan if available
   if (floorPlans && floorPlans.length > 0 && selectedPlanId === null) {
@@ -398,6 +420,7 @@ export default function FloorPlans() {
   }
 
   const isCeremonyMode = selectedPlan?.mode === "ceremony";
+  
   const assignedGuests = useMemo(() => {
     if (!selectedPlan?.seats || !guests) return [];
     return guests.filter(g => selectedPlan.seats.some(s => s.guestId === g.id));
@@ -520,7 +543,7 @@ export default function FloorPlans() {
                                 <Label htmlFor="table-type">Table Type</Label>
                                 <Select
                                   value={newTable.tableType}
-                                  onValueChange={(value: any) => setNewTable({ ...newTable, tableType: value })}
+                                  onValueChange={(value: any) => setNewTable({ ...newTable, tableType: value, seatCount: value === "round" ? 8 : 4 })}
                                 >
                                   <SelectTrigger>
                                     <SelectValue />

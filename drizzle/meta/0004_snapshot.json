@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "59cea934-bcdf-482f-b270-1d0fce10b0ea",
+  "id": "8d114c94-03b3-4e7f-b529-df29e9557e99",
   "prevId": "cb145f66-dfd6-4bc3-bd61-b9f7ca98d75c",
   "tables": {
     "accommodations": {

@@ -211,30 +211,14 @@ export const appRouter = router({
         email: z.string().optional(),
         groupName: z.string().optional(),
         rsvpStatus: z.enum(["confirmed", "pending", "declined"]).optional(),
-        mealSelection: z.string().optional().nullable(),
+        mealSelection: z.string().optional(),
         invitationSent: z.boolean().optional(),
-        dietaryRestrictions: z.string().optional().nullable(),
-        rsvpToken: z.string().optional(),
-        starterSelection: z.string().optional().nullable(),
-        mainSelection: z.string().optional().nullable(),
-        dessertSelection: z.string().optional().nullable(),
+        dietaryRestrictions: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
         await db.updateGuest(id, data);
         return { success: true };
-      }),
-
-    getStats: protectedProcedure
-      .input(z.object({ eventId: z.number() }))
-      .query(async ({ input }) => {
-        const guests = await db.getGuestsByEventId(input.eventId);
-        return {
-          total: guests.length,
-          confirmed: guests.filter(g => g.rsvpStatus === "confirmed").length,
-          pending: guests.filter(g => g.rsvpStatus === "pending").length,
-          declined: guests.filter(g => g.rsvpStatus === "declined").length,
-        };
       }),
 
     delete: protectedProcedure
@@ -271,7 +255,6 @@ export const appRouter = router({
     submitRSVP: publicProcedure
       .input(z.object({
         token: z.string(),
-        rsvpStatus: z.enum(["confirmed", "declined"]).optional(),
         starterSelection: z.string().optional(),
         mainSelection: z.string().optional(),
         dessertSelection: z.string().optional(),
@@ -324,7 +307,6 @@ export const appRouter = router({
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
-        mode: z.enum(["ceremony", "reception"]).optional(),
         orderIndex: z.number().optional(),
       }))
       .mutation(async ({ input }) => {

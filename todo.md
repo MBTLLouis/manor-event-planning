@@ -137,40 +137,8 @@
 - [x] Create public RSVP page accessible via unique token
 - [x] Test complete 3-stage workflow
 
-## Guest Management Refactoring
-- [x] Simplify guest list to single view (remove 3-stage system from UI)
-- [x] Update RSVP status to use Pending/Confirmed/Declined only
-- [x] Remove Save the Date and Final Guest Database pages
-- [x] Update guest list to show all invited guests
-- [x] Implement meal selection locking logic (requires food options configured + confirmed attendance)
-- [x] Update public RSVP form to check food options availability
-- [x] Show appropriate message when food options not configured
-- [x] Pull meal selection dropdowns from Food Choices module
-- [x] Test complete workflow with locking rules
-
-## Bug Fixes
-- [x] Fix API validation error rejecting null values for meal selections in guest update procedure
-
-## Timeline Module Enhancements
-- [x] Add multiple day management (add/edit/delete days)
-- [x] Implement timeline event CRUD operations (add/edit/delete events)
-- [x] Add event name field
-- [x] Replace time text field with dropdown time selector
-- [x] Add optional "Person Responsible" field
-- [x] Add "Additional Information" text area field
-- [x] Update Timeline UI with improved layout
-- [x] Test all timeline operations
-
-## Seating Planner Rebuild
-- [x] Update database schema for ceremony and reception seating modes
-- [x] Add rotation field to tables (15° increments)
-- [x] Separate ceremony seats from reception tables
-- [x] Build ceremony mode with individual seat drag-and-drop
-- [x] Build reception mode with table drag-and-drop (Round: 8 seats, Rectangle: 4 seats)
-- [x] Implement table rotation functionality (15° increments)
-- [x] Add guest assignment system (click seat → select guest)
-- [x] Create unassigned/assigned guest panels
-- [x] Implement full drag-and-drop repositioning for tables after placement
-- [x] Add hover highlight and click selection
-- [x] Persist all state (positions, assignments, rotations)
-- [x] Test both ceremony and reception modes
+## Seating Planner Performance Optimization
+- [x] Optimize reception table drag performance to eliminate lag
+- [x] Improve drag overlay rendering
+- [x] Reduce unnecessary re-renders during drag operations
+- [x] Test drag smoothness matches ceremony mode

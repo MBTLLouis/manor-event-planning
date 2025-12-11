@@ -148,3 +148,8 @@
 - [x] Add canvas boundary constraints to prevent tables going off-screen
 - [x] Test drag positioning accuracy
 - [x] Test boundary constraints work correctly
+
+## Critical Bug - Table Disappearing
+- [x] Fix table disappearing after drag-and-drop
+- [x] Debug mutation response and query invalidation
+- [x] Test table persistence after drag

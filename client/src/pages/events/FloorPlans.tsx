@@ -302,7 +302,36 @@ export default function FloorPlans() {
   const createSeatMutation = trpc.seats.create.useMutation();
 
   const updateTableMutation = trpc.tables.update.useMutation({
-    onSuccess: () => {
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await utils.floorPlans.getById.cancel({ id: selectedPlanId! });
+      
+      // Snapshot the previous value
+      const previousData = utils.floorPlans.getById.getData({ id: selectedPlanId! });
+      
+      // Optimistically update to the new value
+      if (previousData) {
+        utils.floorPlans.getById.setData({ id: selectedPlanId! }, {
+          ...previousData,
+          tables: previousData.tables?.map(t => 
+            t.id === variables.id 
+              ? { ...t, ...variables }
+              : t
+          ) || []
+        });
+      }
+      
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        utils.floorPlans.getById.setData({ id: selectedPlanId! }, context.previousData);
+      }
+      toast.error("Failed to update table position");
+    },
+    onSettled: () => {
+      // Always refetch after error or success
       if (selectedPlanId) {
         utils.floorPlans.getById.invalidate({ id: selectedPlanId });
       }
@@ -310,7 +339,30 @@ export default function FloorPlans() {
   });
 
   const updateSeatMutation = trpc.seats.update.useMutation({
-    onSuccess: () => {
+    onMutate: async (variables) => {
+      await utils.floorPlans.getById.cancel({ id: selectedPlanId! });
+      const previousData = utils.floorPlans.getById.getData({ id: selectedPlanId! });
+      
+      if (previousData) {
+        utils.floorPlans.getById.setData({ id: selectedPlanId! }, {
+          ...previousData,
+          seats: previousData.seats?.map(s => 
+            s.id === variables.id 
+              ? { ...s, ...variables }
+              : s
+          ) || []
+        });
+      }
+      
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        utils.floorPlans.getById.setData({ id: selectedPlanId! }, context.previousData);
+      }
+      toast.error("Failed to update seat position");
+    },
+    onSettled: () => {
       if (selectedPlanId) {
         utils.floorPlans.getById.invalidate({ id: selectedPlanId });
       }

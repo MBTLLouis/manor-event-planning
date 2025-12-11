@@ -312,6 +312,7 @@ export const appRouter = router({
       .input(z.object({
         eventId: z.number(),
         name: z.string(),
+        mode: z.enum(["ceremony", "reception"]).optional(),
         orderIndex: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
@@ -323,6 +324,7 @@ export const appRouter = router({
       .input(z.object({
         id: z.number(),
         name: z.string().optional(),
+        mode: z.enum(["ceremony", "reception"]).optional(),
         orderIndex: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
@@ -363,6 +365,7 @@ export const appRouter = router({
         seatCount: z.number(),
         positionX: z.number(),
         positionY: z.number(),
+        rotation: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const id = await db.createTable(input);
@@ -375,6 +378,7 @@ export const appRouter = router({
         name: z.string().optional(),
         positionX: z.number().optional(),
         positionY: z.number().optional(),
+        rotation: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;

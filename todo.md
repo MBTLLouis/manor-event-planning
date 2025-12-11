@@ -160,3 +160,17 @@
 - [x] Add "Additional Information" text area field
 - [x] Update Timeline UI with improved layout
 - [x] Test all timeline operations
+
+## Seating Planner Rebuild
+- [x] Update database schema for ceremony and reception seating modes
+- [x] Add rotation field to tables (15° increments)
+- [x] Separate ceremony seats from reception tables
+- [x] Build ceremony mode with individual seat drag-and-drop
+- [x] Build reception mode with table drag-and-drop (Round: 8 seats, Rectangle: 4 seats)
+- [x] Implement table rotation functionality (15° increments)
+- [x] Add guest assignment system (click seat → select guest)
+- [x] Create unassigned/assigned guest panels
+- [x] Implement full drag-and-drop repositioning for tables after placement
+- [x] Add hover highlight and click selection
+- [x] Persist all state (positions, assignments, rotations)
+- [x] Test both ceremony and reception modes

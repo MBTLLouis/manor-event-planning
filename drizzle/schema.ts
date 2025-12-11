@@ -78,6 +78,7 @@ export const floorPlans = mysqlTable("floorPlans", {
   id: int("id").autoincrement().primaryKey(),
   eventId: int("eventId").notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  mode: mysqlEnum("mode", ["ceremony", "reception"]).default("reception").notNull(),
   orderIndex: int("orderIndex").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -97,6 +98,7 @@ export const tables = mysqlTable("tables", {
   seatCount: int("seatCount").notNull(),
   positionX: int("positionX").notNull(),
   positionY: int("positionY").notNull(),
+  rotation: int("rotation").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

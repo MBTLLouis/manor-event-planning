@@ -147,3 +147,6 @@
 - [x] Show appropriate message when food options not configured
 - [x] Pull meal selection dropdowns from Food Choices module
 - [x] Test complete workflow with locking rules
+
+## Bug Fixes
+- [x] Fix API validation error rejecting null values for meal selections in guest update procedure

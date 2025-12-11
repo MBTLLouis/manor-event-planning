@@ -211,13 +211,13 @@ export const appRouter = router({
         email: z.string().optional(),
         groupName: z.string().optional(),
         rsvpStatus: z.enum(["confirmed", "pending", "declined"]).optional(),
-        mealSelection: z.string().optional(),
+        mealSelection: z.string().optional().nullable(),
         invitationSent: z.boolean().optional(),
-        dietaryRestrictions: z.string().optional(),
+        dietaryRestrictions: z.string().optional().nullable(),
         rsvpToken: z.string().optional(),
-        starterSelection: z.string().optional(),
-        mainSelection: z.string().optional(),
-        dessertSelection: z.string().optional(),
+        starterSelection: z.string().optional().nullable(),
+        mainSelection: z.string().optional().nullable(),
+        dessertSelection: z.string().optional().nullable(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;

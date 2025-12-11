@@ -150,3 +150,13 @@
 
 ## Bug Fixes
 - [x] Fix API validation error rejecting null values for meal selections in guest update procedure
+
+## Timeline Module Enhancements
+- [x] Add multiple day management (add/edit/delete days)
+- [x] Implement timeline event CRUD operations (add/edit/delete events)
+- [x] Add event name field
+- [x] Replace time text field with dropdown time selector
+- [x] Add optional "Person Responsible" field
+- [x] Add "Additional Information" text area field
+- [x] Update Timeline UI with improved layout
+- [x] Test all timeline operations

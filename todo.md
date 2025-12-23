@@ -265,3 +265,8 @@
 - [x] Add dietary restriction flags to Guest Selections Summary
 - [x] Implement PDF export for menu reports
 - [x] Add drag-and-drop course ordering for serving sequence
+
+## Food Choices UI Spacing Adjustments
+- [x] Reduce title spacing in Food Choices page
+- [x] Move action buttons inward with better padding
+- [x] Narrow course card width to add more gap from sides

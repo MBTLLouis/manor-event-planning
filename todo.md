@@ -179,9 +179,10 @@
 - [x] Add Additional details text box for dietary requirements
 
 ### 4. Timeline Management
-- [ ] Allow deletion and modification of day titles and dates
-- [ ] Display timeline in ascending day order
-- [ ] Ensure new events are inserted in correct chronological position
+- [x] Allow deletion and modification of day titles and dates
+- [x] Display timeline in ascending day order
+- [x] Ensure new events are inserted in correct chronological position
+- [x] Implement drag-and-drop reordering for timeline items
 
 ### 5. Checklist Improvement
 - [ ] Add tabs: "Manor By The Lake" and "Couple" to distinguish tasks

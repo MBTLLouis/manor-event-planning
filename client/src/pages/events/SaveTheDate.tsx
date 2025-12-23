@@ -81,8 +81,14 @@ export default function SaveTheDate() {
       return;
     }
 
+    const nameParts = newGuestName.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastName = nameParts.slice(1).join(" ") || nameParts[0];
+
     addGuestMutation.mutate({
       eventId,
+      firstName,
+      lastName,
       name: newGuestName,
       email: newGuestEmail || undefined,
       stage: 1,

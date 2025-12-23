@@ -199,15 +199,25 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         eventId: z.number(),
+        firstName: z.string(),
+        lastName: z.string(),
         name: z.string(),
         email: z.string().optional(),
         groupName: z.string().optional(),
         stage: z.number().optional(),
         saveTheDateResponse: z.enum(["yes", "no", "pending"]).optional(),
-        rsvpStatus: z.enum(["confirmed", "pending", "declined"]).optional(),
+        rsvpStatus: z.enum(["draft", "invited", "confirmed", "declined"]).optional(),
         mealSelection: z.string().optional(),
-        invitationSent: z.boolean().optional(),
+        starterSelection: z.string().optional(),
+        mainSelection: z.string().optional(),
+        dessertSelection: z.string().optional(),
+        hasDietaryRequirements: z.boolean().optional(),
         dietaryRestrictions: z.string().optional(),
+        allergySeverity: z.enum(["none", "mild", "severe"]).optional(),
+        canOthersConsumeNearby: z.boolean().optional(),
+        dietaryDetails: z.string().optional(),
+        guestType: z.enum(["day", "evening", "both"]).optional(),
+        invitationSent: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
         const id = await db.createGuest(input);
@@ -217,13 +227,26 @@ export const appRouter = router({
     update: protectedProcedure
       .input(z.object({
         id: z.number(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
         name: z.string().optional(),
         email: z.string().optional(),
         groupName: z.string().optional(),
-        rsvpStatus: z.enum(["confirmed", "pending", "declined"]).optional(),
+        rsvpStatus: z.enum(["draft", "invited", "confirmed", "declined"]).optional(),
         mealSelection: z.string().optional(),
-        invitationSent: z.boolean().optional(),
+        starterSelection: z.string().optional(),
+        mainSelection: z.string().optional(),
+        dessertSelection: z.string().optional(),
+        hasDietaryRequirements: z.boolean().optional(),
         dietaryRestrictions: z.string().optional(),
+        allergySeverity: z.enum(["none", "mild", "severe"]).optional(),
+        canOthersConsumeNearby: z.boolean().optional(),
+        dietaryDetails: z.string().optional(),
+        guestType: z.enum(["day", "evening", "both"]).optional(),
+        tableAssigned: z.boolean().optional(),
+        tableId: z.number().optional(),
+        seatId: z.number().optional(),
+        invitationSent: z.boolean().optional(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;

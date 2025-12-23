@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `guests` ADD `firstName` varchar(100);\nALTER TABLE `guests` ADD `lastName` varchar(100);\nALTER TABLE `guests` ADD `hasDietaryRequirements` boolean DEFAULT false NOT NULL;\nALTER TABLE `guests` ADD `allergySeverity` enum('none','mild','severe') DEFAULT 'none';\nALTER TABLE `guests` ADD `canOthersConsumeNearby` boolean DEFAULT true;\nALTER TABLE `guests` ADD `dietaryDetails` text;\nALTER TABLE `guests` ADD `tableAssigned` boolean DEFAULT false NOT NULL;\nALTER TABLE `guests` ADD `tableId` int;\nALTER TABLE `guests` ADD `seatId` int;\nALTER TABLE `guests` ADD `guestType` enum('day','evening','both') DEFAULT 'both';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute ALTER TABLE `guests` ADD `firstName` varchar(100);\nALTER TABLE `guests` ADD `lastName` varchar(100);\nALTER TABLE `guests` ADD `hasDietaryRequirements` boolean DEFAULT false NOT NULL;\nALTER TABLE `guests` ADD `allergySeverity` enum('none','mild','severe') DEFAULT 'none';\nALTER TABLE `guests` ADD `canOthersConsumeNearby` boolean DEFAULT true;\nALTER TABLE `guests` ADD `dietaryDetails` text;\nALTER TABLE `guests` ADD `tableAssigned` boolean DEFAULT false NOT NULL;\nALTER TABLE `guests` ADD `tableId` int;\nALTER TABLE `guests` ADD `seatId` int;\nALTER TABLE `guests` ADD `guestType` enum('day','evening','both') DEFAULT 'both';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4514
+}

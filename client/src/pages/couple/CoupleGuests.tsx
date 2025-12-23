@@ -37,7 +37,7 @@ export default function CoupleGuests() {
   const stats = {
     total: guests.length,
     confirmed: guests.filter((g) => g.rsvpStatus === "confirmed").length,
-    pending: guests.filter((g) => g.rsvpStatus === "pending").length,
+    pending: guests.filter((g) => g.rsvpStatus === "invited" || g.rsvpStatus === "draft").length,
     declined: guests.filter((g) => g.rsvpStatus === "declined").length,
   };
 
@@ -45,8 +45,10 @@ export default function CoupleGuests() {
     switch (status) {
       case "confirmed":
         return <Badge className="bg-green-500">Confirmed</Badge>;
-      case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>;
+      case "invited":
+        return <Badge className="bg-yellow-500">Invited</Badge>;
+      case "draft":
+        return <Badge className="bg-gray-500">Draft</Badge>;
       case "declined":
         return <Badge className="bg-red-500">Declined</Badge>;
       default:

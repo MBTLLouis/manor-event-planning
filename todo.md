@@ -165,18 +165,18 @@
 - [ ] Make "Back to events" button more prominent in event details view
 
 ### 3. Guest List Management Enhancements
-- [ ] Implement tabs: All Guests, Save The Date, Food Choices, Table Assignment, Completed
-- [ ] Add sub-tabs for Save The Date: Invited, Attending, Unavailable
-- [ ] Add sub-tabs for Food Choices: Awaiting Choices, Confirmed
-- [ ] Add sub-tabs for Table Assignment: Un-Allocated, Allocated
-- [ ] Add required fields: First Name, Last Name, RSVP Status with color coding
-- [ ] Add optional fields: Email, Group
-- [ ] Add Food Choices: Single-choice dropdown (Starter, Main, Dessert)
-- [ ] Add Dietary Requirement checkbox with expanded form
-- [ ] Add Dietary Restriction multi-choice dropdown with "Other" text box
-- [ ] Add Allergy Severity (Mild/Severe)
-- [ ] Add "Can others consume around you?" (Yes/No)
-- [ ] Add Additional details text box for dietary requirements
+- [x] Implement tabs: All Guests, Save The Date, Food Choices, Table Assignment, Completed
+- [x] Add sub-tabs for Save The Date: Invited, Attending, Unavailable
+- [x] Add sub-tabs for Food Choices: Awaiting Choices, Confirmed
+- [x] Add sub-tabs for Table Assignment: Un-Allocated, Allocated
+- [x] Add required fields: First Name, Last Name, RSVP Status with color coding
+- [x] Add optional fields: Email, Group
+- [x] Add Food Choices: Single-choice dropdown (Starter, Main, Dessert)
+- [x] Add Dietary Requirement checkbox with expanded form
+- [x] Add Dietary Restriction multi-choice dropdown with "Other" text box
+- [x] Add Allergy Severity (Mild/Severe)
+- [x] Add "Can others consume around you?" (Yes/No)
+- [x] Add Additional details text box for dietary requirements
 
 ### 4. Timeline Management
 - [ ] Allow deletion and modification of day titles and dates

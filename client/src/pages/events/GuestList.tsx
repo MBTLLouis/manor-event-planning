@@ -7,13 +7,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Search, Edit, Trash2, Mail } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ArrowLeft, Plus, Search, Edit, Trash2, AlertTriangle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
-export default function GuestList() {
+type RsvpStatus = "draft" | "invited" | "confirmed" | "declined";
+type AllergySeverity = "none" | "mild" | "severe";
+type GuestType = "day" | "evening" | "both";
+
+export default function GuestListEnhanced() {
   const [, params] = useRoute("/events/:id/guests");
   const [, setLocation] = useLocation();
   const eventId = params?.id ? parseInt(params.id) : 0;
@@ -23,12 +31,20 @@ export default function GuestList() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<any>(null);
   const [newGuest, setNewGuest] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     groupName: "",
-    rsvpStatus: "pending" as "confirmed" | "pending" | "declined",
-    mealSelection: "",
+    rsvpStatus: "draft" as RsvpStatus,
+    guestType: "both" as GuestType,
+    starterSelection: "",
+    mainSelection: "",
+    dessertSelection: "",
+    hasDietaryRequirements: false,
     dietaryRestrictions: "",
+    allergySeverity: "none" as AllergySeverity,
+    canOthersConsumeNearby: true,
+    dietaryDetails: "",
   });
 
   const { data: guests } = trpc.guests.list.useQuery({ eventId });
@@ -40,7 +56,22 @@ export default function GuestList() {
     onSuccess: () => {
       toast.success("Guest added successfully!");
       setIsAddDialogOpen(false);
-      setNewGuest({ name: "", email: "", groupName: "", rsvpStatus: "pending", mealSelection: "", dietaryRestrictions: "" });
+      setNewGuest({
+        firstName: "",
+        lastName: "",
+        email: "",
+        groupName: "",
+        rsvpStatus: "draft",
+        guestType: "both",
+        starterSelection: "",
+        mainSelection: "",
+        dessertSelection: "",
+        hasDietaryRequirements: false,
+        dietaryRestrictions: "",
+        allergySeverity: "none",
+        canOthersConsumeNearby: true,
+        dietaryDetails: "",
+      });
       utils.guests.list.invalidate({ eventId });
       utils.guests.stats.invalidate({ eventId });
     },
@@ -66,13 +97,23 @@ export default function GuestList() {
 
   const handleAddGuest = (e: React.FormEvent) => {
     e.preventDefault();
-    createGuestMutation.mutate({ eventId, ...newGuest });
+    const fullName = `${newGuest.firstName} ${newGuest.lastName}`;
+    createGuestMutation.mutate({ 
+      eventId, 
+      ...newGuest,
+      name: fullName,
+    });
   };
 
   const handleUpdateGuest = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedGuest) {
-      updateGuestMutation.mutate({ id: selectedGuest.id, ...selectedGuest });
+      const fullName = `${selectedGuest.firstName} ${selectedGuest.lastName}`;
+      updateGuestMutation.mutate({ 
+        id: selectedGuest.id, 
+        ...selectedGuest,
+        name: fullName,
+      });
     }
   };
 
@@ -83,138 +124,365 @@ export default function GuestList() {
   };
 
   const filteredGuests = guests?.filter((guest) =>
-    guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    guest.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    guest.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    guest.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    guest.groupName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const confirmedGuests = filteredGuests?.filter((g) => g.rsvpStatus === "confirmed");
-  const initialGuests = filteredGuests?.filter((g) => g.rsvpStatus === "pending");
+  // Filter guests by different criteria
+  const allGuests = filteredGuests || [];
+  
+  // Save The Date filters
+  const saveTheDateInvited = allGuests.filter(g => g.saveTheDateResponse !== "pending");
+  const saveTheDateAttending = allGuests.filter(g => g.saveTheDateResponse === "yes");
+  const saveTheDateUnavailable = allGuests.filter(g => g.saveTheDateResponse === "no");
+
+  // Food Choices filters
+  const foodChoicesAwaiting = allGuests.filter(g => 
+    g.rsvpStatus === "confirmed" && (!g.starterSelection || !g.mainSelection || !g.dessertSelection)
+  );
+  const foodChoicesConfirmed = allGuests.filter(g => 
+    g.starterSelection && g.mainSelection && g.dessertSelection
+  );
+
+  // Table Assignment filters
+  const tableUnallocated = allGuests.filter(g => !g.tableAssigned);
+  const tableAllocated = allGuests.filter(g => g.tableAssigned);
+
+  // Completed
+  const completed = allGuests.filter(g => 
+    g.rsvpStatus === "confirmed" && 
+    g.starterSelection && 
+    g.mainSelection && 
+    g.dessertSelection && 
+    g.tableAssigned
+  );
+
+  const getRsvpStatusColor = (status: string) => {
+    switch (status) {
+      case "draft": return "bg-gray-200 text-gray-800";
+      case "invited": return "bg-blue-200 text-blue-800";
+      case "confirmed": return "bg-green-200 text-green-800";
+      case "declined": return "bg-red-200 text-red-800";
+      default: return "bg-gray-200 text-gray-800";
+    }
+  };
+
+  const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) => void }) => (
+    <div className="space-y-4 py-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name *</Label>
+          <Input
+            id="firstName"
+            value={guest.firstName || ""}
+            onChange={(e) => setGuest({ ...guest, firstName: e.target.value })}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name *</Label>
+          <Input
+            id="lastName"
+            value={guest.lastName || ""}
+            onChange={(e) => setGuest({ ...guest, lastName: e.target.value })}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email (Optional)</Label>
+        <Input
+          id="email"
+          type="email"
+          value={guest.email || ""}
+          onChange={(e) => setGuest({ ...guest, email: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="groupName">Group (Optional)</Label>
+        <Input
+          id="groupName"
+          placeholder="e.g., Bride's Family"
+          value={guest.groupName || ""}
+          onChange={(e) => setGuest({ ...guest, groupName: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="rsvpStatus">RSVP Status *</Label>
+        <Select 
+          value={guest.rsvpStatus || "draft"} 
+          onValueChange={(value) => setGuest({ ...guest, rsvpStatus: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">Draft Invite</SelectItem>
+            <SelectItem value="invited">Invited</SelectItem>
+            <SelectItem value="confirmed">Attending</SelectItem>
+            <SelectItem value="declined">Not Attending</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="guestType">Guest Type</Label>
+        <Select 
+          value={guest.guestType || "both"} 
+          onValueChange={(value) => setGuest({ ...guest, guestType: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">Day Guest</SelectItem>
+            <SelectItem value="evening">Evening Guest</SelectItem>
+            <SelectItem value="both">Day & Evening</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="border-t pt-4 space-y-4">
+        <h4 className="font-semibold">Food Choices</h4>
+        
+        <div className="space-y-2">
+          <Label htmlFor="starter">Starter</Label>
+          <Input
+            id="starter"
+            placeholder="Pending"
+            value={guest.starterSelection || ""}
+            onChange={(e) => setGuest({ ...guest, starterSelection: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="main">Main Course</Label>
+          <Input
+            id="main"
+            placeholder="Pending"
+            value={guest.mainSelection || ""}
+            onChange={(e) => setGuest({ ...guest, mainSelection: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="dessert">Dessert</Label>
+          <Input
+            id="dessert"
+            placeholder="Pending"
+            value={guest.dessertSelection || ""}
+            onChange={(e) => setGuest({ ...guest, dessertSelection: e.target.value })}
+          />
+        </div>
+      </div>
+
+      <div className="border-t pt-4 space-y-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="hasDietaryRequirements"
+            checked={guest.hasDietaryRequirements || false}
+            onCheckedChange={(checked) => setGuest({ ...guest, hasDietaryRequirements: checked })}
+          />
+          <Label htmlFor="hasDietaryRequirements" className="font-semibold">
+            Has Dietary Requirements
+          </Label>
+        </div>
+
+        {guest.hasDietaryRequirements && (
+          <div className="ml-6 space-y-4 border-l-2 border-amber-300 pl-4">
+            <div className="space-y-2">
+              <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+              <Input
+                id="dietaryRestrictions"
+                placeholder="e.g., Vegetarian, Gluten-Free, Nut Allergy"
+                value={guest.dietaryRestrictions || ""}
+                onChange={(e) => setGuest({ ...guest, dietaryRestrictions: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Separate multiple restrictions with commas
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="allergySeverity">Allergy Severity</Label>
+              <RadioGroup 
+                value={guest.allergySeverity || "none"}
+                onValueChange={(value) => setGuest({ ...guest, allergySeverity: value })}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="none" id="none" />
+                  <Label htmlFor="none">None</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mild" id="mild" />
+                  <Label htmlFor="mild">Mild</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="severe" id="severe" />
+                  <Label htmlFor="severe" className="flex items-center gap-2">
+                    Severe <AlertTriangle className="w-4 h-4 text-red-500" />
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="canOthersConsume">Can others consume around you?</Label>
+              <RadioGroup 
+                value={guest.canOthersConsumeNearby ? "yes" : "no"}
+                onValueChange={(value) => setGuest({ ...guest, canOthersConsumeNearby: value === "yes" })}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="yes" />
+                  <Label htmlFor="yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="no" />
+                  <Label htmlFor="no">No (airborne/contact risk)</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dietaryDetails">Additional Details</Label>
+              <Textarea
+                id="dietaryDetails"
+                placeholder="Any additional information about dietary requirements..."
+                value={guest.dietaryDetails || ""}
+                onChange={(e) => setGuest({ ...guest, dietaryDetails: e.target.value })}
+                rows={3}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const GuestTable = ({ guestList }: { guestList: any[] }) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Group</TableHead>
+          <TableHead>RSVP Status</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>Food</TableHead>
+          <TableHead>Dietary</TableHead>
+          <TableHead>Table</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {guestList.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+              No guests found
+            </TableCell>
+          </TableRow>
+        ) : (
+          guestList.map((guest) => (
+            <TableRow key={guest.id}>
+              <TableCell className="font-medium">{guest.name}</TableCell>
+              <TableCell>{guest.email || "-"}</TableCell>
+              <TableCell>{guest.groupName || "-"}</TableCell>
+              <TableCell>
+                <Badge className={getRsvpStatusColor(guest.rsvpStatus)}>
+                  {guest.rsvpStatus}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline">{guest.guestType || "both"}</Badge>
+              </TableCell>
+              <TableCell>
+                {guest.starterSelection && guest.mainSelection && guest.dessertSelection ? (
+                  <Badge variant="outline" className="bg-green-50">✓</Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-gray-50">-</Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                {guest.hasDietaryRequirements ? (
+                  <Badge 
+                    variant="outline" 
+                    className={guest.allergySeverity === "severe" ? "bg-red-100 text-red-800" : "bg-amber-50"}
+                  >
+                    {guest.allergySeverity === "severe" && <AlertTriangle className="w-3 h-3 mr-1" />}
+                    {guest.allergySeverity === "severe" ? "SEVERE" : "Yes"}
+                  </Badge>
+                ) : (
+                  "-"
+                )}
+              </TableCell>
+              <TableCell>
+                {guest.tableAssigned ? (
+                  <Badge variant="outline" className="bg-green-50">Assigned</Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-gray-50">-</Badge>
+                )}
+              </TableCell>
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedGuest(guest);
+                      setIsEditDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteGuest(guest.id)}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  );
 
   return (
     <EmployeeLayout>
       <div className="p-8">
         <Button variant="ghost" className="mb-6" onClick={() => setLocation(`/events/${eventId}`)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
+          Back to Event Dashboard
         </Button>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{event?.title}</h1>
-          <p className="text-lg text-muted-foreground">Guest List & RSVP Management</p>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats?.total || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Confirmed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">{stats?.confirmed || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-yellow-600">{stats?.pending || 0}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Declined</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-600">{stats?.declined || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search guests..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Guest List</h1>
+            <p className="text-muted-foreground">{event?.title}</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
+              <Button size="lg">
+                <Plus className="w-5 h-5 mr-2" />
                 Add Guest
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <form onSubmit={handleAddGuest}>
                 <DialogHeader>
                   <DialogTitle>Add New Guest</DialogTitle>
-                  <DialogDescription>Add a guest to the event guest list</DialogDescription>
+                  <DialogDescription>
+                    Add a new guest to the event with detailed information
+                  </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      value={newGuest.name}
-                      onChange={(e) => setNewGuest({ ...newGuest, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newGuest.email}
-                      onChange={(e) => setNewGuest({ ...newGuest, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="group">Group</Label>
-                    <Input
-                      id="group"
-                      placeholder="e.g., Family, Friends"
-                      value={newGuest.groupName}
-                      onChange={(e) => setNewGuest({ ...newGuest, groupName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="rsvp">RSVP Status</Label>
-                    <Select
-                      value={newGuest.rsvpStatus}
-                      onValueChange={(value: any) => setNewGuest({ ...newGuest, rsvpStatus: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dietary">Dietary Restrictions</Label>
-                    <Input
-                      id="dietary"
-                      value={newGuest.dietaryRestrictions}
-                      onChange={(e) => setNewGuest({ ...newGuest, dietaryRestrictions: e.target.value })}
-                    />
-                  </div>
-                </div>
+                <GuestFormFields guest={newGuest} setGuest={setNewGuest} />
                 <DialogFooter>
                   <Button type="submit" disabled={createGuestMutation.isPending}>
                     {createGuestMutation.isPending ? "Adding..." : "Add Guest"}
@@ -223,257 +491,171 @@ export default function GuestList() {
               </form>
             </DialogContent>
           </Dialog>
-          <Button variant="outline">
-            <Mail className="w-4 h-4 mr-2" />
-            Invite Guest
-          </Button>
         </div>
 
-        <Tabs defaultValue="all" className="space-y-4">
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, email, or group..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <Tabs defaultValue="all" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="all">All Guests ({filteredGuests?.length || 0})</TabsTrigger>
-            <TabsTrigger value="initial">Initial Invitations ({initialGuests?.length || 0})</TabsTrigger>
-            <TabsTrigger value="confirmed">Confirmed Guests ({confirmedGuests?.length || 0})</TabsTrigger>
+            <TabsTrigger value="all">All Guests ({allGuests.length})</TabsTrigger>
+            <TabsTrigger value="savethedate">Save The Date ({saveTheDateInvited.length})</TabsTrigger>
+            <TabsTrigger value="foodchoices">Food Choices ({foodChoicesConfirmed.length})</TabsTrigger>
+            <TabsTrigger value="tableassignment">Table Assignment ({tableAllocated.length})</TabsTrigger>
+            <TabsTrigger value="completed">Completed ({completed.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
             <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead>RSVP Status</TableHead>
-                      <TableHead>Meal</TableHead>
-                      <TableHead>Invitation</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredGuests && filteredGuests.length > 0 ? (
-                      filteredGuests.map((guest) => (
-                        <TableRow key={guest.id}>
-                          <TableCell className="font-medium">{guest.name}</TableCell>
-                          <TableCell>{guest.email || "-"}</TableCell>
-                          <TableCell>{guest.groupName || "-"}</TableCell>
-                          <TableCell>
-                            <span className={`status-${guest.rsvpStatus} px-2 py-1 rounded-full text-xs font-medium`}>
-                              {guest.rsvpStatus}
-                            </span>
-                          </TableCell>
-                          <TableCell>{guest.mealSelection || "-"}</TableCell>
-                          <TableCell>
-                            {guest.invitationSent ? (
-                              <span className="text-green-600 text-sm">Sent</span>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">Not sent</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedGuest(guest);
-                                  setIsEditDialogOpen(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDeleteGuest(guest.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                          No guests found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <CardHeader>
+                <CardTitle>All Guests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <GuestTable guestList={allGuests} />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="initial">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead>RSVP Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {initialGuests && initialGuests.length > 0 ? (
-                      initialGuests.map((guest) => (
-                        <TableRow key={guest.id}>
-                          <TableCell className="font-medium">{guest.name}</TableCell>
-                          <TableCell>{guest.email || "-"}</TableCell>
-                          <TableCell>{guest.groupName || "-"}</TableCell>
-                          <TableCell>
-                            <span className="status-pending px-2 py-1 rounded-full text-xs font-medium">
-                              {guest.rsvpStatus}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button variant="ghost" size="icon" onClick={() => { setSelectedGuest(guest); setIsEditDialogOpen(true); }}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDeleteGuest(guest.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                          No pending invitations
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+          <TabsContent value="savethedate">
+            <Tabs defaultValue="invited" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="invited">Invited ({saveTheDateInvited.length})</TabsTrigger>
+                <TabsTrigger value="attending">Attending ({saveTheDateAttending.length})</TabsTrigger>
+                <TabsTrigger value="unavailable">Unavailable ({saveTheDateUnavailable.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="invited">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Save The Date - Invited</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={saveTheDateInvited} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="attending">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Save The Date - Attending</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={saveTheDateAttending} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="unavailable">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Save The Date - Unavailable</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={saveTheDateUnavailable} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
-          <TabsContent value="confirmed">
+          <TabsContent value="foodchoices">
+            <Tabs defaultValue="awaiting" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="awaiting">Awaiting Choices ({foodChoicesAwaiting.length})</TabsTrigger>
+                <TabsTrigger value="confirmed">Confirmed ({foodChoicesConfirmed.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="awaiting">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Food Choices - Awaiting</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={foodChoicesAwaiting} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="confirmed">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Food Choices - Confirmed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={foodChoicesConfirmed} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="tableassignment">
+            <Tabs defaultValue="unallocated" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="unallocated">Un-Allocated ({tableUnallocated.length})</TabsTrigger>
+                <TabsTrigger value="allocated">Allocated ({tableAllocated.length})</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="unallocated">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Table Assignment - Un-Allocated</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={tableUnallocated} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="allocated">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Table Assignment - Allocated</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <GuestTable guestList={tableAllocated} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          <TabsContent value="completed">
             <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Group</TableHead>
-                      <TableHead>Meal</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {confirmedGuests && confirmedGuests.length > 0 ? (
-                      confirmedGuests.map((guest) => (
-                        <TableRow key={guest.id}>
-                          <TableCell className="font-medium">{guest.name}</TableCell>
-                          <TableCell>{guest.email || "-"}</TableCell>
-                          <TableCell>{guest.groupName || "-"}</TableCell>
-                          <TableCell>{guest.mealSelection || "-"}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <Button variant="ghost" size="icon" onClick={() => { setSelectedGuest(guest); setIsEditDialogOpen(true); }}>
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDeleteGuest(guest.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                          No confirmed guests yet
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+              <CardHeader>
+                <CardTitle>Completed Guests</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Guests with confirmed RSVP, food choices, and table assignment
+                </p>
+              </CardHeader>
+              <CardContent>
+                <GuestTable guestList={completed} />
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
-        {/* Edit Dialog */}
+        {/* Edit Guest Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleUpdateGuest}>
               <DialogHeader>
                 <DialogTitle>Edit Guest</DialogTitle>
-                <DialogDescription>Update guest information</DialogDescription>
+                <DialogDescription>
+                  Update guest information
+                </DialogDescription>
               </DialogHeader>
-              {selectedGuest && (
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">Name *</Label>
-                    <Input
-                      id="edit-name"
-                      value={selectedGuest.name}
-                      onChange={(e) => setSelectedGuest({ ...selectedGuest, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-email">Email</Label>
-                    <Input
-                      id="edit-email"
-                      type="email"
-                      value={selectedGuest.email || ""}
-                      onChange={(e) => setSelectedGuest({ ...selectedGuest, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-group">Group</Label>
-                    <Input
-                      id="edit-group"
-                      value={selectedGuest.groupName || ""}
-                      onChange={(e) => setSelectedGuest({ ...selectedGuest, groupName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-rsvp">RSVP Status</Label>
-                    <Select
-                      value={selectedGuest.rsvpStatus}
-                      onValueChange={(value: any) => setSelectedGuest({ ...selectedGuest, rsvpStatus: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="declined">Declined</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-meal">Meal Selection</Label>
-                    <Input
-                      id="edit-meal"
-                      value={selectedGuest.mealSelection || ""}
-                      onChange={(e) => setSelectedGuest({ ...selectedGuest, mealSelection: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-dietary">Dietary Restrictions</Label>
-                    <Input
-                      id="edit-dietary"
-                      value={selectedGuest.dietaryRestrictions || ""}
-                      onChange={(e) => setSelectedGuest({ ...selectedGuest, dietaryRestrictions: e.target.value })}
-                    />
-                  </div>
-                </div>
-              )}
+              <GuestFormFields guest={selectedGuest || {}} setGuest={setSelectedGuest} />
               <DialogFooter>
                 <Button type="submit" disabled={updateGuestMutation.isPending}>
                   {updateGuestMutation.isPending ? "Updating..." : "Update Guest"}

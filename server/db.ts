@@ -257,14 +257,15 @@ export async function deleteGuest(id: number) {
 
 export async function getGuestStats(eventId: number) {
   const db = await getDb();
-  if (!db) return { total: 0, confirmed: 0, pending: 0, declined: 0 };
+  if (!db) return { total: 0, confirmed: 0, draft: 0, invited: 0, declined: 0 };
 
   const allGuests = await db.select().from(guests).where(eq(guests.eventId, eventId));
 
   return {
     total: allGuests.length,
     confirmed: allGuests.filter((g) => g.rsvpStatus === "confirmed").length,
-    pending: allGuests.filter((g) => g.rsvpStatus === "pending").length,
+    draft: allGuests.filter((g) => g.rsvpStatus === "draft").length,
+    invited: allGuests.filter((g) => g.rsvpStatus === "invited").length,
     declined: allGuests.filter((g) => g.rsvpStatus === "declined").length,
   };
 }

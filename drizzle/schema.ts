@@ -47,7 +47,10 @@ export type InsertEvent = typeof events.$inferInsert;
 export const guests = mysqlTable("guests", {
   id: int("id").autoincrement().primaryKey(),
   eventId: int("eventId").notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
+  // Name fields
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  lastName: varchar("lastName", { length: 100 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // Full name for backward compatibility
   email: varchar("email", { length: 320 }),
   groupName: varchar("groupName", { length: 100 }),
   // 3-Stage System: 1=Save the Date, 2=RSVP Details, 3=Final Database
@@ -57,13 +60,25 @@ export const guests = mysqlTable("guests", {
   // Unique token for RSVP link access
   rsvpToken: varchar("rsvpToken", { length: 64 }).unique(),
   // Stage 2 & 3: RSVP details
-  rsvpStatus: mysqlEnum("rsvpStatus", ["confirmed", "pending", "declined"]).default("pending").notNull(),
+  rsvpStatus: mysqlEnum("rsvpStatus", ["draft", "invited", "confirmed", "declined"]).default("draft").notNull(),
+  // Food choices
   starterSelection: varchar("starterSelection", { length: 255 }),
   mainSelection: varchar("mainSelection", { length: 255 }),
   dessertSelection: varchar("dessertSelection", { length: 255 }),
-  dietaryRestrictions: text("dietaryRestrictions"),
+  // Detailed dietary requirements
+  hasDietaryRequirements: boolean("hasDietaryRequirements").default(false).notNull(),
+  dietaryRestrictions: text("dietaryRestrictions"), // Multi-choice: Vegetarian, Vegan, Gluten-Free, etc.
+  allergySeverity: mysqlEnum("allergySeverity", ["none", "mild", "severe"]).default("none"),
+  canOthersConsumeNearby: boolean("canOthersConsumeNearby").default(true),
+  dietaryDetails: text("dietaryDetails"), // Additional details text box
   // Legacy field for backward compatibility
   mealSelection: text("mealSelection"),
+  // Table assignment
+  tableAssigned: boolean("tableAssigned").default(false).notNull(),
+  tableId: int("tableId"),
+  seatId: int("seatId"),
+  // Guest type
+  guestType: mysqlEnum("guestType", ["day", "evening", "both"]).default("both"),
   invitationSent: boolean("invitationSent").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

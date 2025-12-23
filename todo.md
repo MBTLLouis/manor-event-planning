@@ -229,3 +229,8 @@
 - [x] Fix input losing focus after typing one character in add/edit guest dialogs
 - [x] Identify cause of re-render on each keystroke
 - [x] Test all form inputs maintain focus
+
+## Timeline Events - Automatic Time Sorting
+- [x] Update database query to sort events by time field (chronological)
+- [x] Remove manual drag-and-drop ordering for events
+- [x] Test that earliest events appear at top, latest at bottom

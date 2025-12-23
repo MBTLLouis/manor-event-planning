@@ -474,7 +474,8 @@ export async function getTimelineEventsByDayId(dayId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  return await db.select().from(timelineEvents).where(eq(timelineEvents.timelineDayId, dayId)).orderBy(asc(timelineEvents.orderIndex));
+  // Sort by time (chronological order within the day)
+  return await db.select().from(timelineEvents).where(eq(timelineEvents.timelineDayId, dayId)).orderBy(asc(timelineEvents.time));
 }
 
 export async function updateTimelineEvent(id: number, data: Partial<InsertTimelineEvent>) {

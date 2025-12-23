@@ -6,76 +6,39 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Clock, Edit, Trash2, GripVertical } from "lucide-react";
+import { ArrowLeft, Plus, Clock, Edit, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+// Removed drag-and-drop imports - events now sort automatically by time
 
-function SortableEventCard({ event, onDelete }: { event: any; onDelete: (id: number) => void }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: event.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
+// Simple event card - events sort automatically by time
+function EventCard({ event, onDelete }: { event: any; onDelete: (id: number) => void }) {
   return (
-    <Card ref={setNodeRef} style={style} className="border-l-4 border-l-primary">
+    <Card className="border-l-4 border-l-primary">
       <CardContent className="pt-6">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3 flex-1">
-            <button
-              className="cursor-grab active:cursor-grabbing mt-1"
-              {...attributes}
-              {...listeners}
-            >
-              <GripVertical className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <Clock className="w-5 h-5 text-primary" />
-                <span className="font-semibold text-lg">{event.time}</span>
-              </div>
-              <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-              {event.description && (
-                <p className="text-muted-foreground mb-2">{event.description}</p>
-              )}
-              {event.assignedTo && (
-                <p className="text-sm">
-                  <span className="font-medium">Assigned to:</span> {event.assignedTo}
-                </p>
-              )}
-              {event.notes && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  <span className="font-medium">Notes:</span> {event.notes}
-                </p>
-              )}
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="w-5 h-5 text-primary" />
+              <span className="font-semibold text-lg">{event.time}</span>
             </div>
+            <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+            {event.description && (
+              <p className="text-muted-foreground mb-2">{event.description}</p>
+            )}
+            {event.assignedTo && (
+              <p className="text-sm">
+                <span className="font-medium">Assigned to:</span> {event.assignedTo}
+              </p>
+            )}
+            {event.notes && (
+              <p className="text-sm text-muted-foreground mt-2">
+                <span className="font-medium">Notes:</span> {event.notes}
+              </p>
+            )}
           </div>
           <Button
             variant="ghost"
@@ -164,16 +127,7 @@ export default function TimelineEnhanced() {
     },
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  // Removed sensors - events now sort automatically by time
 
   const handleAddDay = (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,31 +175,7 @@ export default function TimelineEnhanced() {
     }
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
-    const selectedDay = days?.find(d => d.id === selectedDayId);
-    if (!selectedDay?.events) return;
-
-    const oldIndex = selectedDay.events.findIndex(e => e.id === active.id);
-    const newIndex = selectedDay.events.findIndex(e => e.id === over.id);
-
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const newEvents = arrayMove(selectedDay.events, oldIndex, newIndex);
-
-    // Update orderIndex for all affected events
-    newEvents.forEach((evt, index) => {
-      if (evt.orderIndex !== index) {
-        updateEventMutation.mutate({
-          id: evt.id,
-          orderIndex: index,
-        });
-      }
-    });
-  };
+  // Removed handleDragEnd - events now sort automatically by time
 
   // Auto-select first day if available
   if (days && days.length > 0 && selectedDayId === null) {
@@ -421,26 +351,15 @@ export default function TimelineEnhanced() {
                   </CardHeader>
                   <CardContent>
                     {day.events && day.events.length > 0 ? (
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                      >
-                        <SortableContext
-                          items={day.events.map(e => e.id)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          <div className="space-y-4">
-                            {day.events.map((evt) => (
-                              <SortableEventCard
-                                key={evt.id}
-                                event={evt}
-                                onDelete={handleDeleteEvent}
-                              />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
+                      <div className="space-y-4">
+                        {day.events.map((evt) => (
+                          <EventCard
+                            key={evt.id}
+                            event={evt}
+                            onDelete={handleDeleteEvent}
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <p className="text-center text-muted-foreground py-8">
                         No events scheduled for this day. Click "Add Event" to create one.

@@ -185,7 +185,10 @@
 - [x] Implement drag-and-drop reordering for timeline items
 
 ### 5. Checklist Improvement
-- [ ] Add tabs: "Manor By The Lake" and "Couple" to distinguish tasks
+- [x] Add assignedTo field to checklist schema (Manor/Couple)
+- [x] Add tabs: "Manor By The Lake" and "Couple" to distinguish tasks
+- [x] Show independent progress tracking for each tab
+- [x] Update checklist create/edit forms to include assignment
 
 ### 6. Food Choices Configuration
 - [ ] Allow adding/modifying/removing courses in menu configuration

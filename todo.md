@@ -253,3 +253,9 @@
 - [x] Store guest food selections in flexible JSON structure
 - [x] Test adding custom courses (e.g., "Canapés", "Cheese Course")
 - [x] Test removing courses and handling existing guest selections
+
+## Integrate Menu Configuration into Food Choices Section
+- [x] Move menu configuration UI into event-specific Food Choices tab/section
+- [x] Remove standalone MenuConfig page
+- [x] Remove MenuConfig route from App.tsx
+- [x] Test menu management within event context

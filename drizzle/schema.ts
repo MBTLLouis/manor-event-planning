@@ -276,6 +276,24 @@ export type ChecklistItem = typeof checklistItems.$inferSelect;
 export type InsertChecklistItem = typeof checklistItems.$inferInsert;
 
 /**
+ * Menu Items table - stores configurable food choices for events
+ */
+export const menuItems = mysqlTable("menuItems", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  course: mysqlEnum("course", ["starter", "main", "dessert"]).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  isAvailable: boolean("isAvailable").default(true).notNull(),
+  orderIndex: int("orderIndex").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MenuItem = typeof menuItems.$inferSelect;
+export type InsertMenuItem = typeof menuItems.$inferInsert;
+
+/**
  * Notes table - stores event-specific notes
  */
 export const notes = mysqlTable("notes", {

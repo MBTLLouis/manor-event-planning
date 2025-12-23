@@ -910,6 +910,53 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  menu: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getMenuItemsByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        course: z.enum(["starter", "main", "dessert"]),
+        name: z.string(),
+        description: z.string().nullish(),
+        orderIndex: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createMenuItem({
+          eventId: input.eventId,
+          course: input.course,
+          name: input.name,
+          description: input.description || undefined,
+          orderIndex: input.orderIndex,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().nullish(),
+        isAvailable: z.boolean().optional(),
+        orderIndex: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateMenuItem(id, data);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteMenuItem(input.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

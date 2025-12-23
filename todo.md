@@ -191,8 +191,11 @@
 - [x] Update checklist create/edit forms to include assignment
 
 ### 6. Food Choices Configuration
-- [ ] Allow adding/modifying/removing courses in menu configuration
-- [ ] Sync menu changes with Food Choices guest section
+- [x] Create menu configuration schema (starters, mains, desserts tables)
+- [x] Build backend tRPC procedures for menu CRUD operations
+- [x] Create Menu Configuration UI for staff to manage options
+- [x] Update Guest List dropdowns to use dynamic menu options
+- [x] Test menu configuration and guest selection integration
 - [ ] Provide meal breakdown summary for chefs (counts per dish + dietary notes)
 - [ ] Highlight severe allergies with prominent alerts
 

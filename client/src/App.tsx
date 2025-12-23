@@ -21,6 +21,7 @@ import FinalGuestDatabase from "./pages/events/FinalGuestDatabase";
 import FloorPlans from "./pages/events/FloorPlans";
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
+import MenuConfig from "./pages/events/MenuConfig";
 import Budget from "./pages/events/Budget";
 import VendorsModule from "./pages/events/Vendors";
 import Checklist from "./pages/events/Checklist";
@@ -119,6 +120,9 @@ function Router() {
       </Route>
       <Route path="/events/:id/food-choices">
         {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
+      </Route>
+      <Route path="/events/:id/menu-config">
+        {(params) => <ProtectedRoute component={MenuConfig} params={params} />}
       </Route>
       <Route path="/events/:id/budget">
         {(params) => <ProtectedRoute component={Budget} params={params} />}

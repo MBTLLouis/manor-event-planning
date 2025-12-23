@@ -22,7 +22,14 @@ type AllergySeverity = "none" | "mild" | "severe";
 type GuestType = "day" | "evening" | "both";
 
 // Extract GuestFormFields component to prevent re-creation on each render
-const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) => void }) => (
+const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (g: any) => void, eventId: number }) => {
+  const { data: menuItems = [] } = trpc.menu.list.useQuery({ eventId });
+  
+  const starters = menuItems.filter(item => item.course === "starter" && item.isAvailable);
+  const mains = menuItems.filter(item => item.course === "main" && item.isAvailable);
+  const desserts = menuItems.filter(item => item.course === "dessert" && item.isAvailable);
+  
+  return (
   <div className="space-y-4 py-4">
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -105,32 +112,62 @@ const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) =
       
       <div className="space-y-2">
         <Label htmlFor="starter">Starter</Label>
-        <Input
-          id="starter"
-          placeholder="Pending"
+        <Select
           value={guest.starterSelection || ""}
-          onChange={(e) => setGuest({ ...guest, starterSelection: e.target.value })}
-        />
+          onValueChange={(value) => setGuest({ ...guest, starterSelection: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select starter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {starters.map((item) => (
+              <SelectItem key={item.id} value={item.name}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="main">Main Course</Label>
-        <Input
-          id="main"
-          placeholder="Pending"
+        <Select
           value={guest.mainSelection || ""}
-          onChange={(e) => setGuest({ ...guest, mainSelection: e.target.value })}
-        />
+          onValueChange={(value) => setGuest({ ...guest, mainSelection: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select main" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {mains.map((item) => (
+              <SelectItem key={item.id} value={item.name}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="dessert">Dessert</Label>
-        <Input
-          id="dessert"
-          placeholder="Pending"
+        <Select
           value={guest.dessertSelection || ""}
-          onChange={(e) => setGuest({ ...guest, dessertSelection: e.target.value })}
-        />
+          onValueChange={(value) => setGuest({ ...guest, dessertSelection: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select dessert" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {desserts.map((item) => (
+              <SelectItem key={item.id} value={item.name}>
+                {item.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
 
@@ -215,7 +252,8 @@ const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) =
       )}
     </div>
   </div>
-);
+  );
+};
 
 export default function GuestListEnhanced() {
   const [, params] = useRoute("/events/:id/guests");
@@ -484,7 +522,7 @@ export default function GuestListEnhanced() {
                     Add a new guest to the event with detailed information
                   </DialogDescription>
                 </DialogHeader>
-                <GuestFormFields guest={newGuest} setGuest={setNewGuest} />
+                <GuestFormFields guest={newGuest} setGuest={setNewGuest} eventId={eventId} />
                 <DialogFooter>
                   <Button type="submit" disabled={createGuestMutation.isPending}>
                     {createGuestMutation.isPending ? "Adding..." : "Add Guest"}
@@ -657,7 +695,7 @@ export default function GuestListEnhanced() {
                   Update guest information
                 </DialogDescription>
               </DialogHeader>
-              <GuestFormFields guest={selectedGuest || {}} setGuest={setSelectedGuest} />
+              <GuestFormFields guest={selectedGuest || {}} setGuest={setSelectedGuest} eventId={eventId} />
               <DialogFooter>
                 <Button type="submit" disabled={updateGuestMutation.isPending}>
                   {updateGuestMutation.isPending ? "Updating..." : "Update Guest"}

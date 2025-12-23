@@ -33,6 +33,8 @@ import {
   InsertAccommodation,
   weddingWebsites,
   InsertWeddingWebsite,
+  menuItems,
+  InsertMenuItem,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -701,6 +703,32 @@ export async function deleteAccommodation(id: number) {
   if (!db) throw new Error("Database not available");
 
   await db.delete(accommodations).where(eq(accommodations.id, id));
+}
+
+// Menu Items
+export async function createMenuItem(item: InsertMenuItem) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(menuItems).values(item);
+  return { success: true };
+}
+
+export async function getMenuItemsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(menuItems).where(eq(menuItems.eventId, eventId)).orderBy(asc(menuItems.course), asc(menuItems.orderIndex));
+}
+
+export async function updateMenuItem(id: number, data: Partial<InsertMenuItem>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(menuItems).set(data).where(eq(menuItems.id, id));
+}
+
+export async function deleteMenuItem(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(menuItems).where(eq(menuItems.id, id));
 }
 
 // Wedding Websites

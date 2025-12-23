@@ -152,7 +152,7 @@ export default function FoodChoices() {
   return (
     <EmployeeLayout>
       <div className="space-y-6">
-        <div className="mb-4">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold">Food Choices</h1>
           <p className="text-muted-foreground">{event?.title}</p>
         </div>
@@ -164,7 +164,7 @@ export default function FoodChoices() {
           </TabsList>
           
           <TabsContent value="menu" className="space-y-4">
-            <div className="flex gap-2 max-w-4xl">
+            <div className="flex gap-2">
               <Button onClick={() => setIsAddCourseDialogOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Course
@@ -197,7 +197,7 @@ export default function FoodChoices() {
                   items={courses}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="grid gap-4 max-w-4xl">
+                  <div className="grid gap-4">
                     {courses.map((courseName) => {
                   const courseItems = menuItems.filter(item => item.course === courseName);
                   
@@ -219,7 +219,7 @@ export default function FoodChoices() {
           </TabsContent>
           
           <TabsContent value="summary" className="space-y-4">
-            <div className="flex justify-end max-w-4xl">
+            <div className="flex justify-end">
               <Button onClick={() => window.print()} variant="outline">
                 <ChefHat className="h-4 w-4 mr-2" />
                 Export PDF
@@ -232,7 +232,7 @@ export default function FoodChoices() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 max-w-4xl">
+              <div className="grid gap-4">
                 {Object.entries(selectionSummary).map(([courseName, dishes]) => (
                   <Card key={courseName}>
                     <CardHeader>

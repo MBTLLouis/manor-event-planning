@@ -266,7 +266,11 @@
 - [x] Implement PDF export for menu reports
 - [x] Add drag-and-drop course ordering for serving sequence
 
-## Food Choices UI Spacing Adjustments
-- [x] Reduce title spacing in Food Choices page
-- [x] Move action buttons inward with better padding
-- [x] Narrow course card width to add more gap from sides
+## Food Choices UI Spacing Adjustments (REVERTED)
+- [x] Reduce title spacing in Food Choices page (reverted to mb-8)
+- [x] Move action buttons inward with better padding (reverted - removed max-w)
+- [x] Narrow course card width to add more gap from sides (reverted - removed max-w)
+
+## Food Choices Layout Revert
+- [x] Revert spacing changes in Food Choices page
+- [x] Match layout to other event sections (Guest List, Timeline, etc.)

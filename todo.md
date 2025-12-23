@@ -274,3 +274,6 @@
 ## Food Choices Layout Revert
 - [x] Revert spacing changes in Food Choices page
 - [x] Match layout to other event sections (Guest List, Timeline, etc.)
+
+## Bug Fix - Select.Item Empty Value Error
+- [x] Fix Select.Item components with empty string values in Guest List page

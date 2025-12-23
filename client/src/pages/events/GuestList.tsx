@@ -117,7 +117,7 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
           
           if (courseItems.length === 0) return null;
           
-          const currentSelection = (guest.foodSelections as Record<string, string> || {})[courseName] || "";
+          const currentSelection = (guest.foodSelections as Record<string, string> || {})[courseName] || "__none__";
           
           return (
             <div key={courseName} className="space-y-2">
@@ -128,7 +128,11 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
                 value={currentSelection}
                 onValueChange={(value) => {
                   const selections = { ...(guest.foodSelections as Record<string, string> || {}) };
-                  selections[courseName] = value;
+                  if (value === "__none__") {
+                    delete selections[courseName];
+                  } else {
+                    selections[courseName] = value;
+                  }
                   setGuest({ ...guest, foodSelections: selections });
                 }}
               >
@@ -136,7 +140,7 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
                   <SelectValue placeholder={`Select ${courseName}`} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="__none__">None</SelectItem>
                   {courseItems.map(item => (
                     <SelectItem key={item.id} value={item.name}>
                       {item.name}

@@ -21,6 +21,202 @@ type RsvpStatus = "draft" | "invited" | "confirmed" | "declined";
 type AllergySeverity = "none" | "mild" | "severe";
 type GuestType = "day" | "evening" | "both";
 
+// Extract GuestFormFields component to prevent re-creation on each render
+const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) => void }) => (
+  <div className="space-y-4 py-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="firstName">First Name *</Label>
+        <Input
+          id="firstName"
+          value={guest.firstName || ""}
+          onChange={(e) => setGuest({ ...guest, firstName: e.target.value })}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="lastName">Last Name *</Label>
+        <Input
+          id="lastName"
+          value={guest.lastName || ""}
+          onChange={(e) => setGuest({ ...guest, lastName: e.target.value })}
+          required
+        />
+      </div>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="email">Email (Optional)</Label>
+      <Input
+        id="email"
+        type="email"
+        value={guest.email || ""}
+        onChange={(e) => setGuest({ ...guest, email: e.target.value })}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="groupName">Group (Optional)</Label>
+      <Input
+        id="groupName"
+        placeholder="e.g., Bride's Family"
+        value={guest.groupName || ""}
+        onChange={(e) => setGuest({ ...guest, groupName: e.target.value })}
+      />
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="rsvpStatus">RSVP Status *</Label>
+      <Select 
+        value={guest.rsvpStatus || "draft"} 
+        onValueChange={(value) => setGuest({ ...guest, rsvpStatus: value })}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="draft">Draft Invite</SelectItem>
+          <SelectItem value="invited">Invited</SelectItem>
+          <SelectItem value="confirmed">Attending</SelectItem>
+          <SelectItem value="declined">Not Attending</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="space-y-2">
+      <Label htmlFor="guestType">Guest Type</Label>
+      <Select 
+        value={guest.guestType || "both"} 
+        onValueChange={(value) => setGuest({ ...guest, guestType: value })}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="day">Day Guest</SelectItem>
+          <SelectItem value="evening">Evening Guest</SelectItem>
+          <SelectItem value="both">Day & Evening</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div className="border-t pt-4 space-y-4">
+      <h4 className="font-semibold">Food Choices</h4>
+      
+      <div className="space-y-2">
+        <Label htmlFor="starter">Starter</Label>
+        <Input
+          id="starter"
+          placeholder="Pending"
+          value={guest.starterSelection || ""}
+          onChange={(e) => setGuest({ ...guest, starterSelection: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="main">Main Course</Label>
+        <Input
+          id="main"
+          placeholder="Pending"
+          value={guest.mainSelection || ""}
+          onChange={(e) => setGuest({ ...guest, mainSelection: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="dessert">Dessert</Label>
+        <Input
+          id="dessert"
+          placeholder="Pending"
+          value={guest.dessertSelection || ""}
+          onChange={(e) => setGuest({ ...guest, dessertSelection: e.target.value })}
+        />
+      </div>
+    </div>
+
+    <div className="border-t pt-4 space-y-4">
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="hasDietaryRequirements"
+          checked={guest.hasDietaryRequirements || false}
+          onCheckedChange={(checked) => setGuest({ ...guest, hasDietaryRequirements: checked })}
+        />
+        <Label htmlFor="hasDietaryRequirements" className="font-semibold">
+          Has Dietary Requirements
+        </Label>
+      </div>
+
+      {guest.hasDietaryRequirements && (
+        <div className="ml-6 space-y-4 border-l-2 border-amber-300 pl-4">
+          <div className="space-y-2">
+            <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+            <Input
+              id="dietaryRestrictions"
+              placeholder="e.g., Vegetarian, Gluten-Free, Nut Allergy"
+              value={guest.dietaryRestrictions || ""}
+              onChange={(e) => setGuest({ ...guest, dietaryRestrictions: e.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Separate multiple restrictions with commas
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="allergySeverity">Allergy Severity</Label>
+            <RadioGroup 
+              value={guest.allergySeverity || "none"}
+              onValueChange={(value) => setGuest({ ...guest, allergySeverity: value })}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="none" id="none" />
+                <Label htmlFor="none">None</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="mild" id="mild" />
+                <Label htmlFor="mild">Mild</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="severe" id="severe" />
+                <Label htmlFor="severe" className="flex items-center gap-2">
+                  Severe <AlertTriangle className="w-4 h-4 text-red-500" />
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="canOthersConsume">Can others consume around you?</Label>
+            <RadioGroup 
+              value={guest.canOthersConsumeNearby ? "yes" : "no"}
+              onValueChange={(value) => setGuest({ ...guest, canOthersConsumeNearby: value === "yes" })}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="yes" id="yes" />
+                <Label htmlFor="yes">Yes</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="no" id="no" />
+                <Label htmlFor="no">No (airborne/contact risk)</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dietaryDetails">Additional Details</Label>
+            <Textarea
+              id="dietaryDetails"
+              placeholder="Any additional information about dietary requirements..."
+              value={guest.dietaryDetails || ""}
+              onChange={(e) => setGuest({ ...guest, dietaryDetails: e.target.value })}
+              rows={3}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export default function GuestListEnhanced() {
   const [, params] = useRoute("/events/:id/guests");
   const [, setLocation] = useLocation();
@@ -168,200 +364,6 @@ export default function GuestListEnhanced() {
     }
   };
 
-  const GuestFormFields = ({ guest, setGuest }: { guest: any, setGuest: (g: any) => void }) => (
-    <div className="space-y-4 py-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="firstName">First Name *</Label>
-          <Input
-            id="firstName"
-            value={guest.firstName || ""}
-            onChange={(e) => setGuest({ ...guest, firstName: e.target.value })}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">Last Name *</Label>
-          <Input
-            id="lastName"
-            value={guest.lastName || ""}
-            onChange={(e) => setGuest({ ...guest, lastName: e.target.value })}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="email">Email (Optional)</Label>
-        <Input
-          id="email"
-          type="email"
-          value={guest.email || ""}
-          onChange={(e) => setGuest({ ...guest, email: e.target.value })}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="groupName">Group (Optional)</Label>
-        <Input
-          id="groupName"
-          placeholder="e.g., Bride's Family"
-          value={guest.groupName || ""}
-          onChange={(e) => setGuest({ ...guest, groupName: e.target.value })}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="rsvpStatus">RSVP Status *</Label>
-        <Select 
-          value={guest.rsvpStatus || "draft"} 
-          onValueChange={(value) => setGuest({ ...guest, rsvpStatus: value })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="draft">Draft Invite</SelectItem>
-            <SelectItem value="invited">Invited</SelectItem>
-            <SelectItem value="confirmed">Attending</SelectItem>
-            <SelectItem value="declined">Not Attending</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="guestType">Guest Type</Label>
-        <Select 
-          value={guest.guestType || "both"} 
-          onValueChange={(value) => setGuest({ ...guest, guestType: value })}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="day">Day Guest</SelectItem>
-            <SelectItem value="evening">Evening Guest</SelectItem>
-            <SelectItem value="both">Day & Evening</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="border-t pt-4 space-y-4">
-        <h4 className="font-semibold">Food Choices</h4>
-        
-        <div className="space-y-2">
-          <Label htmlFor="starter">Starter</Label>
-          <Input
-            id="starter"
-            placeholder="Pending"
-            value={guest.starterSelection || ""}
-            onChange={(e) => setGuest({ ...guest, starterSelection: e.target.value })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="main">Main Course</Label>
-          <Input
-            id="main"
-            placeholder="Pending"
-            value={guest.mainSelection || ""}
-            onChange={(e) => setGuest({ ...guest, mainSelection: e.target.value })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="dessert">Dessert</Label>
-          <Input
-            id="dessert"
-            placeholder="Pending"
-            value={guest.dessertSelection || ""}
-            onChange={(e) => setGuest({ ...guest, dessertSelection: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div className="border-t pt-4 space-y-4">
-        <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="hasDietaryRequirements"
-            checked={guest.hasDietaryRequirements || false}
-            onCheckedChange={(checked) => setGuest({ ...guest, hasDietaryRequirements: checked })}
-          />
-          <Label htmlFor="hasDietaryRequirements" className="font-semibold">
-            Has Dietary Requirements
-          </Label>
-        </div>
-
-        {guest.hasDietaryRequirements && (
-          <div className="ml-6 space-y-4 border-l-2 border-amber-300 pl-4">
-            <div className="space-y-2">
-              <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
-              <Input
-                id="dietaryRestrictions"
-                placeholder="e.g., Vegetarian, Gluten-Free, Nut Allergy"
-                value={guest.dietaryRestrictions || ""}
-                onChange={(e) => setGuest({ ...guest, dietaryRestrictions: e.target.value })}
-              />
-              <p className="text-xs text-muted-foreground">
-                Separate multiple restrictions with commas
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="allergySeverity">Allergy Severity</Label>
-              <RadioGroup 
-                value={guest.allergySeverity || "none"}
-                onValueChange={(value) => setGuest({ ...guest, allergySeverity: value })}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="none" id="none" />
-                  <Label htmlFor="none">None</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="mild" id="mild" />
-                  <Label htmlFor="mild">Mild</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="severe" id="severe" />
-                  <Label htmlFor="severe" className="flex items-center gap-2">
-                    Severe <AlertTriangle className="w-4 h-4 text-red-500" />
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="canOthersConsume">Can others consume around you?</Label>
-              <RadioGroup 
-                value={guest.canOthersConsumeNearby ? "yes" : "no"}
-                onValueChange={(value) => setGuest({ ...guest, canOthersConsumeNearby: value === "yes" })}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id="yes" />
-                  <Label htmlFor="yes">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id="no" />
-                  <Label htmlFor="no">No (airborne/contact risk)</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dietaryDetails">Additional Details</Label>
-              <Textarea
-                id="dietaryDetails"
-                placeholder="Any additional information about dietary requirements..."
-                value={guest.dietaryDetails || ""}
-                onChange={(e) => setGuest({ ...guest, dietaryDetails: e.target.value })}
-                rows={3}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const GuestTable = ({ guestList }: { guestList: any[] }) => (
     <Table>

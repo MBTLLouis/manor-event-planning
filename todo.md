@@ -223,3 +223,8 @@
 ## Bug Fix - Guest Update Validation Errors
 - [x] Fix tRPC Zod schema to accept null values for optional fields (mealSelection, starterSelection, mainSelection, dessertSelection, dietaryDetails, tableId, seatId)
 - [x] Test guest update functionality
+
+## Bug Fix - Input Focus Loss in Guest Forms
+- [x] Fix input losing focus after typing one character in add/edit guest dialogs
+- [x] Identify cause of re-render on each keystroke
+- [x] Test all form inputs maintain focus

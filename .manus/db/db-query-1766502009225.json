@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS courses (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  eventId INT NOT NULL,\n  name VARCHAR(100) NOT NULL,\n  displayOrder INT NOT NULL DEFAULT 0,\n  isActive BOOLEAN NOT NULL DEFAULT true,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute CREATE TABLE IF NOT EXISTS courses (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  eventId INT NOT NULL,\n  name VARCHAR(100) NOT NULL,\n  displayOrder INT NOT NULL DEFAULT 0,\n  isActive BOOLEAN NOT NULL DEFAULT true,\n  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n)",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 186
+}

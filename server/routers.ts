@@ -237,6 +237,7 @@ export const appRouter = router({
         starterSelection: z.string().nullish(),
         mainSelection: z.string().nullish(),
         dessertSelection: z.string().nullish(),
+        foodSelections: z.record(z.string(), z.string()).nullish(),
         hasDietaryRequirements: z.boolean().nullish(),
         dietaryRestrictions: z.string().nullish(),
         allergySeverity: z.enum(["none", "mild", "severe"]).nullish(),
@@ -921,7 +922,7 @@ export const appRouter = router({
     create: protectedProcedure
       .input(z.object({
         eventId: z.number(),
-        course: z.enum(["starter", "main", "dessert"]),
+        course: z.string(),
         name: z.string(),
         description: z.string().nullish(),
         orderIndex: z.number().default(0),

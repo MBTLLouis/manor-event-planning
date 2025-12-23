@@ -245,3 +245,11 @@
 - [x] Add edit button to timeline event cards
 - [x] Create edit event dialog with all fields (time, title, description, assignedTo, notes)
 - [x] Test editing events and verify automatic re-sorting by time
+
+## Custom Course Management
+- [x] Update menuItems schema to use text field instead of enum for course
+- [x] Add course management UI to add/remove custom courses
+- [x] Update Guest List to dynamically generate food selection fields based on configured courses
+- [x] Store guest food selections in flexible JSON structure
+- [x] Test adding custom courses (e.g., "Canapés", "Cheese Course")
+- [x] Test removing courses and handling existing guest selections

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, datetime } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, datetime, json } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -80,6 +80,8 @@ export const guests = mysqlTable("guests", {
   // Guest type
   guestType: mysqlEnum("guestType", ["day", "evening", "both"]).default("both"),
   invitationSent: boolean("invitationSent").default(false).notNull(),
+  // Flexible food selections for custom courses
+  foodSelections: json("foodSelections").$type<Record<string, string>>(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -278,10 +280,22 @@ export type InsertChecklistItem = typeof checklistItems.$inferInsert;
 /**
  * Menu Items table - stores configurable food choices for events
  */
+export const courses = mysqlTable("courses", {
+  id: int("id").primaryKey().autoincrement(),
+  eventId: int("eventId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  displayOrder: int("displayOrder").notNull().default(0),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow(),
+});
+
+export type Course = typeof courses.$inferSelect;
+export type InsertCourse = typeof courses.$inferInsert;
+
 export const menuItems = mysqlTable("menuItems", {
   id: int("id").autoincrement().primaryKey(),
   eventId: int("eventId").notNull(),
-  course: mysqlEnum("course", ["starter", "main", "dessert"]).notNull(),
+  course: varchar("course", { length: 100 }).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   isAvailable: boolean("isAvailable").default(true).notNull(),

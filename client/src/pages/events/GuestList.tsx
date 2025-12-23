@@ -25,9 +25,8 @@ type GuestType = "day" | "evening" | "both";
 const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (g: any) => void, eventId: number }) => {
   const { data: menuItems = [] } = trpc.menu.list.useQuery({ eventId });
   
-  const starters = menuItems.filter(item => item.course === "starter" && item.isAvailable);
-  const mains = menuItems.filter(item => item.course === "main" && item.isAvailable);
-  const desserts = menuItems.filter(item => item.course === "dessert" && item.isAvailable);
+  // Extract unique courses from menu items
+  const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
   
   return (
   <div className="space-y-4 py-4">
@@ -110,64 +109,44 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
     <div className="border-t pt-4 space-y-4">
       <h4 className="font-semibold">Food Choices</h4>
       
-      <div className="space-y-2">
-        <Label htmlFor="starter">Starter</Label>
-        <Select
-          value={guest.starterSelection || ""}
-          onValueChange={(value) => setGuest({ ...guest, starterSelection: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select starter" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">None</SelectItem>
-            {starters.map((item) => (
-              <SelectItem key={item.id} value={item.name}>
-                {item.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="main">Main Course</Label>
-        <Select
-          value={guest.mainSelection || ""}
-          onValueChange={(value) => setGuest({ ...guest, mainSelection: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select main" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">None</SelectItem>
-            {mains.map((item) => (
-              <SelectItem key={item.id} value={item.name}>
-                {item.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="dessert">Dessert</Label>
-        <Select
-          value={guest.dessertSelection || ""}
-          onValueChange={(value) => setGuest({ ...guest, dessertSelection: value })}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select dessert" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="">None</SelectItem>
-            {desserts.map((item) => (
-              <SelectItem key={item.id} value={item.name}>
-                {item.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {courses.map((courseName) => {
+          const courseItems = menuItems.filter(
+            item => item.course === courseName && item.isAvailable
+          );
+          
+          if (courseItems.length === 0) return null;
+          
+          const currentSelection = (guest.foodSelections as Record<string, string> || {})[courseName] || "";
+          
+          return (
+            <div key={courseName} className="space-y-2">
+              <Label htmlFor={`food-${courseName}`} className="capitalize">
+                {courseName}
+              </Label>
+              <Select
+                value={currentSelection}
+                onValueChange={(value) => {
+                  const selections = { ...(guest.foodSelections as Record<string, string> || {}) };
+                  selections[courseName] = value;
+                  setGuest({ ...guest, foodSelections: selections });
+                }}
+              >
+                <SelectTrigger id={`food-${courseName}`}>
+                  <SelectValue placeholder={`Select ${courseName}`} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {courseItems.map(item => (
+                    <SelectItem key={item.id} value={item.name}>
+                      {item.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          );
+        })}
       </div>
     </div>
 

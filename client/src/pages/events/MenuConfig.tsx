@@ -1,38 +1,54 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams } from "wouter";
 import { trpc } from "@/lib/trpc";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MenuConfig() {
   const params = useParams();
   const eventId = Number(params.id);
   
-  const [activeTab, setActiveTab] = useState<"starter" | "main" | "dessert">("starter");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("starter");
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
+  const [isAddCourseDialogOpen, setIsAddCourseDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   
-  const [formData, setFormData] = useState({
+  const [itemFormData, setItemFormData] = useState({
     name: "",
     description: "",
   });
   
+  const [newCourseName, setNewCourseName] = useState("");
+  
   const { data: menuItems = [], refetch } = trpc.menu.list.useQuery({ eventId });
+  
+  // Get unique courses from menu items
+  const courses = useMemo(() => {
+    const courseSet = new Set(menuItems.map(item => item.course));
+    return Array.from(courseSet).sort();
+  }, [menuItems]);
+  
+  // Ensure activeTab is valid
+  useState(() => {
+    if (courses.length > 0 && !courses.includes(activeTab)) {
+      setActiveTab(courses[0]);
+    }
+  });
   
   const createMutation = trpc.menu.create.useMutation({
     onSuccess: () => {
       toast.success("Menu item added successfully");
-      setIsAddDialogOpen(false);
-      setFormData({ name: "", description: "" });
+      setIsAddItemDialogOpen(false);
+      setItemFormData({ name: "", description: "" });
       refetch();
     },
     onError: (error) => {
@@ -43,7 +59,7 @@ export default function MenuConfig() {
   const updateMutation = trpc.menu.update.useMutation({
     onSuccess: () => {
       toast.success("Menu item updated successfully");
-      setIsEditDialogOpen(false);
+      setIsEditItemDialogOpen(false);
       setEditingItem(null);
       refetch();
     },
@@ -62,91 +78,132 @@ export default function MenuConfig() {
     },
   });
   
-  const handleAdd = () => {
-    if (!formData.name.trim()) {
+  const handleAddItem = () => {
+    if (!itemFormData.name.trim()) {
       toast.error("Name is required");
       return;
     }
     
-    const maxOrder = menuItems
-      .filter(item => item.course === activeTab)
-      .reduce((max, item) => Math.max(max, item.orderIndex), -1);
+    const courseItems = menuItems.filter(item => item.course === activeTab);
+    const maxOrder = courseItems.reduce((max, item) => Math.max(max, item.orderIndex), -1);
     
     createMutation.mutate({
       eventId,
       course: activeTab,
-      name: formData.name,
-      description: formData.description || null,
+      name: itemFormData.name,
+      description: itemFormData.description || null,
       orderIndex: maxOrder + 1,
     });
   };
   
-  const handleEdit = () => {
+  const handleEditItem = () => {
     if (!editingItem) return;
     
     updateMutation.mutate({
       id: editingItem.id,
-      name: formData.name,
-      description: formData.description || null,
+      name: itemFormData.name,
+      description: itemFormData.description || null,
     });
   };
   
-  const handleDelete = (id: number) => {
+  const handleDeleteItem = (id: number) => {
     if (confirm("Are you sure you want to delete this menu item?")) {
       deleteMutation.mutate({ id });
     }
   };
   
+  const handleAddCourse = () => {
+    if (!newCourseName.trim()) {
+      toast.error("Course name is required");
+      return;
+    }
+    
+    if (courses.includes(newCourseName.toLowerCase())) {
+      toast.error("Course already exists");
+      return;
+    }
+    
+    // Create a placeholder item for the new course
+    createMutation.mutate({
+      eventId,
+      course: newCourseName.toLowerCase(),
+      name: "Example Item",
+      description: "Replace this with actual menu items",
+      orderIndex: 0,
+    });
+    
+    setIsAddCourseDialogOpen(false);
+    setNewCourseName("");
+    setActiveTab(newCourseName.toLowerCase());
+  };
+  
+  const handleDeleteCourse = (courseName: string) => {
+    const courseItems = menuItems.filter(item => item.course === courseName);
+    
+    if (confirm(`Delete "${courseName}" course and all ${courseItems.length} items in it?`)) {
+      // Delete all items in this course
+      courseItems.forEach(item => {
+        deleteMutation.mutate({ id: item.id });
+      });
+      
+      // Switch to first remaining course
+      const remainingCourses = courses.filter(c => c !== courseName);
+      if (remainingCourses.length > 0) {
+        setActiveTab(remainingCourses[0]);
+      }
+    }
+  };
+  
   const openEditDialog = (item: any) => {
     setEditingItem(item);
-    setFormData({
+    setItemFormData({
       name: item.name,
       description: item.description || "",
     });
-    setIsEditDialogOpen(true);
+    setIsEditItemDialogOpen(true);
   };
   
-  const starters = menuItems.filter(item => item.course === "starter");
-  const mains = menuItems.filter(item => item.course === "main");
-  const desserts = menuItems.filter(item => item.course === "dessert");
-  
-  const renderMenuItems = (items: any[]) => (
-    <div className="space-y-3">
-      {items.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">No items added yet</p>
-      ) : (
-        items.map((item) => (
-          <Card key={item.id}>
-            <CardContent className="flex items-start gap-3 p-4">
-              <GripVertical className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium">{item.name}</h4>
-                {item.description && (
-                  <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                )}
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => openEditDialog(item)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))
-      )}
-    </div>
-  );
+  const renderMenuItems = (courseName: string) => {
+    const items = menuItems.filter(item => item.course === courseName);
+    
+    return (
+      <div className="space-y-3">
+        {items.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No items added yet</p>
+        ) : (
+          items.map((item) => (
+            <Card key={item.id}>
+              <CardContent className="flex items-start gap-3 p-4">
+                <GripVertical className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium">{item.name}</h4>
+                  {item.description && (
+                    <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                  )}
+                </div>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => openEditDialog(item)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteItem(item.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    );
+  };
   
   return (
     <EmployeeLayout>
@@ -155,52 +212,106 @@ export default function MenuConfig() {
           <div>
             <h1 className="text-3xl font-bold">Menu Configuration</h1>
             <p className="text-muted-foreground mt-1">
-              Manage food choices that appear in guest selection dropdowns
+              Manage courses and food choices for guest selection
             </p>
           </div>
+          <Button onClick={() => setIsAddCourseDialogOpen(true)} variant="outline">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Course
+          </Button>
         </div>
         
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList>
-              <TabsTrigger value="starter">
-                Starters ({starters.length})
-              </TabsTrigger>
-              <TabsTrigger value="main">
-                Mains ({mains.length})
-              </TabsTrigger>
-              <TabsTrigger value="dessert">
-                Desserts ({desserts.length})
-              </TabsTrigger>
-            </TabsList>
+        {courses.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground mb-4">No courses configured yet</p>
+              <Button onClick={() => setIsAddCourseDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Your First Course
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <TabsList className="flex-wrap h-auto">
+                {courses.map((course) => {
+                  const itemCount = menuItems.filter(item => item.course === course).length;
+                  return (
+                    <TabsTrigger key={course} value={course} className="relative group">
+                      <span className="capitalize">{course}</span>
+                      <span className="ml-2 text-xs">({itemCount})</span>
+                      {courses.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCourse(course);
+                          }}
+                          className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+              
+              <Button onClick={() => setIsAddItemDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Item
+              </Button>
+            </div>
             
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Item
-            </Button>
-          </div>
-          
-          <TabsContent value="starter" className="space-y-4">
-            {renderMenuItems(starters)}
-          </TabsContent>
-          
-          <TabsContent value="main" className="space-y-4">
-            {renderMenuItems(mains)}
-          </TabsContent>
-          
-          <TabsContent value="dessert" className="space-y-4">
-            {renderMenuItems(desserts)}
-          </TabsContent>
-        </Tabs>
+            {courses.map((course) => (
+              <TabsContent key={course} value={course} className="space-y-4">
+                {renderMenuItems(course)}
+              </TabsContent>
+            ))}
+          </Tabs>
+        )}
       </div>
       
-      {/* Add Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      {/* Add Course Dialog */}
+      <Dialog open={isAddCourseDialogOpen} onOpenChange={setIsAddCourseDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</DialogTitle>
+            <DialogTitle>Add New Course</DialogTitle>
             <DialogDescription>
-              Add a new {activeTab} option for guests to select
+              Create a custom course (e.g., "Canapés", "Cheese", "Coffee")
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="courseName">Course Name *</Label>
+              <Input
+                id="courseName"
+                value={newCourseName}
+                onChange={(e) => setNewCourseName(e.target.value)}
+                placeholder="e.g., Canapés"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCourseDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddCourse}>
+              Add Course
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Add Item Dialog */}
+      <Dialog open={isAddItemDialogOpen} onOpenChange={setIsAddItemDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Item to {activeTab}</DialogTitle>
+            <DialogDescription>
+              Add a new menu option for guests to select
             </DialogDescription>
           </DialogHeader>
           
@@ -209,9 +320,9 @@ export default function MenuConfig() {
               <Label htmlFor="name">Name *</Label>
               <Input
                 id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={`e.g., ${activeTab === 'starter' ? 'Soup of the Day' : activeTab === 'main' ? 'Grilled Salmon' : 'Chocolate Cake'}`}
+                value={itemFormData.name}
+                onChange={(e) => setItemFormData({ ...itemFormData, name: e.target.value })}
+                placeholder="e.g., Grilled Salmon"
               />
             </div>
             
@@ -219,8 +330,8 @@ export default function MenuConfig() {
               <Label htmlFor="description">Description (Optional)</Label>
               <Textarea
                 id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={itemFormData.description}
+                onChange={(e) => setItemFormData({ ...itemFormData, description: e.target.value })}
                 placeholder="Brief description of the dish"
                 rows={3}
               />
@@ -228,18 +339,18 @@ export default function MenuConfig() {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsAddItemDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAdd} disabled={createMutation.isPending}>
+            <Button onClick={handleAddItem} disabled={createMutation.isPending}>
               {createMutation.isPending ? "Adding..." : "Add Item"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditItemDialogOpen} onOpenChange={setIsEditItemDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Menu Item</DialogTitle>
@@ -253,8 +364,8 @@ export default function MenuConfig() {
               <Label htmlFor="edit-name">Name *</Label>
               <Input
                 id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={itemFormData.name}
+                onChange={(e) => setItemFormData({ ...itemFormData, name: e.target.value })}
               />
             </div>
             
@@ -262,18 +373,18 @@ export default function MenuConfig() {
               <Label htmlFor="edit-description">Description (Optional)</Label>
               <Textarea
                 id="edit-description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                value={itemFormData.description}
+                onChange={(e) => setItemFormData({ ...itemFormData, description: e.target.value })}
                 rows={3}
               />
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditItemDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleEdit} disabled={updateMutation.isPending}>
+            <Button onClick={handleEditItem} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>

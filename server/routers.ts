@@ -227,30 +227,34 @@ export const appRouter = router({
     update: protectedProcedure
       .input(z.object({
         id: z.number(),
-        firstName: z.string().optional(),
-        lastName: z.string().optional(),
-        name: z.string().optional(),
-        email: z.string().optional(),
-        groupName: z.string().optional(),
-        rsvpStatus: z.enum(["draft", "invited", "confirmed", "declined"]).optional(),
-        mealSelection: z.string().optional(),
-        starterSelection: z.string().optional(),
-        mainSelection: z.string().optional(),
-        dessertSelection: z.string().optional(),
-        hasDietaryRequirements: z.boolean().optional(),
-        dietaryRestrictions: z.string().optional(),
-        allergySeverity: z.enum(["none", "mild", "severe"]).optional(),
-        canOthersConsumeNearby: z.boolean().optional(),
-        dietaryDetails: z.string().optional(),
-        guestType: z.enum(["day", "evening", "both"]).optional(),
-        tableAssigned: z.boolean().optional(),
-        tableId: z.number().optional(),
-        seatId: z.number().optional(),
-        invitationSent: z.boolean().optional(),
+        firstName: z.string().nullish(),
+        lastName: z.string().nullish(),
+        name: z.string().nullish(),
+        email: z.string().nullish(),
+        groupName: z.string().nullish(),
+        rsvpStatus: z.enum(["draft", "invited", "confirmed", "declined"]).nullish(),
+        mealSelection: z.string().nullish(),
+        starterSelection: z.string().nullish(),
+        mainSelection: z.string().nullish(),
+        dessertSelection: z.string().nullish(),
+        hasDietaryRequirements: z.boolean().nullish(),
+        dietaryRestrictions: z.string().nullish(),
+        allergySeverity: z.enum(["none", "mild", "severe"]).nullish(),
+        canOthersConsumeNearby: z.boolean().nullish(),
+        dietaryDetails: z.string().nullish(),
+        guestType: z.enum(["day", "evening", "both"]).nullish(),
+        tableAssigned: z.boolean().nullish(),
+        tableId: z.number().nullish(),
+        seatId: z.number().nullish(),
+        invitationSent: z.boolean().nullish(),
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
-        await db.updateGuest(id, data);
+        // Filter out null and undefined values
+        const cleanData = Object.fromEntries(
+          Object.entries(data).filter(([_, v]) => v !== null && v !== undefined)
+        );
+        await db.updateGuest(id, cleanData);
         return { success: true };
       }),
 

@@ -219,3 +219,7 @@
 - [ ] Use card-style layout similar to Events section
 - [ ] Add vendor form fields: Company Name, First Name, Last Name, Email, Phone, Services, Website
 - [ ] Source vendors from: https://www.manorbythelake.co.uk/partners
+
+## Bug Fix - Guest Update Validation Errors
+- [x] Fix tRPC Zod schema to accept null values for optional fields (mealSelection, starterSelection, mainSelection, dessertSelection, dietaryDetails, tableId, seatId)
+- [x] Test guest update functionality

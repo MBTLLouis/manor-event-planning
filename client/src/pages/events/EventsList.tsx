@@ -5,17 +5,23 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Calendar, MoreVertical } from "lucide-react";
+import { Plus, Search, Calendar, MoreVertical, Trash2, Edit, Eye, EyeOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
 
 export default function EventsList() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
     coupleName1: "",
@@ -45,11 +51,75 @@ export default function EventsList() {
     },
   });
 
+  const updateEventMutation = trpc.events.update.useMutation({
+    onSuccess: () => {
+      toast.success("Event updated successfully!");
+      setIsEditDialogOpen(false);
+      setSelectedEvent(null);
+      utils.events.upcoming.invalidate();
+      utils.events.past.invalidate();
+      utils.events.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update event");
+    },
+  });
+
+  const deleteEventMutation = trpc.events.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Event deleted successfully!");
+      setIsDeleteDialogOpen(false);
+      setSelectedEvent(null);
+      utils.events.upcoming.invalidate();
+      utils.events.past.invalidate();
+      utils.events.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete event");
+    },
+  });
+
+  const toggleVisibilityMutation = trpc.events.toggleCoupleVisibility.useMutation({
+    onSuccess: () => {
+      toast.success("Visibility updated!");
+      utils.events.upcoming.invalidate();
+      utils.events.past.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update visibility");
+    },
+  });
+
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
     createEventMutation.mutate({
       ...newEvent,
       status: "planning",
+    });
+  };
+
+  const handleEditEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEvent) return;
+    updateEventMutation.mutate({
+      id: selectedEvent.id,
+      title: selectedEvent.title,
+      coupleName1: selectedEvent.coupleName1,
+      coupleName2: selectedEvent.coupleName2,
+      eventDate: selectedEvent.eventDate,
+      eventCode: selectedEvent.eventCode,
+    });
+  };
+
+  const handleDeleteEvent = () => {
+    if (!selectedEvent) return;
+    deleteEventMutation.mutate({ id: selectedEvent.id });
+  };
+
+  const handleToggleVisibility = (eventId: number, currentVisibility: boolean) => {
+    toggleVisibilityMutation.mutate({ 
+      id: eventId, 
+      coupleCanView: !currentVisibility 
     });
   };
 
@@ -72,9 +142,45 @@ export default function EventsList() {
               <p className="text-xs text-muted-foreground">Code: {event.eventCode}</p>
             )}
           </div>
-          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setSelectedEvent(event);
+                setIsEditDialogOpen(true);
+              }}>
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Event
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                handleToggleVisibility(event.id, event.coupleCanView);
+              }}>
+                {event.coupleCanView ? (
+                  <><EyeOff className="w-4 h-4 mr-2" />Hide from Couple</>
+                ) : (
+                  <><Eye className="w-4 h-4 mr-2" />Show to Couple</>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedEvent(event);
+                  setIsDeleteDialogOpen(true);
+                }}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Event
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent>
@@ -232,6 +338,97 @@ export default function EventsList() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Edit Event Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <form onSubmit={handleEditEvent}>
+              <DialogHeader>
+                <DialogTitle>Edit Event</DialogTitle>
+                <DialogDescription>
+                  Update event details
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">Event Title</Label>
+                  <Input
+                    id="edit-title"
+                    placeholder="e.g., Sarah & John's Wedding"
+                    value={selectedEvent?.title || ""}
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, title: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-coupleName1">Partner 1 Name</Label>
+                    <Input
+                      id="edit-coupleName1"
+                      placeholder="First name"
+                      value={selectedEvent?.coupleName1 || ""}
+                      onChange={(e) => setSelectedEvent({ ...selectedEvent, coupleName1: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-coupleName2">Partner 2 Name</Label>
+                    <Input
+                      id="edit-coupleName2"
+                      placeholder="Second name"
+                      value={selectedEvent?.coupleName2 || ""}
+                      onChange={(e) => setSelectedEvent({ ...selectedEvent, coupleName2: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-eventDate">Event Date</Label>
+                  <Input
+                    id="edit-eventDate"
+                    type="datetime-local"
+                    value={selectedEvent?.eventDate ? new Date(selectedEvent.eventDate).toISOString().slice(0, 16) : ""}
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, eventDate: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-eventCode">Event Code (Optional)</Label>
+                  <Input
+                    id="edit-eventCode"
+                    placeholder="e.g., SJ2024"
+                    value={selectedEvent?.eventCode || ""}
+                    onChange={(e) => setSelectedEvent({ ...selectedEvent, eventCode: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" disabled={updateEventMutation.isPending}>
+                  {updateEventMutation.isPending ? "Updating..." : "Update Event"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete "{selectedEvent?.title}". This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDeleteEvent}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteEventMutation.isPending ? "Deleting..." : "Delete Event"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </EmployeeLayout>
   );

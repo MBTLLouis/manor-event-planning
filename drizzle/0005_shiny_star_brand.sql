@@ -1,0 +1,1 @@
+ALTER TABLE `events` ADD `coupleCanView` boolean DEFAULT true NOT NULL;

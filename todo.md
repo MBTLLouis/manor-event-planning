@@ -153,3 +153,69 @@
 - [x] Fix table disappearing after drag-and-drop
 - [x] Debug mutation response and query invalidation
 - [x] Test table persistence after drag
+
+## New Feature Enhancements from Requirements Document
+
+### 1. Events Section Enhancements
+- [x] Add "Delete Event" button under three dots menu on event cards
+- [x] Enable editing of event name and event reference
+- [x] Add toggle section under three dots to control couple visibility
+
+### 2. Event Details Navigation
+- [ ] Make "Back to events" button more prominent in event details view
+
+### 3. Guest List Management Enhancements
+- [ ] Implement tabs: All Guests, Save The Date, Food Choices, Table Assignment, Completed
+- [ ] Add sub-tabs for Save The Date: Invited, Attending, Unavailable
+- [ ] Add sub-tabs for Food Choices: Awaiting Choices, Confirmed
+- [ ] Add sub-tabs for Table Assignment: Un-Allocated, Allocated
+- [ ] Add required fields: First Name, Last Name, RSVP Status with color coding
+- [ ] Add optional fields: Email, Group
+- [ ] Add Food Choices: Single-choice dropdown (Starter, Main, Dessert)
+- [ ] Add Dietary Requirement checkbox with expanded form
+- [ ] Add Dietary Restriction multi-choice dropdown with "Other" text box
+- [ ] Add Allergy Severity (Mild/Severe)
+- [ ] Add "Can others consume around you?" (Yes/No)
+- [ ] Add Additional details text box for dietary requirements
+
+### 4. Timeline Management
+- [ ] Allow deletion and modification of day titles and dates
+- [ ] Display timeline in ascending day order
+- [ ] Ensure new events are inserted in correct chronological position
+
+### 5. Checklist Improvement
+- [ ] Add tabs: "Manor By The Lake" and "Couple" to distinguish tasks
+
+### 6. Food Choices Configuration
+- [ ] Allow adding/modifying/removing courses in menu configuration
+- [ ] Sync menu changes with Food Choices guest section
+- [ ] Provide meal breakdown summary for chefs (counts per dish + dietary notes)
+- [ ] Highlight severe allergies with prominent alerts
+
+### 7. Wedding Website Builder
+- [ ] Create header with names, wedding date, venue
+- [ ] Add navigation tabs: Home, Our Story, Event Details, Travel, Accommodation, Gifts, Q&A
+- [ ] Implement 10 customizable sections with text/photo editing
+- [ ] Add drag-and-drop reordering for sections
+- [ ] Add visibility toggle for sections
+- [ ] Add pre-filled templates for quick setup
+- [ ] Goal: Complete site buildable in <30 minutes
+
+### 8. Messages System
+- [ ] Create messaging section for couple-staff communication
+- [ ] Tie messages to specific events
+
+### 9. Accommodations Management
+- [ ] Show Rooms 1-12 with guest assignment capability
+- [ ] Pull existing guest dietary requirements into breakfast planning
+- [ ] Include notes section for room setup instructions
+
+### 10. Calendar View
+- [ ] Display all booked events with color coding (Green = available, Red = booked)
+- [ ] Allow event creation directly from calendar
+
+### 11. Vendors/Suppliers Section
+- [ ] Import vendors from Manor by the Lake partners page
+- [ ] Use card-style layout similar to Events section
+- [ ] Add vendor form fields: Company Name, First Name, Last Name, Email, Phone, Services, Website
+- [ ] Source vendors from: https://www.manorbythelake.co.uk/partners

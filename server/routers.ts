@@ -156,6 +156,16 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    toggleCoupleVisibility: protectedProcedure
+      .input(z.object({ 
+        id: z.number(),
+        coupleCanView: z.boolean()
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateEvent(input.id, { coupleCanView: input.coupleCanView });
+        return { success: true };
+      }),
+
     stats: protectedProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {

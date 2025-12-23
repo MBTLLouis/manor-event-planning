@@ -32,6 +32,7 @@ export const events = mysqlTable("events", {
   eventDate: datetime("eventDate").notNull(),
   eventCode: varchar("eventCode", { length: 50 }).unique(),
   status: mysqlEnum("status", ["planning", "confirmed", "completed", "cancelled"]).default("planning").notNull(),
+  coupleCanView: boolean("coupleCanView").default(true).notNull(),
   createdById: int("createdById").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

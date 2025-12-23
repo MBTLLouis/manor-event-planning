@@ -11,7 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, ChefHat } from "lucide-react";
+import { Plus, Pencil, Trash2, ChefHat, GripVertical } from "lucide-react";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { toast } from "sonner";
 
 export default function FoodChoices() {
@@ -34,8 +37,52 @@ export default function FoodChoices() {
     orderIndex: 0,
   });
   
-  // Extract unique courses
-  const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
+  // Extract unique courses with their order
+  const coursesWithOrder = Array.from(new Set(menuItems.map(item => item.course)))
+    .map(courseName => {
+      const courseItems = menuItems.filter(item => item.course === courseName);
+      const minOrder = Math.min(...courseItems.map(item => item.orderIndex));
+      return { name: courseName, orderIndex: minOrder };
+    })
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  
+  const courses = coursesWithOrder.map(c => c.name);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id) return;
+    
+    const oldIndex = courses.indexOf(active.id as string);
+    const newIndex = courses.indexOf(over.id as string);
+    
+    const reorderedCourses = arrayMove(courses, oldIndex, newIndex);
+    
+    // Update orderIndex for all items in reordered courses
+    reorderedCourses.forEach((courseName, index) => {
+      const courseItems = menuItems.filter(item => item.course === courseName);
+      courseItems.forEach(item => {
+        updateItemMutation.mutate({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          isAvailable: item.isAvailable,
+          orderIndex: index * 100, // Space out by 100 to allow insertions
+        });
+      });
+    });
+  };
   
   const createItemMutation = trpc.menu.create.useMutation({
     onSuccess: () => {
@@ -141,80 +188,43 @@ export default function FoodChoices() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {courses.map((courseName) => {
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={courses}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid gap-4">
+                    {courses.map((courseName) => {
                   const courseItems = menuItems.filter(item => item.course === courseName);
                   
                   return (
-                    <Card key={courseName}>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <CardTitle className="capitalize">{courseName}</CardTitle>
-                            <CardDescription>{courseItems.length} items</CardDescription>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteCourse(courseName)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead className="w-[100px]">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {courseItems.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell className="font-medium">{item.name}</TableCell>
-                                <TableCell className="text-muted-foreground">
-                                  {item.description || "—"}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge variant={item.isAvailable ? "default" : "secondary"}>
-                                    {item.isAvailable ? "Available" : "Unavailable"}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setEditingItem(item)}
-                                    >
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => deleteItemMutation.mutate({ id: item.id })}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </Card>
+                    <SortableCourseCard
+                      key={courseName}
+                      courseName={courseName}
+                      courseItems={courseItems}
+                      deleteCourse={deleteCourse}
+                      setEditingItem={setEditingItem}
+                      deleteItemMutation={deleteItemMutation}
+                    />
                   );
                 })}
-              </div>
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </TabsContent>
           
           <TabsContent value="summary" className="space-y-4">
+            <div className="flex justify-end">
+              <Button onClick={() => window.print()} variant="outline">
+                <ChefHat className="h-4 w-4 mr-2" />
+                Export PDF
+              </Button>
+            </div>
             {Object.keys(selectionSummary).length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center py-12">
@@ -233,18 +243,43 @@ export default function FoodChoices() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Dish</TableHead>
+                            <TableHead>Dietary Warnings</TableHead>
                             <TableHead className="text-right">Count</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {Object.entries(dishes).map(([dish, count]) => (
-                            <TableRow key={dish}>
-                              <TableCell className="font-medium">{dish}</TableCell>
-                              <TableCell className="text-right">
-                                <Badge>{count}</Badge>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+                          {Object.entries(dishes).map(([dish, count]) => {
+                            // Find guests with this selection who have dietary restrictions
+                            const guestsWithDietary = guests.filter(g => 
+                              g.foodSelections && 
+                              typeof g.foodSelections === 'object' && 
+                              Object.values(g.foodSelections).includes(dish) && 
+                              g.hasDietaryRequirements
+                            );
+                            
+                            return (
+                              <TableRow key={dish}>
+                                <TableCell className="font-medium">{dish}</TableCell>
+                                <TableCell>
+                                  {guestsWithDietary.length > 0 ? (
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="destructive" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
+                                        ⚠️ {guestsWithDietary.length} guest{guestsWithDietary.length > 1 ? 's' : ''}
+                                      </Badge>
+                                      <span className="text-xs text-muted-foreground">
+                                        {guestsWithDietary.map(g => `${g.firstName} ${g.lastName}`).join(', ')}
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground text-sm">None</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Badge>{count}</Badge>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </CardContent>
@@ -377,5 +412,110 @@ export default function FoodChoices() {
         </DialogContent>
       </Dialog>
     </EmployeeLayout>
+  );
+}
+
+interface SortableCourseCardProps {
+  courseName: string;
+  courseItems: any[];
+  deleteCourse: (courseName: string) => void;
+  setEditingItem: (item: any) => void;
+  deleteItemMutation: any;
+}
+
+function SortableCourseCard({
+  courseName,
+  courseItems,
+  deleteCourse,
+  setEditingItem,
+  deleteItemMutation,
+}: SortableCourseCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: courseName });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card ref={setNodeRef} style={style}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              className="cursor-grab active:cursor-grabbing touch-none"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </button>
+            <div>
+              <CardTitle className="capitalize">{courseName}</CardTitle>
+              <CardDescription>{courseItems.length} items</CardDescription>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => deleteCourse(courseName)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {courseItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.name}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {item.description || "—"}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={item.isAvailable ? "default" : "secondary"}>
+                    {item.isAvailable ? "Available" : "Unavailable"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditingItem(item)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteItemMutation.mutate({ id: item.id })}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

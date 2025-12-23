@@ -259,3 +259,9 @@
 - [x] Remove standalone MenuConfig page
 - [x] Remove MenuConfig route from App.tsx
 - [x] Test menu management within event context
+
+## Food Choices Enhancements
+- [x] Set default menu courses (Starter, Main, Dessert) on event creation
+- [x] Add dietary restriction flags to Guest Selections Summary
+- [x] Implement PDF export for menu reports
+- [x] Add drag-and-drop course ordering for serving sequence

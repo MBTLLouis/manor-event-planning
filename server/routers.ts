@@ -791,11 +791,38 @@ export const appRouter = router({
         isPinned: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-        const id = await db.createNote({
-          ...input,
-          createdById: ctx.user.id,
-        });
-        return { id };
+      const eventId = await db.createEvent({
+        ...input,
+        createdById: ctx.user.id,
+      });
+      
+      // Create default menu courses
+      await db.createMenuItem({
+        eventId,
+        course: "Starter",
+        name: "To be configured",
+        description: "",
+        isAvailable: true,
+        orderIndex: 0,
+      });
+      await db.createMenuItem({
+        eventId,
+        course: "Main",
+        name: "To be configured",
+        description: "",
+        isAvailable: true,
+        orderIndex: 1,
+      });
+      await db.createMenuItem({
+        eventId,
+        course: "Dessert",
+        name: "To be configured",
+        description: "",
+        isAvailable: true,
+        orderIndex: 2,
+      });
+      
+      return { id: eventId };
       }),
 
     update: protectedProcedure
@@ -947,14 +974,20 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
-        await db.updateMenuItem(id, data);
-        return { success: true };
+        return await db.updateMenuItem(id, data);
       }),
 
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await db.deleteMenuItem(input.id);
+        return { success: true };
+      }),
+    
+    deleteCourse: protectedProcedure
+      .input(z.object({ eventId: z.number(), course: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.deleteMenuItemsByCourse(input.eventId, input.course);
         return { success: true };
       }),
   }),

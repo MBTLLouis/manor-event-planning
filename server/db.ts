@@ -709,8 +709,12 @@ export async function deleteAccommodation(id: number) {
 export async function createMenuItem(item: InsertMenuItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(menuItems).values(item);
-  return { success: true };
+  const result = await db.insert(menuItems).values(item);
+  const id = Number(result[0].insertId);
+  
+  // Fetch and return the created item
+  const created = await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+  return created[0];
 }
 
 export async function getMenuItemsByEventId(eventId: number) {
@@ -723,12 +727,22 @@ export async function updateMenuItem(id: number, data: Partial<InsertMenuItem>) 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(menuItems).set(data).where(eq(menuItems.id, id));
+  
+  // Fetch and return the updated item
+  const updated = await db.select().from(menuItems).where(eq(menuItems.id, id)).limit(1);
+  return updated[0];
 }
 
 export async function deleteMenuItem(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(menuItems).where(eq(menuItems.id, id));
+}
+
+export async function deleteMenuItemsByCourse(eventId: number, course: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(menuItems).where(and(eq(menuItems.eventId, eventId), eq(menuItems.course, course)));
 }
 
 // Wedding Websites

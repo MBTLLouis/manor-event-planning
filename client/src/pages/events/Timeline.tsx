@@ -15,7 +15,7 @@ import { format } from "date-fns";
 // Removed drag-and-drop imports - events now sort automatically by time
 
 // Simple event card - events sort automatically by time
-function EventCard({ event, onDelete }: { event: any; onDelete: (id: number) => void }) {
+function EventCard({ event, onDelete, onEdit }: { event: any; onDelete: (id: number) => void; onEdit: (event: any) => void }) {
   return (
     <Card className="border-l-4 border-l-primary">
       <CardContent className="pt-6">
@@ -40,13 +40,22 @@ function EventCard({ event, onDelete }: { event: any; onDelete: (id: number) => 
               </p>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(event.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(event)}
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(event.id)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -61,8 +70,10 @@ export default function TimelineEnhanced() {
   const [isAddDayDialogOpen, setIsAddDayDialogOpen] = useState(false);
   const [isEditDayDialogOpen, setIsEditDayDialogOpen] = useState(false);
   const [isAddEventDialogOpen, setIsAddEventDialogOpen] = useState(false);
+  const [isEditEventDialogOpen, setIsEditEventDialogOpen] = useState(false);
   const [selectedDayId, setSelectedDayId] = useState<number | null>(null);
   const [editingDay, setEditingDay] = useState<any>(null);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
   const [newDay, setNewDay] = useState({ title: "", date: "" });
   const [newEvent, setNewEvent] = useState({
     time: "",
@@ -115,7 +126,9 @@ export default function TimelineEnhanced() {
 
   const updateEventMutation = trpc.timeline.updateEvent.useMutation({
     onSuccess: () => {
-      toast.success("Event updated!");
+      toast.success("Event updated successfully!");
+      setIsEditEventDialogOpen(false);
+      setEditingEvent(null);
       utils.timeline.listDays.invalidate({ eventId });
     },
   });
@@ -173,6 +186,25 @@ export default function TimelineEnhanced() {
     if (confirm("Are you sure you want to delete this event?")) {
       deleteEventMutation.mutate({ id: eventId });
     }
+  };
+
+  const handleEditEvent = (event: any) => {
+    setEditingEvent(event);
+    setIsEditEventDialogOpen(true);
+  };
+
+  const handleUpdateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+
+    updateEventMutation.mutate({
+      id: editingEvent.id,
+      time: editingEvent.time,
+      title: editingEvent.title,
+      description: editingEvent.description || null,
+      assignedTo: editingEvent.assignedTo || null,
+      notes: editingEvent.notes || null,
+    });
   };
 
   // Removed handleDragEnd - events now sort automatically by time
@@ -357,6 +389,7 @@ export default function TimelineEnhanced() {
                             key={evt.id}
                             event={evt}
                             onDelete={handleDeleteEvent}
+                            onEdit={handleEditEvent}
                           />
                         ))}
                       </div>
@@ -455,6 +488,74 @@ export default function TimelineEnhanced() {
               </div>
               <DialogFooter>
                 <Button type="submit">Update Day</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Event Dialog */}
+        <Dialog open={isEditEventDialogOpen} onOpenChange={setIsEditEventDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Event</DialogTitle>
+              <DialogDescription>
+                Modify the event details. Events will automatically reorder by time.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateEvent}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-time">Time *</Label>
+                    <Input
+                      id="edit-event-time"
+                      type="time"
+                      value={editingEvent?.time || ""}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, time: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-event-title">Title *</Label>
+                    <Input
+                      id="edit-event-title"
+                      value={editingEvent?.title || ""}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-event-description">Description</Label>
+                  <Textarea
+                    id="edit-event-description"
+                    value={editingEvent?.description || ""}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-event-assigned">Assigned To</Label>
+                  <Input
+                    id="edit-event-assigned"
+                    value={editingEvent?.assignedTo || ""}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, assignedTo: e.target.value })}
+                    placeholder="Person or team responsible"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-event-notes">Notes</Label>
+                  <Textarea
+                    id="edit-event-notes"
+                    value={editingEvent?.notes || ""}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, notes: e.target.value })}
+                    rows={2}
+                    placeholder="Additional notes or instructions"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Update Event</Button>
               </DialogFooter>
             </form>
           </DialogContent>

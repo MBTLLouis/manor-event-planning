@@ -234,3 +234,8 @@
 - [x] Update database query to sort events by time field (chronological)
 - [x] Remove manual drag-and-drop ordering for events
 - [x] Test that earliest events appear at top, latest at bottom
+
+## Timeline Event Editing
+- [x] Add edit button to timeline event cards
+- [x] Create edit event dialog with all fields (time, title, description, assignedTo, notes)
+- [x] Test editing events and verify automatic re-sorting by time

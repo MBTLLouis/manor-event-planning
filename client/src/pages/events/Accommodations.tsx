@@ -162,7 +162,7 @@ export default function Accommodations() {
       <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => setLocation(`/events/${eventIdNum}`)}>
+          <Button variant="ghost" size="sm" onClick={() => setLocation("/events")}>
             <ChevronLeft className="h-4 w-4" />
             Back to Event
           </Button>

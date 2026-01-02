@@ -338,4 +338,4 @@
 - [x] Add error boundary and fallback when eventId is invalid
 
 ## Navigation Bugs
-- [x] Back button from Accommodations shows Invalid Event ID error
+- [x] Back button from Accommodations shows Invalid Event ID error - fixed to navigate to /events list

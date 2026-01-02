@@ -326,4 +326,4 @@
 
 ## Accommodation Bugs
 - [x] Fix sidebar not visible when navigating to Accommodations page
-- [x] Fix duplicate rooms being created when initializing rooms
+- [x] Fix duplicate rooms being created when initializing rooms - cleared duplicates from database

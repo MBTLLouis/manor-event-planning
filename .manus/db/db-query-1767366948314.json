@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM accommodationRooms WHERE id NOT IN (SELECT MIN(id) FROM accommodationRooms GROUP BY eventId, roomName);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute DELETE FROM accommodationRooms WHERE id NOT IN (SELECT MIN(id) FROM accommodationRooms GROUP BY eventId, roomName);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 60
+}

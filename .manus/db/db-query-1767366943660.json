@@ -1,0 +1,80 @@
+{
+  "query": "SELECT eventId, roomName, COUNT(*) as count FROM accommodationRooms GROUP BY eventId, roomName HAVING COUNT(*) > 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT eventId, roomName, COUNT(*) as count FROM accommodationRooms GROUP BY eventId, roomName HAVING COUNT(*) > 1;",
+  "rows": [
+    {
+      "eventId": "0",
+      "roomName": "Room 8",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 3",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 10",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 9",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Lodge",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 2",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 4",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 12",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 11",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Cottage",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 5",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 7",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 6",
+      "count": "2"
+    },
+    {
+      "eventId": "0",
+      "roomName": "Room 1",
+      "count": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "eventId\troomName\tcount\n0\tRoom 8\t2\n0\tRoom 3\t2\n0\tRoom 10\t2\n0\tRoom 9\t2\n0\tLodge\t2\n0\tRoom 2\t2\n0\tRoom 4\t2\n0\tRoom 12\t2\n0\tRoom 11\t2\n0\tCottage\t2\n0\tRoom 5\t2\n0\tRoom 7\t2\n0\tRoom 6\t2\n0\tRoom 1\t2\n",
+  "stderr": "",
+  "execution_time_ms": 218
+}

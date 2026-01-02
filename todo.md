@@ -277,3 +277,10 @@
 
 ## Bug Fix - Select.Item Empty Value Error
 - [x] Fix Select.Item components with empty string values in Guest List page
+
+## Employee Management Feature
+- [x] Create tRPC procedures for employee CRUD operations
+- [x] Build employee management UI component with table and dialogs
+- [x] Add role/permission management (admin/employee)
+- [x] Integrate into admin dashboard with visibility control
+- [x] Test employee creation, editing, deletion, and permission changes

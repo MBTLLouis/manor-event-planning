@@ -4,10 +4,12 @@ import { Calendar, MessageSquare, CheckSquare, Users } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
+import { EmployeeManagement } from "@/components/EmployeeManagement";
 import { format } from "date-fns";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const { data: user } = trpc.auth.me.useQuery();
   const { data: stats } = trpc.dashboard.stats.useQuery();
   const { data: upcomingEvents } = trpc.events.upcoming.useQuery();
 
@@ -150,6 +152,13 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Employee Management Section - Admin Only */}
+        {user?.role === "admin" && (
+          <div className="mt-8">
+            <EmployeeManagement />
+          </div>
+        )}
       </div>
     </EmployeeLayout>
   );

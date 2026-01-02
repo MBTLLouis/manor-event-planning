@@ -991,6 +991,92 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  employees: router({
+    list: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .query(async () => {
+        return await db.getAllEmployees();
+      }),
+
+    create: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .input(z.object({
+        name: z.string(),
+        email: z.string().email(),
+        username: z.string(),
+        password: z.string(),
+        role: z.enum(["admin", "employee"]),
+      }))
+      .mutation(async ({ input }) => {
+        const existingUser = await db.getUserByUsername(input.username);
+        if (existingUser) {
+          throw new TRPCError({ code: "CONFLICT" });
+        }
+
+        const hashedPassword = await bcrypt.hash(input.password, 10);
+        const id = await db.createUser({
+          openId: `local-${input.username}-${Date.now()}`,
+          username: input.username,
+          password: hashedPassword,
+          name: input.name,
+          email: input.email,
+          role: input.role,
+          loginMethod: "local",
+        });
+
+        return { id, success: true };
+      }),
+
+    update: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.enum(["admin", "employee"]).optional(),
+        password: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, password, ...data } = input;
+        const updateData: any = { ...data };
+        
+        if (password) {
+          updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        await db.updateUser(id, updateData);
+        return { success: true };
+      }),
+
+    delete: protectedProcedure
+      .use(async ({ ctx, next }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return next({ ctx });
+      })
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteUser(input.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

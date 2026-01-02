@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, name, username, email, role, loginMethod FROM users WHERE username = 'siobhan'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, name, username, email, role, loginMethod FROM users WHERE username = 'siobhan'",
+  "rows": [
+    {
+      "id": "3360010",
+      "name": "Siobhan",
+      "username": "siobhan",
+      "email": "siobhan@manor.com",
+      "role": "employee",
+      "loginMethod": "local"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tusername\temail\trole\tloginMethod\n3360010\tSiobhan\tsiobhan\tsiobhan@manor.com\temployee\tlocal\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

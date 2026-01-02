@@ -139,6 +139,30 @@ export async function createUser(user: InsertUser) {
   return Number(result[0].insertId);
 }
 
+export async function getAllEmployees() {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db.select().from(users).where(eq(users.role, "employee"));
+  return result;
+}
+
+export async function updateUser(id: number, data: Partial<InsertUser>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(users).set(data).where(eq(users.id, id));
+  return true;
+}
+
+export async function deleteUser(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(users).where(eq(users.id, id));
+  return true;
+}
+
 // Events
 export async function createEvent(event: InsertEvent) {
   const db = await getDb();

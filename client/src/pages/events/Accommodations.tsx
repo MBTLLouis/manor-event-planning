@@ -36,6 +36,9 @@ interface Guest {
   firstName: string;
   lastName: string;
   email: string | null;
+  dietaryRestrictions?: string | null;
+  mildAllergies?: string | null;
+  severeAllergies?: string | null;
 }
 
 export default function Accommodations() {
@@ -135,6 +138,16 @@ export default function Accommodations() {
     return guest ? `${guest.firstName} ${guest.lastName}` : "Unknown Guest";
   };
 
+  const getGuestDietaryInfo = (guestId: number) => {
+    const guest = guestsData?.find(g => g.id === guestId);
+    if (!guest) return null;
+    return {
+      hasDietaryRequirements: guest.hasDietaryRequirements,
+      dietaryRestrictions: guest.dietaryRestrictions,
+      allergySeverity: guest.allergySeverity,
+    };
+  };
+
   const getUnallocatedGuests = () => {
     const allocatedGuestIds = new Set(allocations.map(a => a.guestId));
     return (guestsData || []).filter(g => !allocatedGuestIds.has(g.id));
@@ -193,19 +206,37 @@ export default function Accommodations() {
                 <div className="mb-3 space-y-2">
                   <label className="text-xs font-medium text-gray-600">Guests</label>
                   {roomAllocations.length > 0 ? (
-                    <div className="space-y-1">
-                      {roomAllocations.map((alloc) => (
-                        <div key={alloc.id} className="flex items-center justify-between rounded bg-blue-50 px-2 py-1">
-                          <span className="text-sm">{getGuestName(alloc.guestId)}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveAllocation(alloc.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div className="space-y-2">
+                      {roomAllocations.map((alloc) => {
+                        const dietaryInfo = getGuestDietaryInfo(alloc.guestId);
+                        return (
+                          <div key={alloc.id} className="rounded bg-blue-50 px-2 py-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium">{getGuestName(alloc.guestId)}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveAllocation(alloc.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            {dietaryInfo?.hasDietaryRequirements && (
+                              <div className="mt-1 space-y-0.5 text-xs text-gray-600">
+                                {dietaryInfo?.dietaryRestrictions && (
+                                  <p>Dietary: {dietaryInfo.dietaryRestrictions}</p>
+                                )}
+                                {dietaryInfo?.allergySeverity === "mild" && (
+                                  <p className="text-yellow-600 font-medium">Mild Allergy</p>
+                                )}
+                                {dietaryInfo?.allergySeverity === "severe" && (
+                                  <p className="text-red-600 font-medium">Severe Allergy</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-xs text-gray-500">No guests allocated</p>

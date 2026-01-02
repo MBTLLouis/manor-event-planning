@@ -327,3 +327,8 @@
 ## Accommodation Bugs
 - [x] Fix sidebar not visible when navigating to Accommodations page
 - [x] Fix duplicate rooms being created when initializing rooms - cleared duplicates from database
+
+## Accommodation Dietary Requirements
+- [x] Display dietary requirements for guests assigned to rooms
+- [x] Pull dietary data from guest profiles when allocating to rooms
+- [x] Show dietary flags (Mild/Severe allergies) in room cards

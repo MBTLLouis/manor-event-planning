@@ -289,3 +289,7 @@
 - [x] Fix canvas sizing to fit within white background box properly
 - [x] Fix drag-and-drop positioning - tables disappearing off screen
 - [x] Add zoom in/out controls for seating plan canvas
+
+## Seating Plan - Corner Boundary Bug
+- [x] Fix tables disappearing when moved to corners of canvas
+- [x] Debug boundary constraint calculations for corner positions

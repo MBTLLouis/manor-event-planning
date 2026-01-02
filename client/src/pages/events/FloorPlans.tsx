@@ -437,10 +437,11 @@ export default function FloorPlans() {
 
     if (!data) return;
 
-    // Canvas boundaries
+    // Canvas boundaries - allow elements to touch edges
     const CANVAS_WIDTH = 1200;
     const CANVAS_HEIGHT = 600;
-    const PADDING = 20;
+    const MIN_PADDING = 0;
+    const MAX_PADDING = 0;
 
     if (data.type === 'table') {
       const table = data.table as TableData;
@@ -452,9 +453,9 @@ export default function FloorPlans() {
       let newX = table.positionX + (delta.x / zoom);
       let newY = table.positionY + (delta.y / zoom);
       
-      // Apply boundary constraints
-      newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - tableWidth - PADDING));
-      newY = Math.max(PADDING, Math.min(newY, CANVAS_HEIGHT - tableHeight - PADDING));
+      // Apply boundary constraints - allow tables to touch edges
+      newX = Math.max(MIN_PADDING, Math.min(newX, CANVAS_WIDTH - tableWidth + MAX_PADDING));
+      newY = Math.max(MIN_PADDING, Math.min(newY, CANVAS_HEIGHT - tableHeight + MAX_PADDING));
       
       updateTableMutation.mutate({
         id: table.id,
@@ -463,15 +464,14 @@ export default function FloorPlans() {
       });
     } else if (data.type === 'seat') {
       const seat = data.seat as SeatData;
-      const SEAT_SIZE = 48; // 12 * 4 (w-12 = 3rem = 48px)
+      const SEAT_SIZE = 48;
       
       // Calculate new position with delta, accounting for zoom
       let newX = seat.positionX + (delta.x / zoom);
       let newY = seat.positionY + (delta.y / zoom);
-      
-      // Apply boundary constraints
-      newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - SEAT_SIZE - PADDING));
-      newY = Math.max(PADDING, Math.min(newY, CANVAS_HEIGHT - SEAT_SIZE - PADDING));
+        // Apply boundary constraints - allow seats to touch edges
+      newX = Math.max(MIN_PADDING, Math.min(newX, CANVAS_WIDTH - SEAT_SIZE + MAX_PADDING));
+      newY = Math.max(MIN_PADDING, Math.min(newY, CANVAS_HEIGHT - SEAT_SIZE + MAX_PADDING));
       
       updateSeatMutation.mutate({
         id: seat.id,

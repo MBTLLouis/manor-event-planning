@@ -332,3 +332,7 @@
 - [x] Display dietary requirements for guests assigned to rooms
 - [x] Pull dietary data from guest profiles when allocating to rooms
 - [x] Show dietary flags (Mild/Severe allergies) in room cards
+
+## Bug Fixes - NaN EventId Error
+- [x] Fix NaN eventId when accessing event pages with undefined URL parameter
+- [x] Add error boundary and fallback when eventId is invalid

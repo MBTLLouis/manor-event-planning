@@ -11,6 +11,18 @@ export default function EventDetail() {
   const [, setLocation] = useLocation();
   const eventId = params?.id ? parseInt(params.id) : 0;
 
+  // Redirect if eventId is invalid
+  if (!eventId || isNaN(eventId)) {
+    return (
+      <EmployeeLayout>
+        <div className="p-8 text-center">
+          <p className="text-red-600 mb-4">Invalid event ID</p>
+          <Button onClick={() => setLocation("/events")}>Back to Events</Button>
+        </div>
+      </EmployeeLayout>
+    );
+  }
+
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
   const { data: stats } = trpc.events.stats.useQuery({ id: eventId });
 

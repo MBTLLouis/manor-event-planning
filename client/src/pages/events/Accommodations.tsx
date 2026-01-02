@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { ChevronLeft, Plus, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
+import EmployeeLayout from "@/components/EmployeeLayout";
 
 interface Room {
   id: number;
@@ -144,7 +145,8 @@ export default function Accommodations() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <EmployeeLayout>
+      <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => setLocation(`/events/${eventId}`)}>
@@ -249,7 +251,8 @@ export default function Accommodations() {
           })}
         </div>
       )}
-    </div>
+      </div>
+    </EmployeeLayout>
   );
 }
 

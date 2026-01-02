@@ -848,6 +848,12 @@ export async function initializeAccommodationRooms(eventId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
+  // Check if rooms already exist for this event
+  const existingRooms = await db.select().from(accommodationRooms).where(eq(accommodationRooms.eventId, eventId));
+  if (existingRooms.length > 0) {
+    return; // Rooms already initialized
+  }
+
   const roomNames = [
     "Room 1", "Room 2", "Room 3", "Room 4", "Room 5", "Room 6",
     "Room 7", "Room 8", "Room 9", "Room 10", "Room 11", "Room 12",

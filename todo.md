@@ -323,3 +323,7 @@
 - [x] Implement multi-guest allocation from RSVP system
 - [x] Add additional notes section for each room
 - [x] Test room allocation and blocking workflow
+
+## Accommodation Bugs
+- [x] Fix sidebar not visible when navigating to Accommodations page
+- [x] Fix duplicate rooms being created when initializing rooms

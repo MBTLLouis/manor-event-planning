@@ -37,6 +37,10 @@ import {
   InsertMenuItem,
   drinks,
   InsertDrink,
+  accommodationRooms,
+  InsertAccommodationRoom,
+  roomAllocations,
+  InsertRoomAllocation,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -836,4 +840,104 @@ export async function deleteDrink(id: number) {
   if (!db) throw new Error("Database not available");
 
   await db.delete(drinks).where(eq(drinks.id, id));
+}
+
+
+// Accommodation Rooms
+export async function initializeAccommodationRooms(eventId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const roomNames = [
+    "Room 1", "Room 2", "Room 3", "Room 4", "Room 5", "Room 6",
+    "Room 7", "Room 8", "Room 9", "Room 10", "Room 11", "Room 12",
+    "Lodge", "Cottage"
+  ];
+
+  const rooms = roomNames.map((name, index) => ({
+    eventId,
+    roomName: name,
+    roomNumber: index < 12 ? index + 1 : null,
+    isAccessible: name === "Room 12", // Room 12 is ground floor accessible
+    isBlocked: false,
+    notes: null,
+  }));
+
+  await db.insert(accommodationRooms).values(rooms);
+}
+
+export async function getAccommodationRoomsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(accommodationRooms).where(eq(accommodationRooms.eventId, eventId)).orderBy(asc(accommodationRooms.roomNumber), asc(accommodationRooms.roomName));
+}
+
+export async function updateAccommodationRoom(id: number, data: Partial<InsertAccommodationRoom>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(accommodationRooms).set(data).where(eq(accommodationRooms.id, id));
+  
+  const updated = await db.select().from(accommodationRooms).where(eq(accommodationRooms.id, id)).limit(1);
+  return updated[0];
+}
+
+export async function deleteAccommodationRoom(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(accommodationRooms).where(eq(accommodationRooms.id, id));
+}
+
+// Room Allocations
+export async function allocateGuestToRoom(roomId: number, guestId: number, eventId: number, notes?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(roomAllocations).values({
+    roomId,
+    guestId,
+    eventId,
+    notes: notes || undefined,
+  });
+  return Number(result[0].insertId);
+}
+
+export async function getRoomAllocationsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(roomAllocations).where(eq(roomAllocations.eventId, eventId));
+}
+
+export async function getRoomAllocationsByRoomId(roomId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(roomAllocations).where(eq(roomAllocations.roomId, roomId));
+}
+
+export async function updateRoomAllocation(id: number, data: Partial<InsertRoomAllocation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(roomAllocations).set(data).where(eq(roomAllocations.id, id));
+  
+  const updated = await db.select().from(roomAllocations).where(eq(roomAllocations.id, id)).limit(1);
+  return updated[0];
+}
+
+export async function deleteRoomAllocation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(roomAllocations).where(eq(roomAllocations.id, id));
+}
+
+export async function deleteRoomAllocationsByRoomId(roomId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(roomAllocations).where(eq(roomAllocations.roomId, roomId));
 }

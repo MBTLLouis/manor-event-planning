@@ -847,57 +847,7 @@ export const appRouter = router({
       }),
   }),
 
-  accommodations: router({
-    list: protectedProcedure
-      .input(z.object({ eventId: z.number() }))
-      .query(async ({ input }) => {
-        return await db.getAccommodationsByEventId(input.eventId);
-      }),
 
-    create: protectedProcedure
-      .input(z.object({
-        eventId: z.number(),
-        hotelName: z.string(),
-        address: z.string().optional(),
-        phone: z.string().optional(),
-        website: z.string().optional(),
-        roomBlockCode: z.string().optional(),
-        roomRate: z.number().optional(),
-        checkInDate: z.date().optional(),
-        checkOutDate: z.date().optional(),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const id = await db.createAccommodation(input);
-        return { id };
-      }),
-
-    update: protectedProcedure
-      .input(z.object({
-        id: z.number(),
-        hotelName: z.string().optional(),
-        address: z.string().optional(),
-        phone: z.string().optional(),
-        website: z.string().optional(),
-        roomBlockCode: z.string().optional(),
-        roomRate: z.number().optional(),
-        checkInDate: z.date().optional(),
-        checkOutDate: z.date().optional(),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const { id, ...data } = input;
-        await db.updateAccommodation(id, data);
-        return { success: true };
-      }),
-
-    delete: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await db.deleteAccommodation(input.id);
-        return { success: true };
-      }),
-  }),
 
   weddingWebsite: router({
     get: protectedProcedure
@@ -1046,6 +996,66 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await db.deleteDrink(input.id);
+        return { success: true };
+      }),
+  }),
+
+  accommodations: router({
+    initializeRooms: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.initializeAccommodationRooms(input.eventId);
+        return { success: true };
+      }),
+
+    getRooms: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAccommodationRoomsByEventId(input.eventId);
+      }),
+
+    updateRoom: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        isBlocked: z.boolean().optional(),
+        notes: z.string().nullish(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateAccommodationRoom(id, data);
+      }),
+
+    allocateGuest: protectedProcedure
+      .input(z.object({
+        roomId: z.number(),
+        guestId: z.number(),
+        eventId: z.number(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.allocateGuestToRoom(input.roomId, input.guestId, input.eventId, input.notes);
+      }),
+
+    getAllocations: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getRoomAllocationsByEventId(input.eventId);
+      }),
+
+    updateAllocation: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        notes: z.string().nullish(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateRoomAllocation(id, data);
+      }),
+
+    removeAllocation: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteRoomAllocation(input.id);
         return { success: true };
       }),
   }),

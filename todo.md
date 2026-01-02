@@ -314,3 +314,12 @@
 - [x] Implement Corkage toggle (Client Brings vs Venue Provides)
 - [x] Add Total Quantity field for drinks
 - [x] Test drinks creation, editing, and deletion
+
+## Guest Accommodation Feature
+- [x] Create accommodation schema with 12 rooms + Lodge + Cottage
+- [x] Add room blocking checkbox functionality
+- [x] Create tRPC procedures for room allocation and blocking
+- [x] Build Accommodations page with room cards
+- [x] Implement multi-guest allocation from RSVP system
+- [x] Add additional notes section for each room
+- [x] Test room allocation and blocking workflow

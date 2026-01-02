@@ -387,3 +387,40 @@ export const drinks = mysqlTable("drinks", {
 
 export type Drink = typeof drinks.$inferSelect;
 export type InsertDrink = typeof drinks.$inferInsert;
+
+
+/**
+ * Accommodation Rooms table - stores room information for events
+ * Includes 12 rooms + Lodge + Cottage
+ */
+export const accommodationRooms = mysqlTable("accommodationRooms", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  roomName: varchar("roomName", { length: 100 }).notNull(), // "Room 1", "Room 2", ..., "Room 12", "Lodge", "Cottage"
+  roomNumber: int("roomNumber"), // 1-12 for regular rooms, null for Lodge/Cottage
+  isAccessible: boolean("isAccessible").default(false).notNull(), // Room 12 is ground floor accessible
+  isBlocked: boolean("isBlocked").default(false).notNull(), // Checkbox to block room from use
+  notes: text("notes"), // Additional notes for the room
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AccommodationRoom = typeof accommodationRooms.$inferSelect;
+export type InsertAccommodationRoom = typeof accommodationRooms.$inferInsert;
+
+/**
+ * Room Allocations table - stores guest allocations to rooms
+ * Supports multiple guests per room
+ */
+export const roomAllocations = mysqlTable("roomAllocations", {
+  id: int("id").autoincrement().primaryKey(),
+  roomId: int("roomId").notNull(), // Foreign key to accommodationRooms
+  guestId: int("guestId").notNull(), // Foreign key to guests
+  eventId: int("eventId").notNull(),
+  notes: text("notes"), // Additional notes for this guest's allocation
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RoomAllocation = typeof roomAllocations.$inferSelect;
+export type InsertRoomAllocation = typeof roomAllocations.$inferInsert;

@@ -1,275 +1,313 @@
-import { useState } from "react";
-import { useParams, useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
-import EmployeeLayout from "@/components/EmployeeLayout";
+import { useEffect, useState } from "react";
+import { useParams } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Hotel, MapPin, Phone, Globe, Edit, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import { ChevronLeft, Plus, Trash2 } from "lucide-react";
+import { useLocation } from "wouter";
+
+interface Room {
+  id: number;
+  eventId: number;
+  roomName: string;
+  roomNumber: number | null;
+  isAccessible: boolean;
+  isBlocked: boolean;
+  notes: string | null;
+}
+
+interface Allocation {
+  id: number;
+  roomId: number;
+  guestId: number;
+  eventId: number;
+  notes: string | null;
+}
+
+interface Guest {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+}
 
 export default function Accommodations() {
-  const params = useParams();
-  const eventId = Number(params.id);
+  const { eventId } = useParams<{ eventId: string }>();
   const [, setLocation] = useLocation();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingAccommodation, setEditingAccommodation] = useState<any>(null);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [allocations, setAllocations] = useState<Allocation[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [showAllocationDialog, setShowAllocationDialog] = useState(false);
 
-  const { data: accommodations = [], refetch } = trpc.accommodations.list.useQuery({ eventId });
-  const { data: event } = trpc.events.getById.useQuery({ id: eventId });
+  const eventIdNum = parseInt(eventId || "0");
 
-  const createMutation = trpc.accommodations.create.useMutation({
-    onSuccess: () => {
-      toast.success("Accommodation added");
-      refetch();
-      setIsAddDialogOpen(false);
-    },
-  });
+  // Queries
+  const { data: roomsData, isLoading: roomsLoading } = trpc.accommodations.getRooms.useQuery({ eventId: eventIdNum });
+  const { data: allocationsData } = trpc.accommodations.getAllocations.useQuery({ eventId: eventIdNum });
+  const { data: guestsData } = trpc.guests.list.useQuery({ eventId: eventIdNum });
 
-  const updateMutation = trpc.accommodations.update.useMutation({
-    onSuccess: () => {
-      toast.success("Accommodation updated");
-      refetch();
-      setEditingAccommodation(null);
-    },
-  });
+  // Mutations
+  const initializeRoomsMutation = trpc.accommodations.initializeRooms.useMutation();
+  const updateRoomMutation = trpc.accommodations.updateRoom.useMutation();
+  const allocateGuestMutation = trpc.accommodations.allocateGuest.useMutation();
+  const removeAllocationMutation = trpc.accommodations.removeAllocation.useMutation();
 
-  const deleteMutation = trpc.accommodations.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Accommodation deleted");
-      refetch();
-    },
-  });
+  useEffect(() => {
+    if (roomsData) setRooms(roomsData);
+    if (allocationsData) setAllocations(allocationsData);
+  }, [roomsData, allocationsData]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const data = {
-      eventId,
-      hotelName: formData.get("hotelName") as string,
-      address: formData.get("address") as string || undefined,
-      phone: formData.get("phone") as string || undefined,
-      website: formData.get("website") as string || undefined,
-      roomBlockCode: formData.get("roomBlockCode") as string || undefined,
-      roomRate: formData.get("roomRate") ? Math.round(parseFloat(formData.get("roomRate") as string) * 100) : undefined,
-      checkInDate: formData.get("checkInDate") ? new Date(formData.get("checkInDate") as string) : undefined,
-      checkOutDate: formData.get("checkOutDate") ? new Date(formData.get("checkOutDate") as string) : undefined,
-      notes: formData.get("notes") as string || undefined,
-    };
-
-    if (editingAccommodation) {
-      updateMutation.mutate({ id: editingAccommodation.id, ...data });
-    } else {
-      createMutation.mutate(data);
+  const handleInitializeRooms = async () => {
+    try {
+      await initializeRoomsMutation.mutateAsync({ eventId: eventIdNum });
+      // Rooms will be updated via useQuery hook
+    } catch (error) {
+      console.error("Failed to initialize rooms:", error);
     }
   };
 
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(cents / 100);
+  const handleToggleBlockRoom = async (room: Room) => {
+    try {
+      const updated = await updateRoomMutation.mutateAsync({
+        id: room.id,
+        isBlocked: !room.isBlocked,
+      });
+      if (updated) {
+        setRooms(rooms.map(r => r.id === room.id ? updated : r));
+      }
+    } catch (error) {
+      console.error("Failed to update room:", error);
+    }
+  };
+
+  const handleUpdateRoomNotes = async (room: Room, notes: string) => {
+    try {
+      const updated = await updateRoomMutation.mutateAsync({
+        id: room.id,
+        notes: notes || null,
+      });
+      if (updated) {
+        setRooms(rooms.map(r => r.id === room.id ? updated : r));
+      }
+    } catch (error) {
+      console.error("Failed to update room notes:", error);
+    }
+  };
+
+  const handleAllocateGuest = async (guestId: number, notes: string) => {
+    if (!selectedRoom) return;
+    try {
+      await allocateGuestMutation.mutateAsync({
+        roomId: selectedRoom.id,
+        guestId,
+        eventId: eventIdNum,
+        notes: notes || undefined,
+      });
+      // Allocations will be updated via useQuery hook
+      setShowAllocationDialog(false);
+    } catch (error) {
+      console.error("Failed to allocate guest:", error);
+    }
+  };
+
+  const handleRemoveAllocation = async (allocationId: number) => {
+    try {
+      await removeAllocationMutation.mutateAsync({ id: allocationId });
+      // Allocations will be updated via useQuery hook
+    } catch (error) {
+      console.error("Failed to remove allocation:", error);
+    }
+  };
+
+  const getRoomAllocations = (roomId: number) => {
+    return allocations.filter(a => a.roomId === roomId);
+  };
+
+  const getGuestName = (guestId: number) => {
+    const guest = guestsData?.find(g => g.id === guestId);
+    return guest ? `${guest.firstName} ${guest.lastName}` : "Unknown Guest";
+  };
+
+  const getUnallocatedGuests = () => {
+    const allocatedGuestIds = new Set(allocations.map(a => a.guestId));
+    return (guestsData || []).filter(g => !allocatedGuestIds.has(g.id));
+  };
+
+  if (roomsLoading) {
+    return <div className="p-6">Loading accommodations...</div>;
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => setLocation(`/events/${eventId}`)}>
+            <ChevronLeft className="h-4 w-4" />
+            Back to Event
+          </Button>
+          <h1 className="text-3xl font-bold">Accommodations</h1>
+        </div>
+      </div>
+
+      {rooms.length === 0 ? (
+        <Card className="p-6 text-center">
+          <p className="mb-4 text-gray-600">No accommodation rooms set up yet.</p>
+          <Button onClick={handleInitializeRooms} disabled={initializeRoomsMutation.isPending}>
+            {initializeRoomsMutation.isPending ? "Initializing..." : "Initialize Default Rooms"}
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {rooms.map((room) => {
+            const roomAllocations = getRoomAllocations(room.id);
+            const isFullyOccupied = roomAllocations.length >= 2;
+
+            return (
+              <Card key={room.id} className={`p-4 ${room.isBlocked ? "bg-gray-100 opacity-60" : ""}`}>
+                <div className="mb-3 flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-lg">{room.roomName}</h3>
+                    {room.isAccessible && (
+                      <p className="text-xs text-green-600">♿ Ground Floor Accessible</p>
+                    )}
+                  </div>
+                  <Checkbox
+                    checked={room.isBlocked}
+                    onCheckedChange={() => handleToggleBlockRoom(room)}
+                    disabled={roomAllocations.length > 0}
+                  />
+                </div>
+
+                {room.isBlocked && (
+                  <p className="mb-2 text-xs font-medium text-gray-500">BLOCKED</p>
+                )}
+
+                <div className="mb-3 space-y-2">
+                  <label className="text-xs font-medium text-gray-600">Guests</label>
+                  {roomAllocations.length > 0 ? (
+                    <div className="space-y-1">
+                      {roomAllocations.map((alloc) => (
+                        <div key={alloc.id} className="flex items-center justify-between rounded bg-blue-50 px-2 py-1">
+                          <span className="text-sm">{getGuestName(alloc.guestId)}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveAllocation(alloc.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-500">No guests allocated</p>
+                  )}
+                </div>
+
+                {!room.isBlocked && !isFullyOccupied && (
+                  <Dialog open={showAllocationDialog && selectedRoom?.id === room.id} onOpenChange={(open) => {
+                    setShowAllocationDialog(open);
+                    if (open) setSelectedRoom(room);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full" onClick={() => setSelectedRoom(room)}>
+                        <Plus className="mr-1 h-3 w-3" />
+                        Add Guest
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Allocate Guest to {room.roomName}</DialogTitle>
+                      </DialogHeader>
+                      <AllocationForm
+                        room={room}
+                        unallocatedGuests={getUnallocatedGuests()}
+                        onAllocate={handleAllocateGuest}
+                        onClose={() => setShowAllocationDialog(false)}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                <div className="mt-3 border-t pt-3">
+                  <label className="text-xs font-medium text-gray-600">Additional Notes</label>
+                  <Textarea
+                    placeholder="Add notes for this room..."
+                    defaultValue={room.notes || ""}
+                    onBlur={(e) => handleUpdateRoomNotes(room, e.target.value)}
+                    className="mt-1 text-xs"
+                  />
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface AllocationFormProps {
+  room: Room;
+  unallocatedGuests: Guest[];
+  onAllocate: (guestId: number, notes: string) => void;
+  onClose: () => void;
+}
+
+function AllocationForm({ room, unallocatedGuests, onAllocate, onClose }: AllocationFormProps) {
+  const [selectedGuestId, setSelectedGuestId] = useState<string>("");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = () => {
+    if (selectedGuestId) {
+      onAllocate(parseInt(selectedGuestId), notes);
+      setSelectedGuestId("");
+      setNotes("");
+      onClose();
+    }
   };
 
   return (
-    <EmployeeLayout>
-      <div className="container mx-auto py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <Button variant="ghost" onClick={() => setLocation(`/events/${eventId}`)}>
-              ← Back to Event
-            </Button>
-            <h1 className="text-3xl font-serif font-bold mt-2">Guest Accommodations</h1>
-            <p className="text-muted-foreground">{event?.title}</p>
-          </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-            setIsAddDialogOpen(open);
-            if (!open) setEditingAccommodation(null);
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Hotel
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <form onSubmit={handleSubmit}>
-                <DialogHeader>
-                  <DialogTitle>{editingAccommodation ? "Edit Accommodation" : "Add Accommodation"}</DialogTitle>
-                  <DialogDescription>Manage hotel and lodging information for guests</DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="hotelName">Hotel Name *</Label>
-                    <Input id="hotelName" name="hotelName" defaultValue={editingAccommodation?.hotelName} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Textarea id="address" name="address" rows={2} defaultValue={editingAccommodation?.address} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" name="phone" defaultValue={editingAccommodation?.phone} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Website</Label>
-                      <Input id="website" name="website" placeholder="https://" defaultValue={editingAccommodation?.website} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="roomBlockCode">Room Block Code</Label>
-                      <Input id="roomBlockCode" name="roomBlockCode" defaultValue={editingAccommodation?.roomBlockCode} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="roomRate">Room Rate ($)</Label>
-                      <Input
-                        id="roomRate"
-                        name="roomRate"
-                        type="number"
-                        step="0.01"
-                        defaultValue={editingAccommodation?.roomRate ? editingAccommodation.roomRate / 100 : ""}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="checkInDate">Check-In Date</Label>
-                      <Input
-                        id="checkInDate"
-                        name="checkInDate"
-                        type="date"
-                        defaultValue={editingAccommodation?.checkInDate ? new Date(editingAccommodation.checkInDate).toISOString().split('T')[0] : ""}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="checkOutDate">Check-Out Date</Label>
-                      <Input
-                        id="checkOutDate"
-                        name="checkOutDate"
-                        type="date"
-                        defaultValue={editingAccommodation?.checkOutDate ? new Date(editingAccommodation.checkOutDate).toISOString().split('T')[0] : ""}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea id="notes" name="notes" rows={3} defaultValue={editingAccommodation?.notes} />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {editingAccommodation ? "Update" : "Add Hotel"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {accommodations.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Hotel className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No accommodations added yet. Click "Add Hotel" to get started.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {accommodations.map((accommodation) => (
-              <Card key={accommodation.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <Hotel className="w-5 h-5 text-primary" />
-                      <CardTitle>{accommodation.hotelName}</CardTitle>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingAccommodation(accommodation);
-                          setIsAddDialogOpen(true);
-                        }}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (confirm("Delete this accommodation?")) {
-                            deleteMutation.mutate({ id: accommodation.id });
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {accommodation.address && (
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <span>{accommodation.address}</span>
-                    </div>
-                  )}
-                  {accommodation.phone && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <a href={`tel:${accommodation.phone}`} className="text-primary hover:underline">
-                        {accommodation.phone}
-                      </a>
-                    </div>
-                  )}
-                  {accommodation.website && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="w-4 h-4 text-muted-foreground" />
-                      <a href={accommodation.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        Visit Website
-                      </a>
-                    </div>
-                  )}
-                  {accommodation.roomBlockCode && (
-                    <div className="bg-secondary rounded-lg p-3 mt-3">
-                      <p className="text-xs text-muted-foreground mb-1">Room Block Code</p>
-                      <p className="font-mono font-semibold">{accommodation.roomBlockCode}</p>
-                    </div>
-                  )}
-                  {accommodation.roomRate && (
-                    <div className="flex items-center justify-between text-sm pt-2 border-t">
-                      <span className="text-muted-foreground">Room Rate</span>
-                      <span className="font-semibold">{formatCurrency(accommodation.roomRate)}/night</span>
-                    </div>
-                  )}
-                  {(accommodation.checkInDate || accommodation.checkOutDate) && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Dates</span>
-                      <span>
-                        {accommodation.checkInDate && new Date(accommodation.checkInDate).toLocaleDateString()}
-                        {accommodation.checkInDate && accommodation.checkOutDate && " - "}
-                        {accommodation.checkOutDate && new Date(accommodation.checkOutDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                  {accommodation.notes && (
-                    <div className="text-sm text-muted-foreground italic pt-2 border-t">
-                      {accommodation.notes}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+    <div className="space-y-4">
+      <div>
+        <Label>Select Guest</Label>
+        <Select value={selectedGuestId} onValueChange={setSelectedGuestId}>
+          <SelectTrigger>
+            <SelectValue placeholder="Choose a guest..." />
+          </SelectTrigger>
+          <SelectContent>
+            {unallocatedGuests.map((guest) => (
+              <SelectItem key={guest.id} value={guest.id.toString()}>
+                {guest.firstName} {guest.lastName}
+              </SelectItem>
             ))}
-          </div>
-        )}
+          </SelectContent>
+        </Select>
       </div>
-    </EmployeeLayout>
+
+      <div>
+        <Label>Notes (Optional)</Label>
+        <Textarea
+          placeholder="Add notes for this guest's stay..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <Button onClick={handleSubmit} disabled={!selectedGuestId}>
+          Allocate Guest
+        </Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+      </div>
+    </div>
   );
 }

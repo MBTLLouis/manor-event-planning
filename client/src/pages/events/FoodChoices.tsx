@@ -11,14 +11,16 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, ChefHat, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, ChefHat, GripVertical, ArrowLeft } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 
 export default function FoodChoices() {
   const params = useParams();
+  const [, setLocation] = useLocation();
   const eventId = parseInt(params.id!);
   
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
@@ -152,6 +154,10 @@ export default function FoodChoices() {
   return (
     <EmployeeLayout>
       <div className="space-y-6">
+        <Button variant="ghost" className="mb-4" onClick={() => setLocation(`/events/${eventId}`)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Event
+        </Button>
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Food Choices</h1>
           <p className="text-muted-foreground">{event?.title}</p>

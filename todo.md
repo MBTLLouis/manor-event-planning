@@ -293,3 +293,6 @@
 ## Seating Plan - Corner Boundary Bug
 - [x] Fix tables disappearing when moved to corners of canvas
 - [x] Debug boundary constraint calculations for corner positions
+
+## Navigation Improvements
+- [x] Add back to event button to Food Choices page

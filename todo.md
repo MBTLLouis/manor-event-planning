@@ -284,3 +284,8 @@
 - [x] Add role/permission management (admin/employee)
 - [x] Integrate into admin dashboard with visibility control
 - [x] Test employee creation, editing, deletion, and permission changes
+
+## Seating Plan Bug Fixes
+- [x] Fix canvas sizing to fit within white background box properly
+- [x] Fix drag-and-drop positioning - tables disappearing off screen
+- [x] Add zoom in/out controls for seating plan canvas

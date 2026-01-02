@@ -201,22 +201,34 @@ const DraggableTable = ({ table, seats, guests, onSeatClick, onRotate, onDelete 
   );
 };
 
-// Droppable canvas
-const DroppableCanvas = ({ children }: { children: React.ReactNode }) => {
+// Droppable canvas with zoom support
+const DroppableCanvas = ({ children, zoom = 1 }: { children: React.ReactNode; zoom?: number }) => {
   const { setNodeRef } = useDroppable({ id: 'canvas' });
 
   return (
     <div
-      ref={setNodeRef}
-      className="border-4 border-teal-600 rounded-lg bg-secondary/20 p-8 relative overflow-hidden"
+      className="border-4 border-teal-600 rounded-lg bg-secondary/20 relative overflow-auto"
       style={{ 
-        backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)', 
-        backgroundSize: '20px 20px',
-        width: '1200px',
-        height: '600px'
+        width: '100%',
+        height: '600px',
+        maxWidth: '100%'
       }}
     >
-      {children}
+      <div
+        ref={setNodeRef}
+        style={{ 
+          backgroundImage: 'radial-gradient(circle, #ccc 1px, transparent 1px)', 
+          backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+          width: `${1200 * zoom}px`,
+          height: `${600 * zoom}px`,
+          transform: `scale(${zoom})`,
+          transformOrigin: 'top left',
+          position: 'relative'
+        }}
+        className="bg-secondary/20"
+      >
+        {children}
+      </div>
     </div>
   );
 };
@@ -232,6 +244,7 @@ export default function FloorPlans() {
   const [selectedSeatId, setSelectedSeatId] = useState<number | null>(null);
   const [newPlanName, setNewPlanName] = useState("");
   const [newPlanMode, setNewPlanMode] = useState<"ceremony" | "reception">("reception");
+  const [zoom, setZoom] = useState(1);
   const [newTable, setNewTable] = useState({
     name: "",
     tableType: "round" as "round" | "rectangular",
@@ -424,10 +437,10 @@ export default function FloorPlans() {
 
     if (!data) return;
 
-    // Canvas boundaries (accounting for padding and element size)
+    // Canvas boundaries
     const CANVAS_WIDTH = 1200;
     const CANVAS_HEIGHT = 600;
-    const PADDING = 32; // 8 * 4 (p-8 = 2rem = 32px)
+    const PADDING = 20;
 
     if (data.type === 'table') {
       const table = data.table as TableData;
@@ -435,9 +448,9 @@ export default function FloorPlans() {
       const tableWidth = isRound ? 120 : 160;
       const tableHeight = isRound ? 120 : 80;
       
-      // Calculate new position with delta
-      let newX = table.positionX + delta.x;
-      let newY = table.positionY + delta.y;
+      // Calculate new position with delta, accounting for zoom
+      let newX = table.positionX + (delta.x / zoom);
+      let newY = table.positionY + (delta.y / zoom);
       
       // Apply boundary constraints
       newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - tableWidth - PADDING));
@@ -452,9 +465,9 @@ export default function FloorPlans() {
       const seat = data.seat as SeatData;
       const SEAT_SIZE = 48; // 12 * 4 (w-12 = 3rem = 48px)
       
-      // Calculate new position with delta
-      let newX = seat.positionX + delta.x;
-      let newY = seat.positionY + delta.y;
+      // Calculate new position with delta, accounting for zoom
+      let newX = seat.positionX + (delta.x / zoom);
+      let newY = seat.positionY + (delta.y / zoom);
       
       // Apply boundary constraints
       newX = Math.max(PADDING, Math.min(newX, CANVAS_WIDTH - SEAT_SIZE - PADDING));
@@ -466,7 +479,7 @@ export default function FloorPlans() {
         positionY: Math.round(newY),
       });
     }
-  }, [updateTableMutation, updateSeatMutation]);
+  }, [updateTableMutation, updateSeatMutation, zoom]);
 
   const handleRotateTable = useCallback((tableId: number, currentRotation: number) => {
     const newRotation = (currentRotation + 15) % 360;
@@ -541,7 +554,34 @@ export default function FloorPlans() {
                       </TabsTrigger>
                     ))}
                   </TabsList>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
+                    <div className="flex items-center gap-2 px-3 py-2 border rounded-lg bg-background">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+                        title="Zoom out"
+                      >
+                        −
+                      </Button>
+                      <span className="text-sm font-medium w-12 text-center">{Math.round(zoom * 100)}%</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+                        title="Zoom in"
+                      >
+                        +
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setZoom(1)}
+                        title="Reset zoom"
+                      >
+                        Reset
+                      </Button>
+                    </div>
                     <Dialog open={isCreatePlanDialogOpen} onOpenChange={setIsCreatePlanDialogOpen}>
                       <DialogTrigger asChild>
                         <Button variant="outline">
@@ -671,7 +711,7 @@ export default function FloorPlans() {
                       </CardHeader>
                       <CardContent>
                         <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-                          <DroppableCanvas>
+                          <DroppableCanvas zoom={zoom}>
                             {plan.mode === "ceremony" ? (
                               // Ceremony mode: individual seats
                               <>

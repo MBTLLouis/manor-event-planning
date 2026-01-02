@@ -296,3 +296,11 @@
 
 ## Navigation Improvements
 - [x] Add back to event button to Food Choices page
+
+## Seating Plan Section (New Feature)
+- [x] Create Seating Plan page component with card-style table interface
+- [x] Build drag-and-drop guest assignment to table cards
+- [x] Add unassigned guests sidebar
+- [x] Implement table capacity indicators
+- [x] Add navigation link in event dashboard
+- [x] Test guest allocation workflow

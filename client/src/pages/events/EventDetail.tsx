@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, DollarSign, Package, Calendar, CheckSquare, MapPin, Utensils, Globe, FileText, MessageSquare, Home } from "lucide-react";
+import { ArrowLeft, Users, DollarSign, Package, Calendar, CheckSquare, MapPin, Utensils, Globe, FileText, MessageSquare, Home, Armchair } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
@@ -58,7 +58,7 @@ export default function EventDetail() {
     {
       icon: MapPin,
       title: "Floor Plans",
-      description: "Design venue layouts and seating charts",
+      description: "Design venue layouts and seating charts (Advanced)",
       path: `/events/${eventId}/floor-plans`,
       color: "text-teal-600",
       bgColor: "bg-teal-100",
@@ -70,6 +70,14 @@ export default function EventDetail() {
       path: `/events/${eventId}/food-choices`,
       color: "text-yellow-600",
       bgColor: "bg-yellow-100",
+    },
+    {
+      icon: Armchair,
+      title: "Seating Plan",
+      description: "Easily assign guests to tables with drag-and-drop",
+      path: `/events/${eventId}/seating-plan`,
+      color: "text-rose-600",
+      bgColor: "bg-rose-100",
     },
     {
       icon: Globe,

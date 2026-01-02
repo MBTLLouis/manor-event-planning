@@ -336,3 +336,6 @@
 ## Bug Fixes - NaN EventId Error
 - [x] Fix NaN eventId when accessing event pages with undefined URL parameter
 - [x] Add error boundary and fallback when eventId is invalid
+
+## Navigation Bugs
+- [x] Back button from Accommodations shows Invalid Event ID error

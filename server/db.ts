@@ -35,6 +35,8 @@ import {
   InsertWeddingWebsite,
   menuItems,
   InsertMenuItem,
+  drinks,
+  InsertDrink,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -791,4 +793,47 @@ export async function updateWeddingWebsite(id: number, data: Partial<InsertWeddi
   if (!db) throw new Error("Database not available");
 
   await db.update(weddingWebsites).set(data).where(eq(weddingWebsites.id, id));
+}
+
+
+// Drinks
+export async function createDrink(drink: InsertDrink) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(drinks).values(drink);
+  return Number(result[0].insertId);
+}
+
+export async function getDrinksByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(drinks).where(eq(drinks.eventId, eventId)).orderBy(asc(drinks.orderIndex));
+}
+
+export async function getDrinkById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(drinks).where(eq(drinks.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateDrink(id: number, data: Partial<InsertDrink>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(drinks).set(data).where(eq(drinks.id, id));
+  
+  // Fetch and return the updated item
+  const updated = await db.select().from(drinks).where(eq(drinks.id, id)).limit(1);
+  return updated[0];
+}
+
+export async function deleteDrink(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(drinks).where(eq(drinks.id, id));
 }

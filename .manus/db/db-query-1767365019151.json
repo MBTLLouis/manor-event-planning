@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `drinks` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`eventId` int NOT NULL,\n\t`drinkType` enum('soft','alcoholic') NOT NULL,\n\t`subType` varchar(100),\n\t`brandProducer` varchar(255),\n\t`cocktailName` varchar(255),\n\t`corkage` enum('client_brings','venue_provides') NOT NULL DEFAULT 'venue_provides',\n\t`totalQuantity` int NOT NULL,\n\t`description` text,\n\t`orderIndex` int NOT NULL DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `drinks_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute CREATE TABLE IF NOT EXISTS `drinks` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`eventId` int NOT NULL,\n\t`drinkType` enum('soft','alcoholic') NOT NULL,\n\t`subType` varchar(100),\n\t`brandProducer` varchar(255),\n\t`cocktailName` varchar(255),\n\t`corkage` enum('client_brings','venue_provides') NOT NULL DEFAULT 'venue_provides',\n\t`totalQuantity` int NOT NULL,\n\t`description` text,\n\t`orderIndex` int NOT NULL DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\t`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,\n\tCONSTRAINT `drinks_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 197
+}

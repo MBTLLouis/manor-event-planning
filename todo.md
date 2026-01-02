@@ -304,3 +304,13 @@
 - [x] Implement table capacity indicators
 - [x] Add navigation link in event dashboard
 - [x] Test guest allocation workflow
+
+## Drinks Choices Feature
+- [x] Create drinks table in database schema
+- [x] Add tRPC procedures for drink CRUD operations
+- [x] Rename "Menu Configuration" tab to "Food Choices"
+- [x] Add "Drinks Choices" tab with consistent UI
+- [x] Build drinks form with conditional fields (Drink Type, Sub-Type, Brand/Producer, etc.)
+- [x] Implement Corkage toggle (Client Brings vs Venue Provides)
+- [x] Add Total Quantity field for drinks
+- [x] Test drinks creation, editing, and deletion

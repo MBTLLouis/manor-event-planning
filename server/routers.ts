@@ -992,6 +992,64 @@ export const appRouter = router({
       }),
   }),
 
+  drinks: router({
+    list: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getDrinksByEventId(input.eventId);
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        drinkType: z.enum(["soft", "alcoholic"]),
+        subType: z.string().nullish(),
+        brandProducer: z.string().nullish(),
+        cocktailName: z.string().nullish(),
+        corkage: z.enum(["client_brings", "venue_provides"]).default("venue_provides"),
+        totalQuantity: z.number(),
+        description: z.string().nullish(),
+        orderIndex: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createDrink({
+          eventId: input.eventId,
+          drinkType: input.drinkType,
+          subType: input.subType || undefined,
+          brandProducer: input.brandProducer || undefined,
+          cocktailName: input.cocktailName || undefined,
+          corkage: input.corkage,
+          totalQuantity: input.totalQuantity,
+          description: input.description || undefined,
+          orderIndex: input.orderIndex,
+        });
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        drinkType: z.enum(["soft", "alcoholic"]).optional(),
+        subType: z.string().nullish(),
+        brandProducer: z.string().nullish(),
+        cocktailName: z.string().nullish(),
+        corkage: z.enum(["client_brings", "venue_provides"]).optional(),
+        totalQuantity: z.number().optional(),
+        description: z.string().nullish(),
+        orderIndex: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateDrink(id, data);
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteDrink(input.id);
+        return { success: true };
+      }),
+  }),
+
   employees: router({
     list: protectedProcedure
       .use(async ({ ctx, next }) => {

@@ -366,3 +366,24 @@ export const weddingWebsites = mysqlTable("weddingWebsites", {
 
 export type WeddingWebsite = typeof weddingWebsites.$inferSelect;
 export type InsertWeddingWebsite = typeof weddingWebsites.$inferInsert;
+
+/**
+ * Drinks table - stores drink/beverage information for events
+ */
+export const drinks = mysqlTable("drinks", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  drinkType: mysqlEnum("drinkType", ["soft", "alcoholic"]).notNull(),
+  subType: varchar("subType", { length: 100 }), // Wine, Beer, Spirits, Cocktail, etc. - only for alcoholic
+  brandProducer: varchar("brandProducer", { length: 255 }),
+  cocktailName: varchar("cocktailName", { length: 255 }), // Only for cocktails
+  corkage: mysqlEnum("corkage", ["client_brings", "venue_provides"]).default("venue_provides").notNull(),
+  totalQuantity: int("totalQuantity").notNull(),
+  description: text("description"),
+  orderIndex: int("orderIndex").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Drink = typeof drinks.$inferSelect;
+export type InsertDrink = typeof drinks.$inferInsert;

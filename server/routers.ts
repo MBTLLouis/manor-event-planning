@@ -467,6 +467,12 @@ export const appRouter = router({
   }),
 
   tables: router({
+    list: protectedProcedure
+      .input(z.object({ floorPlanId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getTablesByFloorPlanId(input.floorPlanId);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         floorPlanId: z.number(),

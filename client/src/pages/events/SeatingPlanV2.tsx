@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import EmployeeLayout from '@/components/EmployeeLayout';
@@ -56,6 +56,55 @@ export default function SeatingPlanV2() {
   const unassignedGuests = eventGuests.filter(
     (guest: any) => !assignedGuestIds.has(guest.id)
   );
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'unsaved' | 'saving'>('idle');
+  const [floorPlanId, setFloorPlanId] = useState<number | null>(null);
+
+  // Get or create floor plan
+  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
+  const createFloorPlanMutation = trpc.floorPlans.create.useMutation();
+  
+  // Load saved tables from database
+  const { data: savedTables = [] } = trpc.tables.list.useQuery(
+    { floorPlanId: floorPlanId || 0 },
+    { enabled: !!floorPlanId }
+  );
+
+  // Initialize floor plan and load tables on mount
+  useEffect(() => {
+    if (floorPlans.length > 0) {
+      setFloorPlanId(floorPlans[0].id);
+      // Convert saved tables to in-memory format
+      const convertedTables = savedTables.map(table => ({
+        id: table.id.toString(),
+        name: table.name,
+        capacity: table.seatCount,
+        guests: [] // TODO: Load guest assignments from database
+      }));
+      if (convertedTables.length > 0) {
+        setTables(convertedTables);
+        setSaveStatus('saved');
+      }
+    } else if (eventId && floorPlans.length === 0) {
+      // Create default floor plan if none exists
+      createFloorPlanMutation.mutate(
+        { eventId, name: 'Main Floor' },
+        {
+          onSuccess: (result) => {
+            setFloorPlanId(result.id);
+          }
+        }
+      );
+    }
+  }, [floorPlans, eventId]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (tables.length > 0 && saveStatus !== 'saving') {
+      setSaveStatus('unsaved');
+    }
+  }, [tables]);
 
   const handleAddTable = () => {
     if (!newTableName.trim()) return;

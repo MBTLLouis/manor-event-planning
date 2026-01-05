@@ -448,3 +448,12 @@
 - [x] Fix NaN eventId error in couple seating plan
 - [x] Get couple's event from list instead of URL params
 - [x] Test couple seating plan loads correctly
+
+## Empty Tables Visibility Bug Fix - Hybrid Persistence - Complete
+- [x] Add "Save Seating Plan" button to persist to database
+- [x] Load saved tables from database on page load
+- [x] Allow in-memory editing until user saves
+- [x] Show save status indicator
+- [x] Test both employee and couple seating plans
+- [x] Added tables.list procedure to routers
+- [x] Implemented hybrid persistence in both employee and couple seating plans

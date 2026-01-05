@@ -14,7 +14,7 @@ export default function CoupleLogin() {
   const [password, setPassword] = useState("");
   const utils = trpc.useUtils();
   
-  const loginMutation = trpc.auth.login.useMutation({
+  const loginMutation = trpc.auth.coupleLogin.useMutation({
     onSuccess: async () => {
       toast.success("Login successful!");
       // Invalidate the auth.me query to refresh user state
@@ -28,7 +28,7 @@ export default function CoupleLogin() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    loginMutation.mutate({ username, password, role: "couple" });
+    loginMutation.mutate({ username, password });
   };
 
   return (

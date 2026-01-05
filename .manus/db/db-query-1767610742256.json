@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, username, name, role, password FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, username, name, role, password FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "username": "employee",
+      "name": "Staff Member",
+      "role": "employee",
+      "password": "$2b$10$728KC2PsWGAvID37lV85D.LTXeyG7aKXDAo2LE1fMlMj.FMGhnH8C"
+    },
+    {
+      "id": "2",
+      "username": "couple",
+      "name": "Sarah & John",
+      "role": "couple",
+      "password": "$2b$10$90XeWa/sNpK8PdI9b23CrefQ27bjkjKlWPIq0NCP50v2BSoAQLr1y"
+    },
+    {
+      "id": "30001",
+      "username": "NULL",
+      "name": "Louis Givens",
+      "role": "admin",
+      "password": "NULL"
+    },
+    {
+      "id": "3450007",
+      "username": "siobhan",
+      "name": "Siobhan",
+      "role": "employee",
+      "password": "$2b$10$rw0Hk4YZSryBpgEoTON0RuuoSgZJfFB2SocgLeLk646vuIXjtcANi"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tusername\tname\trole\tpassword\n1\temployee\tStaff Member\temployee\t$2b$10$728KC2PsWGAvID37lV85D.LTXeyG7aKXDAo2LE1fMlMj.FMGhnH8C\n2\tcouple\tSarah & John\tcouple\t$2b$10$90XeWa/sNpK8PdI9b23CrefQ27bjkjKlWPIq0NCP50v2BSoAQLr1y\n30001\tNULL\tLouis Givens\tadmin\tNULL\n3450007\tsiobhan\tSiobhan\temployee\t$2b$10$rw0Hk4YZSryBpgEoTON0RuuoSgZJfFB2SocgLeLk646vuIXjtcANi\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

@@ -56,6 +56,40 @@ export const appRouter = router({
         return { success: true, user };
       }),
 
+    coupleLogin: publicProcedure
+      .input(z.object({
+        username: z.string(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Find event by couple username
+        const event = await db.getEventByCoupleUsername(input.username);
+        
+        if (!event || !event.couplePassword) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+
+        // Compare plain text password (couple credentials are stored as plain text)
+        if (input.password !== event.couplePassword) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid credentials" });
+        }
+
+        // Create session token using SDK
+        const { sdk } = await import("./_core/sdk");
+        const { ONE_YEAR_MS } = await import("@shared/const");
+        const coupleOpenId = `couple-event-${event.id}`;
+        const sessionToken = await sdk.createSessionToken(coupleOpenId, {
+          name: event.coupleName1 || "Couple",
+          expiresInMs: ONE_YEAR_MS,
+        });
+
+        // Set session cookie
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+        return { success: true, eventId: event.id };
+      }),
+
     register: publicProcedure
       .input(z.object({
         username: z.string(),

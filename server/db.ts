@@ -259,6 +259,15 @@ export async function deleteEvent(id: number) {
   await db.delete(events).where(eq(events.id, id));
 }
 
+// Get event by couple username for couple login
+export async function getEventByCoupleUsername(username: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db.select().from(events).where(eq(events.coupleUsername, username)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 // Guests
 export async function createGuest(guest: InsertGuest) {
   const db = await getDb();

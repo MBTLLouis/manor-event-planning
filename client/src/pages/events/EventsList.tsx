@@ -14,6 +14,8 @@ import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { LoginDetailsModal } from "@/components/LoginDetailsModal";
+import { Key } from "lucide-react";
 
 export default function EventsList() {
   const [, setLocation] = useLocation();
@@ -21,6 +23,7 @@ export default function EventsList() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLoginDetailsOpen, setIsLoginDetailsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -166,6 +169,14 @@ export default function EventsList() {
                 ) : (
                   <><Eye className="w-4 h-4 mr-2" />Show to Couple</>
                 )}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setSelectedEvent(event);
+                setIsLoginDetailsOpen(true);
+              }}>
+                <Key className="w-4 h-4 mr-2" />
+                Login Details
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -429,6 +440,15 @@ export default function EventsList() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Login Details Modal */}
+        {selectedEvent && (
+          <LoginDetailsModal
+            eventId={selectedEvent.id}
+            isOpen={isLoginDetailsOpen}
+            onClose={() => setIsLoginDetailsOpen(false)}
+          />
+        )}
       </div>
     </EmployeeLayout>
   );

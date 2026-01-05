@@ -174,7 +174,17 @@ export async function createEvent(event: InsertEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const result = await db.insert(events).values(event);
+  // Generate couple login credentials
+  const coupleUsername = `couple_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const couplePassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+  const eventWithCredentials = {
+    ...event,
+    coupleUsername,
+    couplePassword,
+  };
+
+  const result = await db.insert(events).values(eventWithCredentials);
   return Number(result[0].insertId);
 }
 

@@ -339,3 +339,12 @@
 
 ## Navigation Bugs
 - [x] Back button from Accommodations shows Invalid Event ID error - fixed to navigate to /events list
+
+## Couple Login Credentials Feature
+- [x] Add couple username and password fields to event schema
+- [x] Generate unique credentials when creating new events
+- [x] Add Login Details button to event menu (three dots)
+- [x] Create LoginDetailsModal to view and edit credentials
+- [x] Integrate modal into events list
+- [x] Allow employees to view and modify couple login credentials
+- [x] Test credential generation and modification workflow

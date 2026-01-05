@@ -181,6 +181,32 @@ export const appRouter = router({
           completed: 0,
         };
       }),
+
+    getCoupleLoginDetails: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const event = await db.getEventById(input.id);
+        if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        return {
+          username: event.coupleUsername,
+          password: event.couplePassword,
+        };
+      }),
+
+    updateCoupleLoginDetails: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        username: z.string().optional(),
+        password: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, username, password } = input;
+        const updateData: any = {};
+        if (username) updateData.coupleUsername = username;
+        if (password) updateData.couplePassword = password;
+        await db.updateEvent(id, updateData);
+        return { success: true };
+      }),
   }),
 
   guests: router({
@@ -791,38 +817,15 @@ export const appRouter = router({
         isPinned: z.boolean().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
-      const eventId = await db.createEvent({
-        ...input,
-        createdById: ctx.user.id,
-      });
-      
-      // Create default menu courses
-      await db.createMenuItem({
-        eventId,
-        course: "Starter",
-        name: "To be configured",
-        description: "",
-        isAvailable: true,
-        orderIndex: 0,
-      });
-      await db.createMenuItem({
-        eventId,
-        course: "Main",
-        name: "To be configured",
-        description: "",
-        isAvailable: true,
-        orderIndex: 1,
-      });
-      await db.createMenuItem({
-        eventId,
-        course: "Dessert",
-        name: "To be configured",
-        description: "",
-        isAvailable: true,
-        orderIndex: 2,
-      });
-      
-      return { id: eventId };
+        const noteId = await db.createNote({
+          eventId: input.eventId,
+          title: input.title,
+          content: input.content,
+          category: input.category,
+          isPinned: input.isPinned,
+          createdById: ctx.user.id,
+        });
+        return { id: noteId };
       }),
 
     update: protectedProcedure

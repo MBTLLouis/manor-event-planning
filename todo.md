@@ -443,3 +443,8 @@
 - [x] Update couple seating plan to use new table planner (SeatingPlanV2)
 - [x] Test couple seating plan functionality
 - [x] Verify table and seat assignments work for couples
+
+## Couple Seating Plan Error Fix - Complete
+- [x] Fix NaN eventId error in couple seating plan
+- [x] Get couple's event from list instead of URL params
+- [x] Test couple seating plan loads correctly

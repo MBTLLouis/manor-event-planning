@@ -37,12 +37,21 @@ interface Table {
 }
 
 export default function CoupleSeatingV2() {
-  const params = useParams();
-  const eventId = Number(params.id);
   const [, setLocation] = useLocation();
 
-  const { data: event } = trpc.events.getById.useQuery({ id: eventId });
-  const { data: eventGuests = [] } = trpc.guests.list.useQuery({ eventId });
+  // Get couple's events - couples have their own event
+  const { data: events = [] } = trpc.events.list.useQuery();
+  const coupleEvent = events[0]; // Couple has one event
+  const eventId = coupleEvent?.id || 0;
+
+  const { data: event } = trpc.events.getById.useQuery(
+    { id: eventId },
+    { enabled: !!coupleEvent }
+  );
+  const { data: eventGuests = [] } = trpc.guests.list.useQuery(
+    { eventId },
+    { enabled: !!coupleEvent }
+  );
 
   const [tables, setTables] = useState<Table[]>([]);
   const [newTableName, setNewTableName] = useState('');
@@ -144,7 +153,7 @@ export default function CoupleSeatingV2() {
     <CoupleLayout>
       <div className="container mx-auto py-8 max-w-7xl">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => setLocation(`/events/${eventId}`)}>
+          <Button variant="ghost" onClick={() => setLocation(`/couple/dashboard`)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Event
           </Button>

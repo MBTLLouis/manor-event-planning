@@ -377,3 +377,7 @@
 - [x] Implement photo gallery management
 - [x] Add story/about section editing
 - [x] Test couple website editing end-to-end
+
+
+## Bug Fixes
+- [x] Remove edit/delete from CoupleTimeline - make read-only

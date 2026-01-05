@@ -432,3 +432,9 @@
 - [x] Display events as table rows with columns: Time, Title, Description, Assigned To, Notes
 - [x] Add edit and delete buttons in each row
 - [x] Style table for readability and compact display
+
+## Timeline Description Expansion - Complete
+- [x] Add expandable row for full description text
+- [x] Show multiline description without truncation
+- [x] Add expand/collapse button to each row
+- [x] Preserve all description information

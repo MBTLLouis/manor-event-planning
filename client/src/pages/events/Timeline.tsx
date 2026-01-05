@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Plus, Clock, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Clock, Edit, Trash2, ChevronDown } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
@@ -14,34 +14,60 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 // Removed drag-and-drop imports - events now sort automatically by time
 
-// Table row for event - events display in table format
+// Table row for event - events display in table format with expandable description
 function EventTableRow({ event, onDelete, onEdit }: { event: any; onDelete: (id: number) => void; onEdit: (event: any) => void }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   return (
-    <tr className="border-b hover:bg-gray-50 transition-colors">
-      <td className="px-4 py-2 text-sm font-semibold text-primary whitespace-nowrap">{event.time}</td>
-      <td className="px-4 py-2 text-sm font-bold">{event.title}</td>
-      <td className="px-4 py-2 text-sm text-muted-foreground max-w-xs truncate">{event.description || "-"}</td>
-      <td className="px-4 py-2 text-sm whitespace-nowrap">{event.assignedTo || "-"}</td>
-      <td className="px-4 py-2 text-sm text-muted-foreground max-w-xs truncate">{event.notes || "-"}</td>
-      <td className="px-4 py-2 flex gap-1 flex-shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(event)}
-          className="h-6 w-6 p-0"
-        >
-          <Edit className="w-3 h-3" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(event.id)}
-          className="h-6 w-6 p-0"
-        >
-          <Trash2 className="w-3 h-3" />
-        </Button>
-      </td>
-    </tr>
+    <>
+      <tr className="border-b hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-2 text-sm font-semibold text-primary whitespace-nowrap">{event.time}</td>
+        <td className="px-4 py-2 text-sm font-bold">{event.title}</td>
+        <td className="px-4 py-2 text-sm text-muted-foreground">
+          {event.description ? (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="flex items-center gap-1 hover:text-primary transition-colors"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              <span className="line-clamp-1">{event.description}</span>
+            </button>
+          ) : (
+            "-"
+          )}
+        </td>
+        <td className="px-4 py-2 text-sm whitespace-nowrap">{event.assignedTo || "-"}</td>
+        <td className="px-4 py-2 text-sm text-muted-foreground max-w-xs truncate">{event.notes || "-"}</td>
+        <td className="px-4 py-2 flex gap-1 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(event)}
+            className="h-6 w-6 p-0"
+          >
+            <Edit className="w-3 h-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(event.id)}
+            className="h-6 w-6 p-0"
+          >
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        </td>
+      </tr>
+      {isExpanded && event.description && (
+        <tr className="bg-gray-50 border-b">
+          <td colSpan={6} className="px-4 py-3">
+            <div className="bg-white rounded border border-gray-200 p-3">
+              <p className="text-sm font-medium text-gray-700 mb-2">Full Description:</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{event.description}</p>
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 

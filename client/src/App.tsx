@@ -22,6 +22,7 @@ import FloorPlans from "./pages/events/FloorPlans";
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
 import SeatingPlan from "./pages/events/SeatingPlan";
+import SeatingPlanV2 from "./pages/events/SeatingPlanV2";
 
 import Budget from "./pages/events/Budget";
 import VendorsModule from "./pages/events/Vendors";
@@ -123,7 +124,7 @@ function Router() {
         {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
       </Route>
       <Route path="/events/:id/seating-plan">
-        {(params) => <ProtectedRoute component={SeatingPlan} params={params} />}
+        {(params) => <ProtectedRoute component={SeatingPlanV2} params={params} />}
       </Route>
 
       <Route path="/events/:id/budget">

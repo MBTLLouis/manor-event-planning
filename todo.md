@@ -405,3 +405,24 @@
 - [x] Add button opens dropdown to select from unassigned guests
 - [x] Remove button next to each guest returns them to unassigned list
 - [x] Test add/remove functionality for both employee and couple
+
+## Debugging - Seating Plan Table Display Issue
+- [ ] Check if floor plans are being created for events
+- [ ] Verify tables.create mutation is working
+- [ ] Check if allTables is empty due to missing floor plans
+- [ ] Add console logging to debug data flow
+
+## Seating Plan Version 2 - Simple Standalone - Complete
+- [x] Create simple table planner component (no database connections)
+- [x] Add table name input and create button
+- [x] Display tables as cards with name and capacity
+- [x] Add guest input field to assign guests to tables
+- [x] Display assigned guests under each table
+- [x] Add remove guest button
+- [x] Test basic add/remove functionality
+
+## Seating Plan Version 2 - Enhancements - Complete
+- [x] Add seat numbers to each guest assignment
+- [x] Allow selection from guest list instead of typing names
+- [x] Show table and seat number in guest list
+- [x] Update guest list to reference seating assignments

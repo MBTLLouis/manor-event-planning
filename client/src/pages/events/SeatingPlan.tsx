@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import EmployeeLayout from '@/components/EmployeeLayout';
@@ -20,6 +20,17 @@ export default function SeatingPlan() {
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
   const { data: guests = [] } = trpc.guests.list.useQuery({ eventId });
   const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
+  
+  const utils = trpc.useUtils();
+  const createFloorPlanMutation = trpc.floorPlans.create.useMutation({
+    onSuccess: () => {
+      utils.floorPlans.list.invalidate({ eventId });
+      toast.success('Floor plan created');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create floor plan');
+    },
+  });
 
   const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
   const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
@@ -29,8 +40,6 @@ export default function SeatingPlan() {
   const [editingTable, setEditingTable] = useState<any>(null);
   const [selectedTableForGuest, setSelectedTableForGuest] = useState<number | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
-
-  const utils = trpc.useUtils();
 
   const createTableMutation = trpc.tables.create.useMutation({
     onSuccess: () => {
@@ -83,13 +92,26 @@ export default function SeatingPlan() {
     },
   });
 
+  const handleCreateFloorPlan = () => {
+    createFloorPlanMutation.mutate({
+      eventId,
+      name: 'Main Floor',
+      mode: 'reception',
+    });
+  };
+
   const handleAddTable = () => {
     if (!newTableName.trim()) {
       toast.error('Please enter a table name');
       return;
     }
 
-    const floorPlanId = floorPlans[0]?.id || 1;
+    if (floorPlans.length === 0) {
+      toast.error('Please create a floor plan first');
+      return;
+    }
+
+    const floorPlanId = floorPlans[0].id;
 
     createTableMutation.mutate({
       floorPlanId,
@@ -121,7 +143,6 @@ export default function SeatingPlan() {
 
     const guestId = parseInt(selectedGuestId);
     
-    // Check if guest is already assigned to a table
     const guest = guests.find((g: any) => g.id === guestId);
     if (guest?.tableId) {
       toast.error('Guest is already assigned to a table');
@@ -171,50 +192,64 @@ export default function SeatingPlan() {
             <h1 className="text-3xl font-serif font-bold mt-2">Table Planning</h1>
             <p className="text-muted-foreground">{event?.title}</p>
           </div>
-          <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-teal-600 hover:bg-teal-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Table
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Table</DialogTitle>
-                <DialogDescription>Create a new table for your event</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="tableName">Table Name</Label>
-                  <Input
-                    id="tableName"
-                    placeholder="e.g., Table 1, VIP Table, Family Table"
-                    value={newTableName}
-                    onChange={(e) => setNewTableName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity</Label>
-                  <Input
-                    id="capacity"
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={newTableCapacity}
-                    onChange={(e) => setNewTableCapacity(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddTable} className="bg-teal-600 hover:bg-teal-700">
+          {floorPlans.length === 0 ? (
+            <Button className="bg-teal-600 hover:bg-teal-700" onClick={handleCreateFloorPlan} disabled={createFloorPlanMutation.isPending}>
+              <Plus className="w-4 h-4 mr-2" />
+              {createFloorPlanMutation.isPending ? 'Creating...' : 'Create Floor Plan'}
+            </Button>
+          ) : (
+            <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-teal-600 hover:bg-teal-700">
+                  <Plus className="w-4 h-4 mr-2" />
                   Add Table
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Table</DialogTitle>
+                  <DialogDescription>Create a new table for your event</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tableName">Table Name</Label>
+                    <Input
+                      id="tableName"
+                      placeholder="e.g., Table 1, VIP Table, Family Table"
+                      value={newTableName}
+                      onChange={(e) => setNewTableName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="capacity">Capacity</Label>
+                    <Input
+                      id="capacity"
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={newTableCapacity}
+                      onChange={(e) => setNewTableCapacity(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleAddTable} className="bg-teal-600 hover:bg-teal-700">
+                    Add Table
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
-        {allTables.length === 0 ? (
+        {floorPlans.length === 0 ? (
+          <Card className="bg-muted">
+            <CardContent className="py-12 text-center">
+              <p className="text-lg text-gray-600 mb-2">No floor plan yet</p>
+              <p className="text-sm text-muted-foreground">Click "Create Floor Plan" to get started</p>
+            </CardContent>
+          </Card>
+        ) : allTables.length === 0 ? (
           <Card className="bg-muted">
             <CardContent className="py-12 text-center">
               <p className="text-lg text-gray-600 mb-2">No tables yet</p>

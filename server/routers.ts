@@ -122,7 +122,13 @@ export const appRouter = router({
   }),
 
   events: router({
-    list: protectedProcedure.query(async () => {
+    list: protectedProcedure.query(async ({ ctx }) => {
+      // For couples, return only their event
+      if (ctx.user.role === 'couple') {
+        const coupleEvent = await db.getEventByCoupleUsername(ctx.user.username || '');
+        return coupleEvent ? [coupleEvent] : [];
+      }
+      // For employees/admins, return all events
       return await db.getAllEvents();
     }),
 

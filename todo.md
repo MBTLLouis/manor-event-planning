@@ -457,3 +457,11 @@
 - [x] Test both employee and couple seating plans
 - [x] Added tables.list procedure to routers
 - [x] Implemented hybrid persistence in both employee and couple seating plans
+
+## Couple Event Loading Bug - Fixed
+- [x] Fix couple login to show correct event
+- [x] Couple should see their own event, not Louis & Ren
+- [x] Check how couple is associated with event in database
+- [x] Update couple dashboard to load correct event
+- [x] Updated events.list procedure to filter by couple username for couple users
+- [x] Used existing getEventByCoupleUsername database function

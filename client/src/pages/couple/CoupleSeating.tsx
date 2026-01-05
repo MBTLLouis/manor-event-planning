@@ -7,19 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Users, Plus, Trash2, Search } from 'lucide-react';
+import { Plus, Users, Trash2, Search, X } from 'lucide-react';
 import { DndContext, DragEndEvent, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { toast } from 'sonner';
-
-interface TableAssignment {
-  tableId: number;
-  tableName: string;
-  tableType: 'round' | 'rectangular';
-  capacity: number;
-  guests: any[];
-}
 
 const DraggableGuest = ({ guest, onRemove }: { guest: any; onRemove?: () => void }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -38,7 +29,7 @@ const DraggableGuest = ({ guest, onRemove }: { guest: any; onRemove?: () => void
       style={style}
       {...listeners}
       {...attributes}
-      className={`p-2 bg-teal-50 border border-teal-200 rounded cursor-grab active:cursor-grabbing text-sm ${isDragging ? 'opacity-50' : ''}`}
+      className={`p-2 bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded cursor-grab active:cursor-grabbing text-sm hover:shadow-md transition-shadow ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium text-teal-900 truncate">{guest.firstName} {guest.lastName}</span>
@@ -48,9 +39,9 @@ const DraggableGuest = ({ guest, onRemove }: { guest: any; onRemove?: () => void
               e.stopPropagation();
               onRemove();
             }}
-            className="text-red-500 hover:text-red-700"
+            className="text-teal-600 hover:text-teal-900"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -58,60 +49,50 @@ const DraggableGuest = ({ guest, onRemove }: { guest: any; onRemove?: () => void
   );
 };
 
-const DroppableTable = ({ table, guests, onRemoveGuest }: {
-  table: TableAssignment;
-  guests: any[];
-  onRemoveGuest: (guestId: number) => void;
-}) => {
+const DroppableTable = ({ table, guests, onRemoveGuest }: any) => {
   const { setNodeRef, isOver } = useDroppable({
-    id: `table-${table.tableId}`,
-    data: { type: 'table', tableId: table.tableId }
+    id: `table-${table.id}`,
+    data: { type: 'table', table }
   });
 
-  const capacity = table.capacity;
+  const capacity = table.capacity || 8;
   const occupancy = guests.length;
   const isFull = occupancy >= capacity;
-  const capacityPercent = (occupancy / capacity) * 100;
 
   return (
     <Card
       ref={setNodeRef}
-      className={`transition-all ${isOver ? 'ring-2 ring-teal-500 bg-teal-50' : ''} ${isFull ? 'border-orange-300' : ''}`}
+      className={`transition-all ${isOver ? 'ring-2 ring-teal-500 shadow-lg' : ''} ${isFull ? 'opacity-75' : ''}`}
     >
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg">{table.tableName}</CardTitle>
-            <CardDescription className="text-sm">
-              {table.tableType === 'round' ? 'Round Table' : 'Rectangular Table'}
+            <CardTitle className="text-lg">{table.name}</CardTitle>
+            <CardDescription className="text-xs mt-1">
+              {occupancy}/{capacity} guests
             </CardDescription>
           </div>
-          <Badge variant={isFull ? 'destructive' : 'outline'}>
+          <Badge variant={isFull ? 'destructive' : 'secondary'}>
             {occupancy}/{capacity}
           </Badge>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
           <div
-            className={`h-2 rounded-full transition-all ${
-              capacityPercent >= 100 ? 'bg-red-500' : capacityPercent >= 80 ? 'bg-orange-500' : 'bg-teal-500'
-            }`}
-            style={{ width: `${Math.min(capacityPercent, 100)}%` }}
+            className={`h-2 rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-teal-500'}`}
+            style={{ width: `${Math.min((occupancy / capacity) * 100, 100)}%` }}
           />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 min-h-[120px] max-h-[300px] overflow-y-auto">
+        <div className="space-y-2 min-h-[100px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           {guests.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Drag guests here</p>
-            </div>
+            <p className="text-xs text-gray-500 text-center py-6">Drag guests here</p>
           ) : (
-            guests.map((guest) => (
+            guests.map((guest: any) => (
               <DraggableGuest
                 key={guest.id}
                 guest={guest}
-                onRemove={() => onRemoveGuest(guest.id)}
+                onRemove={() => onRemoveGuest(table.id, guest.id)}
               />
             ))
           )}
@@ -135,168 +116,119 @@ export default function CoupleSeating() {
     { enabled: !!coupleEvent }
   );
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
-  const [newTable, setNewTable] = useState({
-    name: '',
-    tableType: 'round' as 'round' | 'rectangular',
-    capacity: 8,
-  });
-
-  // Get all tables from all floor plans
-  const tables = useMemo(() => {
-    return floorPlans.flatMap((plan: any) => plan.tables || []);
-  }, [floorPlans]);
-
-  const utils = trpc.useUtils();
-
-  // Get table assignments from all floor plans
-  const tableAssignments = useMemo(() => {
-    const assignments: TableAssignment[] = [];
-    
-    tables.forEach((table: any) => {
-      const tableSeats = table.seats || [];
-      const assignedGuests = guests.filter((g: any) =>
-        tableSeats.some((s: any) => s.guestId === g.id)
-      );
-
-      assignments.push({
-        tableId: table.id,
-        tableName: table.name,
-        tableType: table.tableType,
-        capacity: table.seatCount || 8,
-        guests: assignedGuests,
-      });
-    });
-
-    return assignments;
-  }, [tables, guests]);
-
-  // Get unassigned guests
-  const unassignedGuests = useMemo(() => {
-    const assignedGuestIds = new Set(
-      tableAssignments.flatMap(t => t.guests.map(g => g.id))
-    );
-    return guests.filter((g: any) => !assignedGuestIds.has(g.id));
-  }, [guests, tableAssignments]);
-
-  // Filter unassigned guests by search
-  const filteredUnassignedGuests = useMemo(() => {
-    return unassignedGuests.filter((g: any) =>
-      `${g.firstName} ${g.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [unassignedGuests, searchQuery]);
+  const [newTableName, setNewTableName] = useState('');
+  const [newTableCapacity, setNewTableCapacity] = useState('8');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [tableAssignments, setTableAssignments] = useState<Record<number, any[]>>({});
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 }
-    })
+    useSensor(PointerSensor)
   );
 
-  // Mutations for guest assignment
-  const updateSeatMutation = trpc.seats.update.useMutation({
-    onSuccess: () => {
-      toast.success('Guest assigned to table');
-      utils.floorPlans.list.invalidate({ eventId: coupleEvent?.id });
-      utils.guests.list.invalidate({ eventId: coupleEvent?.id });
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to assign guest');
-    },
-  });
+  // Create virtual tables from floor plans
+  const tables = useMemo(() => {
+    return floorPlans.flatMap((plan: any) => {
+      return (plan.tables || []).map((table: any) => ({
+        id: table.id,
+        name: table.name || `Table ${table.id}`,
+        capacity: table.seatCount || 8,
+        floorPlanId: plan.id,
+      }));
+    });
+  }, [floorPlans]);
 
   const createTableMutation = trpc.tables.create.useMutation({
     onSuccess: () => {
       toast.success('Table added');
       setIsAddTableDialogOpen(false);
-      setNewTable({ name: '', tableType: 'round', capacity: 8 });
-      utils.floorPlans.list.invalidate({ eventId: coupleEvent?.id });
+      setNewTableName('');
+      setNewTableCapacity('8');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create table');
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add table');
     },
   });
+
+  const deleteTableMutation = trpc.tables.delete.useMutation({
+    onSuccess: () => {
+      toast.success('Table deleted');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete table');
+    },
+  });
+
+  const handleAddTable = () => {
+    if (!newTableName.trim()) {
+      toast.error('Please enter a table name');
+      return;
+    }
+
+    if (!coupleEvent) {
+      toast.error('Event not found');
+      return;
+    }
+
+    // Create a default floor plan if none exists
+    const floorPlanId = floorPlans[0]?.id || 1;
+
+    createTableMutation.mutate({
+      floorPlanId,
+      name: newTableName,
+      tableType: 'round',
+      seatCount: parseInt(newTableCapacity),
+      positionX: 0,
+      positionY: 0,
+    });
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over) return;
 
-    const data = active.data.current;
-    if (data?.type !== 'guest') return;
+    const guestId = parseInt(active.id.toString().replace('guest-', ''));
+    const tableId = parseInt(over.id.toString().replace('table-', ''));
 
-    const guest = data.guest;
-    const overData = over.data.current;
+    const guest = guests.find((g: any) => g.id === guestId);
+    if (!guest) return;
 
-    if (overData?.type === 'table') {
-      const tableId = overData.tableId;
-      const table = tables.find((t: any) => t.id === tableId);
+    // Update local state
+    setTableAssignments((prev) => {
+      const newAssignments = { ...prev };
+      
+      // Remove from old table
+      Object.keys(newAssignments).forEach((key) => {
+        newAssignments[parseInt(key)] = newAssignments[parseInt(key)].filter(
+          (g: any) => g.id !== guestId
+        );
+      });
 
-      if (table) {
-        // Check if table is full
-        const tableAssignment = tableAssignments.find(t => t.tableId === tableId);
-        if (tableAssignment && tableAssignment.guests.length >= tableAssignment.capacity) {
-          toast.error('This table is full');
-          return;
-        }
-
-        // Check if guest is already assigned to this table
-        if (tableAssignment?.guests.some(g => g.id === guest.id)) {
-          toast.error('Guest is already at this table');
-          return;
-        }
-
-        // Find the first available seat
-        const availableSeat = table.seats?.find((s: any) => !s.guestId);
-        if (availableSeat) {
-          updateSeatMutation.mutate({
-            id: availableSeat.id,
-            guestId: guest.id,
-          });
-        } else {
-          toast.error('No available seats at this table');
-        }
+      // Add to new table
+      if (!newAssignments[tableId]) {
+        newAssignments[tableId] = [];
       }
-    }
-  };
+      newAssignments[tableId].push(guest);
 
-  const handleRemoveGuest = (guestId: number) => {
-    // Find the seat this guest is assigned to
-    const seat = tables
-      .flatMap((t: any) => t.seats || [])
-      .find((s: any) => s.guestId === guestId);
-
-    if (seat) {
-      updateSeatMutation.mutate({ id: seat.id, guestId: null });
-    }
-  };
-
-  const handleAddTable = () => {
-    if (!newTable.name) {
-      toast.error('Please enter a table name');
-      return;
-    }
-    if (!coupleEvent) {
-      toast.error('Event not found');
-      return;
-    }
-
-    // Use the first floor plan or create a default one
-    const floorPlanId = floorPlans[0]?.id;
-    if (!floorPlanId) {
-      toast.error('No floor plan found. Please create one first.');
-      return;
-    }
-
-    createTableMutation.mutate({
-      floorPlanId,
-      name: newTable.name,
-      tableType: newTable.tableType,
-      seatCount: newTable.capacity,
-      positionX: 0,
-      positionY: 0,
+      return newAssignments;
     });
+
+    toast.success(`${guest.firstName} moved to table`);
   };
+
+  const unassignedGuests = useMemo(() => {
+    const assignedIds = new Set(
+      Object.values(tableAssignments).flat().map((g: any) => g.id)
+    );
+    return guests.filter((g: any) => !assignedIds.has(g.id));
+  }, [guests, tableAssignments]);
+
+  const filteredUnassigned = useMemo(() => {
+    return unassignedGuests.filter((g: any) =>
+      `${g.firstName} ${g.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [unassignedGuests, searchQuery]);
 
   if (!coupleEvent) {
     return (
@@ -310,153 +242,135 @@ export default function CoupleSeating() {
 
   return (
     <CoupleLayout>
-      <div className="space-y-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-serif text-[#2C5F5D] mb-2">Seating Arrangements</h1>
-          <p className="text-gray-600">Arrange your guests at tables using drag and drop</p>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-serif text-[#2C5F5D] mb-2">Seating Plan</h1>
+            <p className="text-gray-600">Arrange your guests at tables</p>
+          </div>
+          <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Table
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Table</DialogTitle>
+                <DialogDescription>Create a new seating table for your event</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tableName">Table Name</Label>
+                  <Input
+                    id="tableName"
+                    placeholder="e.g., Table 1, VIP Table, Family Table"
+                    value={newTableName}
+                    onChange={(e) => setNewTableName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Capacity</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={newTableCapacity}
+                    onChange={(e) => setNewTableCapacity(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddTable} className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                  Add Table
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {floorPlans.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg text-gray-600 mb-2">No floor plans yet</p>
-              <p className="text-sm text-muted-foreground">
-                Your event planner will create floor plans for your venue
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-            <div className="grid lg:grid-cols-4 gap-6">
-              {/* Unassigned Guests */}
-              <div className="lg:col-span-1">
-                <Card className="sticky top-6">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Unassigned Guests</CardTitle>
-                    <CardDescription>{unassignedGuests.length} remaining</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search guests..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8"
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Tables */}
+            <div className="lg:col-span-3 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Tables</h2>
+                <Badge variant="outline">{tables.length} tables</Badge>
+              </div>
+
+              {tables.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-lg text-gray-600 mb-2">No tables yet</p>
+                    <p className="text-sm text-muted-foreground">Add tables to start seating your guests</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {tables.map((table: any) => (
+                    <div key={table.id} className="relative">
+                      <DroppableTable
+                        table={table}
+                        guests={tableAssignments[table.id] || []}
+                        onRemoveGuest={(tableId: number, guestId: number) => {
+                          setTableAssignments((prev) => ({
+                            ...prev,
+                            [tableId]: prev[tableId]?.filter((g: any) => g.id !== guestId) || [],
+                          }));
+                        }}
                       />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteTableMutation.mutate({ id: table.id })}
+                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                      {filteredUnassignedGuests.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8">
-                          <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                          <p className="text-sm">
-                            {searchQuery ? 'No guests found' : 'All guests assigned!'}
-                          </p>
-                        </div>
-                      ) : (
-                        filteredUnassignedGuests.map((guest) => (
-                          <DraggableGuest key={guest.id} guest={guest} />
-                        ))
-                      )}
-                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Unassigned Guests */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-4 space-y-4">
+                <div>
+                  <h2 className="text-xl font-semibold mb-2">Unassigned Guests</h2>
+                  <Badge variant="secondary">{unassignedGuests.length} guests</Badge>
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search guests..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+
+                <Card className="bg-gray-50">
+                  <CardContent className="p-3 space-y-2 max-h-96 overflow-y-auto">
+                    {filteredUnassigned.length === 0 ? (
+                      <p className="text-xs text-gray-500 text-center py-4">
+                        {unassignedGuests.length === 0 ? 'All guests seated!' : 'No guests match search'}
+                      </p>
+                    ) : (
+                      filteredUnassigned.map((guest: any) => (
+                        <DraggableGuest key={guest.id} guest={guest} />
+                      ))
+                    )}
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Tables */}
-              <div className="lg:col-span-3 space-y-6">
-                {floorPlans.map((floorPlan: any) => (
-                  <div key={floorPlan.id}>
-                    <div className="mb-4 flex items-center justify-between">
-                      <h2 className="text-2xl font-serif text-[#2C5F5D]">{floorPlan.name}</h2>
-                      <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button className="bg-[#2C5F5D] hover:bg-[#1e4441]">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Table
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Add Table</DialogTitle>
-                            <DialogDescription>Create a new table for {floorPlan.name}</DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="tableName">Table Name *</Label>
-                              <Input
-                                id="tableName"
-                                placeholder="e.g., Table 1, Sweetheart Table"
-                                value={newTable.name}
-                                onChange={(e) => setNewTable({ ...newTable, name: e.target.value })}
-                                required
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="tableType">Table Type</Label>
-                              <Select value={newTable.tableType} onValueChange={(value: any) => setNewTable({ ...newTable, tableType: value })}>
-                                <SelectTrigger id="tableType">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="round">Round Table</SelectItem>
-                                  <SelectItem value="rectangular">Rectangular Table</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="capacity">Capacity *</Label>
-                              <Input
-                                id="capacity"
-                                type="number"
-                                min="1"
-                                value={newTable.capacity}
-                                onChange={(e) => setNewTable({ ...newTable, capacity: parseInt(e.target.value) || 8 })}
-                                required
-                              />
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button type="button" onClick={handleAddTable} disabled={createTableMutation.isPending}>
-                              {createTableMutation.isPending ? 'Adding...' : 'Add Table'}
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {(floorPlan.tables || []).length === 0 ? (
-                        <div className="col-span-full text-center py-8 text-muted-foreground">
-                          <p>No tables in this floor plan. Add one to get started.</p>
-                        </div>
-                      ) : (
-                        (floorPlan.tables || []).map((table: any) => {
-                          const assignment = tableAssignments.find(t => t.tableId === table.id);
-                          return (
-                            <DroppableTable
-                              key={table.id}
-                              table={assignment || {
-                                tableId: table.id,
-                                tableName: table.name,
-                                tableType: table.tableType,
-                                capacity: table.seatCount || 8,
-                                guests: [],
-                              }}
-                              guests={assignment?.guests || []}
-                              onRemoveGuest={handleRemoveGuest}
-                            />
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
-          </DndContext>
-        )}
+          </div>
+        </DndContext>
       </div>
     </CoupleLayout>
   );

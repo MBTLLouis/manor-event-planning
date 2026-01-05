@@ -426,3 +426,9 @@
 - [x] Allow selection from guest list instead of typing names
 - [x] Show table and seat number in guest list
 - [x] Update guest list to reference seating assignments
+
+## Timeline Table Redesign - Complete
+- [x] Convert timeline from card layout to table format
+- [x] Display events as table rows with columns: Time, Title, Description, Assigned To, Notes
+- [x] Add edit and delete buttons in each row
+- [x] Style table for readability and compact display

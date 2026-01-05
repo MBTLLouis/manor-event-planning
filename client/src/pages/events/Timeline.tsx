@@ -14,51 +14,34 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 // Removed drag-and-drop imports - events now sort automatically by time
 
-// Simple event card - events sort automatically by time
-function EventCard({ event, onDelete, onEdit }: { event: any; onDelete: (id: number) => void; onEdit: (event: any) => void }) {
+// Table row for event - events display in table format
+function EventTableRow({ event, onDelete, onEdit }: { event: any; onDelete: (id: number) => void; onEdit: (event: any) => void }) {
   return (
-    <Card className="border-l-4 border-l-primary">
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <Clock className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-lg">{event.time}</span>
-            </div>
-            <h3 className="text-xl font-bold mb-2">{event.title}</h3>
-            {event.description && (
-              <p className="text-muted-foreground mb-2">{event.description}</p>
-            )}
-            {event.assignedTo && (
-              <p className="text-sm">
-                <span className="font-medium">Assigned to:</span> {event.assignedTo}
-              </p>
-            )}
-            {event.notes && (
-              <p className="text-sm text-muted-foreground mt-2">
-                <span className="font-medium">Notes:</span> {event.notes}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(event)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(event.id)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <tr className="border-b hover:bg-gray-50 transition-colors">
+      <td className="px-4 py-2 text-sm font-semibold text-primary whitespace-nowrap">{event.time}</td>
+      <td className="px-4 py-2 text-sm font-bold">{event.title}</td>
+      <td className="px-4 py-2 text-sm text-muted-foreground max-w-xs truncate">{event.description || "-"}</td>
+      <td className="px-4 py-2 text-sm whitespace-nowrap">{event.assignedTo || "-"}</td>
+      <td className="px-4 py-2 text-sm text-muted-foreground max-w-xs truncate">{event.notes || "-"}</td>
+      <td className="px-4 py-2 flex gap-1 flex-shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onEdit(event)}
+          className="h-6 w-6 p-0"
+        >
+          <Edit className="w-3 h-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(event.id)}
+          className="h-6 w-6 p-0"
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </td>
+    </tr>
   );
 }
 
@@ -237,7 +220,7 @@ export default function TimelineEnhanced() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-              <div className="flex gap-2">
+              <div className="flex gap-1 flex-shrink-0">
                 <Dialog open={isAddDayDialogOpen} onOpenChange={setIsAddDayDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline">
@@ -356,7 +339,7 @@ export default function TimelineEnhanced() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle>{format(new Date(day.date), "EEEE, MMMM d, yyyy")}</CardTitle>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1 flex-shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -369,29 +352,43 @@ export default function TimelineEnhanced() {
                             setIsEditDayDialogOpen(true);
                           }}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3 h-3" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteDay(day.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {day.events && day.events.length > 0 ? (
-                      <div className="space-y-4">
-                        {day.events.map((evt) => (
-                          <EventCard
-                            key={evt.id}
-                            event={evt}
-                            onDelete={handleDeleteEvent}
-                            onEdit={handleEditEvent}
-                          />
-                        ))}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead className="bg-gray-100 border-b-2 border-gray-300">
+                            <tr>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Time</th>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Title</th>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Description</th>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Assigned To</th>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Notes</th>
+                              <th className="px-4 py-2 text-xs font-semibold text-gray-700">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {day.events.map((evt) => (
+                              <EventTableRow
+                                key={evt.id}
+                                event={evt}
+                                onDelete={handleDeleteEvent}
+                                onEdit={handleEditEvent}
+                              />
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     ) : (
                       <p className="text-center text-muted-foreground py-8">

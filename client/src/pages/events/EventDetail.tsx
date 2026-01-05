@@ -67,14 +67,7 @@ export default function EventDetail() {
       color: "text-pink-600",
       bgColor: "bg-pink-100",
     },
-    {
-      icon: MapPin,
-      title: "Floor Plans",
-      description: "Design venue layouts and seating charts (Advanced)",
-      path: `/events/${eventId}/floor-plans`,
-      color: "text-teal-600",
-      bgColor: "bg-teal-100",
-    },
+
     {
       icon: Utensils,
       title: "Food Choices",

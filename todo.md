@@ -391,3 +391,9 @@
 
 ## Bugs to Fix
 - [x] Tables not displaying after being added in seating plan - fixed by adding query invalidation
+
+
+## Seating Plan Restructuring - Complete
+- [x] Update employee seating plan to add guests to tables
+- [x] Update couple seating plan to add guests to tables
+- [x] Remove floor plans section from navigation

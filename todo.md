@@ -465,3 +465,17 @@
 - [x] Update couple dashboard to load correct event
 - [x] Updated events.list procedure to filter by couple username for couple users
 - [x] Used existing getEventByCoupleUsername database function
+
+## Wedding Website - Public Couple Portal - Complete
+- [x] Create wedding website database schema (weddingWebsite table with content fields)
+- [x] Add backend procedures for creating/updating wedding website content
+- [x] Build wedding website frontend with hero banner, countdown, event details
+- [x] Add sections: schedule, accommodation, travel/parking, gift registry, photo gallery
+- [x] Create wedding website editor in event dashboard (CoupleWebsite component)
+- [x] Implement publish/unpublish functionality
+- [x] Generate public URL for wedding website (/wedding/:slug)
+- [x] Add public procedures (getBySlug, getEventBySlug)
+- [x] Create database helper (getWeddingWebsiteBySlug)
+- [x] Test public access without login
+- [x] Test elegant/formal design and responsiveness
+- [x] Write and pass unit tests for wedding website functionality

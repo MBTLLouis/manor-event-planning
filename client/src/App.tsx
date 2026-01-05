@@ -11,6 +11,9 @@ import RoleSelection from "./pages/auth/RoleSelection";
 import EmployeeLogin from "./pages/auth/EmployeeLogin";
 import CoupleLogin from "./pages/auth/CoupleLogin";
 
+// Public pages
+import PublicWeddingWebsite from "./pages/PublicWeddingWebsite";
+
 // Employee pages
 import Dashboard from "./pages/Dashboard";
 import EventsList from "./pages/events/EventsList";
@@ -90,11 +93,14 @@ function RootRedirect() {
 function Router() {
   return (
     <Switch>
+      {/* Public routes */}
+      <Route path="/wedding/:slug" component={PublicWeddingWebsite} />
+      <Route path="/rsvp" component={PublicRSVP} />
+
       {/* Auth routes */}
       <Route path="/login" component={RoleSelection} />
       <Route path="/login/employee" component={EmployeeLogin} />
       <Route path="/login/couple" component={CoupleLogin} />
-      <Route path="/rsvp" component={PublicRSVP} />
 
       {/* Protected employee routes */}
       <Route path="/dashboard">

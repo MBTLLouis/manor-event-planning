@@ -929,6 +929,12 @@ export const appRouter = router({
 
 
   weddingWebsite: router({
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getWeddingWebsiteBySlug(input.slug);
+      }),
+
     get: protectedProcedure
       .input(z.object({ eventId: z.number() }))
       .query(async ({ input }) => {
@@ -965,6 +971,14 @@ export const appRouter = router({
         const { id, ...data } = input;
         await db.updateWeddingWebsite(id, data);
         return { success: true };
+      }),
+
+    getEventBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) return null;
+        return await db.getEventById(website.eventId);
       }),
   }),
 

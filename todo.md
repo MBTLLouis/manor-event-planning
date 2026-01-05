@@ -383,10 +383,10 @@
 - [x] Remove edit/delete from CoupleTimeline - make read-only
 
 
-## Seating Plan Redesign - Complete
-- [x] Update employee SeatingPlan with card-based table visualization
-- [x] Update couple CoupleSeating with card-based table visualization
-- [x] Test seating plan functionality end-to-end
+## Table Planning - Simplification - Complete
+- [x] Simplify employee seating plan to basic table list view
+- [x] Simplify couple seating plan to basic table list view
+- [x] Test basic table planning functionality
 
 
 ## Bugs to Fix

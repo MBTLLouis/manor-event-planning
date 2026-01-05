@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import EmployeeLayout from '@/components/EmployeeLayout';
@@ -8,100 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Plus, Users, Trash2, Search, X } from 'lucide-react';
-import { DndContext, DragEndEvent, useDraggable, useDroppable, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
+import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-const DraggableGuest = ({ guest, onRemove }: { guest: any; onRemove?: () => void }) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `guest-${guest.id}`,
-    data: { type: 'guest', guest }
-  });
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`p-2 bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded cursor-grab active:cursor-grabbing text-sm hover:shadow-md transition-shadow ${isDragging ? 'opacity-50 shadow-lg' : ''}`}
-    >
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-medium text-teal-900 truncate">{guest.firstName} {guest.lastName}</span>
-        {onRemove && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove();
-            }}
-            className="text-teal-600 hover:text-teal-900"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const DroppableTable = ({ table, guests, onRemoveGuest }: any) => {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `table-${table.id}`,
-    data: { type: 'table', table }
-  });
-
-  const capacity = table.capacity || 8;
-  const occupancy = guests.length;
-  const isFull = occupancy >= capacity;
-
-  return (
-    <Card
-      ref={setNodeRef}
-      className={`transition-all ${isOver ? 'ring-2 ring-teal-500 shadow-lg' : ''} ${isFull ? 'opacity-75' : ''}`}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">{table.name}</CardTitle>
-            <CardDescription className="text-xs mt-1">
-              {occupancy}/{capacity} guests
-            </CardDescription>
-          </div>
-          <Badge variant={isFull ? 'destructive' : 'secondary'}>
-            {occupancy}/{capacity}
-          </Badge>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-          <div
-            className={`h-2 rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-teal-500'}`}
-            style={{ width: `${Math.min((occupancy / capacity) * 100, 100)}%` }}
-          />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2 min-h-[100px] p-3 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          {guests.length === 0 ? (
-            <p className="text-xs text-gray-500 text-center py-6">Drag guests here</p>
-          ) : (
-            guests.map((guest: any) => (
-              <DraggableGuest
-                key={guest.id}
-                guest={guest}
-                onRemove={() => onRemoveGuest(table.id, guest.id)}
-              />
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 export default function SeatingPlan() {
   const params = useParams();
@@ -109,30 +17,13 @@ export default function SeatingPlan() {
   const [, setLocation] = useLocation();
 
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
-  const { data: guests = [] } = trpc.guests.list.useQuery({ eventId });
   const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
 
   const [isAddTableDialogOpen, setIsAddTableDialogOpen] = useState(false);
+  const [isEditTableDialogOpen, setIsEditTableDialogOpen] = useState(false);
   const [newTableName, setNewTableName] = useState('');
   const [newTableCapacity, setNewTableCapacity] = useState('8');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [tableAssignments, setTableAssignments] = useState<Record<number, any[]>>({});
-
-  const sensors = useSensors(
-    useSensor(PointerSensor)
-  );
-
-  // Create virtual tables from floor plans
-  const tables = useMemo(() => {
-    return floorPlans.flatMap((plan: any) => {
-      return (plan.tables || []).map((table: any) => ({
-        id: table.id,
-        name: table.name || `Table ${table.id}`,
-        capacity: table.seatCount || 8,
-        floorPlanId: plan.id,
-      }));
-    });
-  }, [floorPlans]);
+  const [editingTable, setEditingTable] = useState<any>(null);
 
   const utils = trpc.useUtils();
 
@@ -149,6 +40,20 @@ export default function SeatingPlan() {
     },
   });
 
+  const updateTableMutation = trpc.tables.update.useMutation({
+    onSuccess: () => {
+      toast.success('Table updated');
+      setIsEditTableDialogOpen(false);
+      setEditingTable(null);
+      setNewTableName('');
+      setNewTableCapacity('8');
+      utils.floorPlans.list.invalidate({ eventId });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update table');
+    },
+  });
+
   const deleteTableMutation = trpc.tables.delete.useMutation({
     onSuccess: () => {
       toast.success('Table deleted');
@@ -159,19 +64,12 @@ export default function SeatingPlan() {
     },
   });
 
-  const updateSeatMutation = trpc.seats.update.useMutation({
-    onError: (error) => {
-      toast.error(error.message || 'Failed to update seating');
-    },
-  });
-
   const handleAddTable = () => {
     if (!newTableName.trim()) {
       toast.error('Please enter a table name');
       return;
     }
 
-    // Create a default floor plan if none exists
     const floorPlanId = floorPlans[0]?.id || 1;
 
     createTableMutation.mutate({
@@ -184,63 +82,43 @@ export default function SeatingPlan() {
     });
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleEditTable = () => {
+    if (!newTableName.trim()) {
+      toast.error('Please enter a table name');
+      return;
+    }
 
-    if (!over) return;
-
-    const guestId = parseInt(active.id.toString().replace('guest-', ''));
-    const tableId = parseInt(over.id.toString().replace('table-', ''));
-
-    const guest = guests.find((g: any) => g.id === guestId);
-    if (!guest) return;
-
-    // Update local state
-    setTableAssignments((prev) => {
-      const newAssignments = { ...prev };
-      
-      // Remove from old table
-      Object.keys(newAssignments).forEach((key) => {
-        newAssignments[parseInt(key)] = newAssignments[parseInt(key)].filter(
-          (g: any) => g.id !== guestId
-        );
-      });
-
-      // Add to new table
-      if (!newAssignments[tableId]) {
-        newAssignments[tableId] = [];
-      }
-      newAssignments[tableId].push(guest);
-
-      return newAssignments;
+    updateTableMutation.mutate({
+      id: editingTable.id,
+      name: newTableName,
     });
-
-    toast.success(`${guest.firstName} moved to table`);
   };
 
-  const unassignedGuests = useMemo(() => {
-    const assignedIds = new Set(
-      Object.values(tableAssignments).flat().map((g: any) => g.id)
-    );
-    return guests.filter((g: any) => !assignedIds.has(g.id));
-  }, [guests, tableAssignments]);
+  const openEditDialog = (table: any) => {
+    setEditingTable(table);
+    setNewTableName(table.name);
+    setNewTableCapacity(table.seatCount?.toString() || '8');
+    setIsEditTableDialogOpen(true);
+  };
 
-  const filteredUnassigned = useMemo(() => {
-    return unassignedGuests.filter((g: any) =>
-      `${g.firstName} ${g.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [unassignedGuests, searchQuery]);
+  // Get all tables from all floor plans
+  const allTables = floorPlans.flatMap((plan: any) => 
+    (plan.tables || []).map((table: any) => ({
+      ...table,
+      floorPlanName: plan.name,
+    }))
+  );
 
   return (
     <EmployeeLayout>
-      <div className="container mx-auto py-8 max-w-6xl">
+      <div className="container mx-auto py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <Button variant="ghost" onClick={() => setLocation(`/events/${eventId}`)}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Event
             </Button>
-            <h1 className="text-3xl font-serif font-bold mt-2">Seating Plan</h1>
+            <h1 className="text-3xl font-serif font-bold mt-2">Table Planning</h1>
             <p className="text-muted-foreground">{event?.title}</p>
           </div>
           <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
@@ -253,7 +131,7 @@ export default function SeatingPlan() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Table</DialogTitle>
-                <DialogDescription>Create a new seating table for your event</DialogDescription>
+                <DialogDescription>Create a new table for your event</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -286,86 +164,87 @@ export default function SeatingPlan() {
           </Dialog>
         </div>
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Tables */}
-            <div className="lg:col-span-3 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Tables</h2>
-                <Badge variant="outline">{tables.length} tables</Badge>
-              </div>
-
-              {tables.length === 0 ? (
-                <Card className="bg-muted">
-                  <CardContent className="py-12 text-center">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg text-gray-600 mb-2">No tables yet</p>
-                    <p className="text-sm text-muted-foreground">Add tables to start seating your guests</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {tables.map((table: any) => (
-                    <div key={table.id} className="relative">
-                      <DroppableTable
-                        table={table}
-                        guests={tableAssignments[table.id] || []}
-                        onRemoveGuest={(tableId: number, guestId: number) => {
-                          setTableAssignments((prev) => ({
-                            ...prev,
-                            [tableId]: prev[tableId]?.filter((g: any) => g.id !== guestId) || [],
-                          }));
-                        }}
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteTableMutation.mutate({ id: table.id })}
-                        className="absolute top-2 right-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {allTables.length === 0 ? (
+          <Card className="bg-muted">
+            <CardContent className="py-12 text-center">
+              <p className="text-lg text-gray-600 mb-2">No tables yet</p>
+              <p className="text-sm text-muted-foreground">Add tables to start planning your seating</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Tables ({allTables.length})</h2>
             </div>
 
-            {/* Unassigned Guests */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Unassigned Guests</h2>
-                  <Badge variant="secondary">{unassignedGuests.length} guests</Badge>
-                </div>
-
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search guests..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8"
-                  />
-                </div>
-
-                <Card className="bg-gray-50">
-                  <CardContent className="p-3 space-y-2 max-h-96 overflow-y-auto">
-                    {filteredUnassigned.length === 0 ? (
-                      <p className="text-xs text-gray-500 text-center py-4">
-                        {unassignedGuests.length === 0 ? 'All guests seated!' : 'No guests match search'}
-                      </p>
-                    ) : (
-                      filteredUnassigned.map((guest: any) => (
-                        <DraggableGuest key={guest.id} guest={guest} />
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-semibold">Table Name</th>
+                    <th className="text-left py-3 px-4 font-semibold">Capacity</th>
+                    <th className="text-left py-3 px-4 font-semibold">Floor Plan</th>
+                    <th className="text-right py-3 px-4 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allTables.map((table: any) => (
+                    <tr key={table.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4">{table.name}</td>
+                      <td className="py-3 px-4">
+                        <Badge variant="outline">{table.seatCount || 8} seats</Badge>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground">{table.floorPlanName}</td>
+                      <td className="py-3 px-4 text-right space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditDialog(table)}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteTableMutation.mutate({ id: table.id })}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-        </DndContext>
+        )}
+
+        {/* Edit Table Dialog */}
+        <Dialog open={isEditTableDialogOpen} onOpenChange={setIsEditTableDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Table</DialogTitle>
+              <DialogDescription>Update table details</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="editTableName">Table Name</Label>
+                <Input
+                  id="editTableName"
+                  value={newTableName}
+                  onChange={(e) => setNewTableName(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleEditTable} className="bg-teal-600 hover:bg-teal-700">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </EmployeeLayout>
   );

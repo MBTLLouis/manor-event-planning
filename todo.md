@@ -362,3 +362,10 @@
 - [ ] Ensure couple pages use same tRPC procedures as employees
 - [ ] Add permission checks to couple pages (respect employee permissions)
 - [ ] Test couple functionality end-to-end
+
+
+## Couple Seating Management - Complete
+- [x] Implement CoupleSeating page with table and guest management
+- [x] Add drag-and-drop guest assignment to tables
+- [x] Add table capacity and allocation tracking
+- [x] Test couple seating functionality end-to-end

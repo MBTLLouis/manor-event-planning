@@ -348,3 +348,17 @@
 - [x] Integrate modal into events list
 - [x] Allow employees to view and modify couple login credentials
 - [x] Test credential generation and modification workflow
+
+
+## Couple Feature Parity - Full Event Modification Capabilities
+- [ ] Audit employee pages to identify all CRUD operations
+- [x] Update CoupleGuests.tsx with add/edit/delete guest functionality
+- [x] Update CoupleMenu.tsx with food choice selection and management
+- [ ] Update CoupleSeating.tsx with seating arrangement capabilities
+- [x] Update CoupleTimeline.tsx with timeline editing
+- [ ] Update CoupleNotes.tsx with note creation/editing
+- [ ] Update CoupleHotels.tsx with accommodation management
+- [ ] Update CoupleWebsite.tsx with website content editing
+- [ ] Ensure couple pages use same tRPC procedures as employees
+- [ ] Add permission checks to couple pages (respect employee permissions)
+- [ ] Test couple functionality end-to-end

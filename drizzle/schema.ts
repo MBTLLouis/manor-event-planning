@@ -35,6 +35,7 @@ export const events = mysqlTable("events", {
   coupleCanView: boolean("coupleCanView").default(true).notNull(),
   coupleUsername: varchar("coupleUsername", { length: 100 }).unique(),
   couplePassword: varchar("couplePassword", { length: 255 }),
+  permissions: json("permissions").$type<{ guestListEnabled: boolean; seatingEnabled: boolean; timelineEnabled: boolean; menuEnabled: boolean; notesEnabled: boolean; hotelEnabled: boolean; websiteEnabled: boolean }>().default({ guestListEnabled: true, seatingEnabled: true, timelineEnabled: true, menuEnabled: true, notesEnabled: true, hotelEnabled: true, websiteEnabled: true }),
   createdById: int("createdById").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

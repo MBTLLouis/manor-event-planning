@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "f30f07b0-f639-4b25-8c84-0a1040b6d2e3",
-  "prevId": "1046be7f-d935-470c-ac93-09d15fbaa6d5",
+  "id": "74557f90-91d8-42f2-ba64-49a0dc3a9c06",
+  "prevId": "7caf9740-97ba-4e38-82ee-3a585b815176",
   "tables": {
     "accommodationRooms": {
       "name": "accommodationRooms",
@@ -656,6 +656,28 @@
           "autoincrement": false,
           "default": true
         },
+        "coupleUsername": {
+          "name": "coupleUsername",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "couplePassword": {
+          "name": "couplePassword",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "('{\"guestListEnabled\":true,\"seatingEnabled\":true,\"timelineEnabled\":true,\"menuEnabled\":true,\"notesEnabled\":true,\"hotelEnabled\":true,\"websiteEnabled\":true}')"
+        },
         "createdById": {
           "name": "createdById",
           "type": "int",
@@ -696,6 +718,12 @@
           "name": "events_eventCode_unique",
           "columns": [
             "eventCode"
+          ]
+        },
+        "events_coupleUsername_unique": {
+          "name": "events_coupleUsername_unique",
+          "columns": [
+            "coupleUsername"
           ]
         }
       },

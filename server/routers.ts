@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
+import * as permStore from "./permissionsStore";
 import bcrypt from "bcryptjs";
 import { TRPCError } from "@trpc/server";
 
@@ -239,6 +240,30 @@ export const appRouter = router({
         if (username) updateData.coupleUsername = username;
         if (password) updateData.couplePassword = password;
         await db.updateEvent(id, updateData);
+        return { success: true };
+      }),
+
+    getPermissions: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(({ input }) => {
+        return permStore.getPermissions(input.id);
+      }),
+
+    updatePermissions: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        permissions: z.object({
+          guestListEnabled: z.boolean(),
+          seatingEnabled: z.boolean(),
+          timelineEnabled: z.boolean(),
+          menuEnabled: z.boolean(),
+          notesEnabled: z.boolean(),
+          hotelEnabled: z.boolean(),
+          websiteEnabled: z.boolean(),
+        }),
+      }))
+      .mutation(({ input }) => {
+        permStore.setPermissions(input.id, input.permissions);
         return { success: true };
       }),
   }),

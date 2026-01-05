@@ -12,10 +12,23 @@ export default function CoupleDashboard() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [permissions, setPermissions] = useState<any>(null);
 
   // Get couple's event
   const { data: events = [] } = trpc.events.list.useQuery();
   const coupleEvent = events[0]; // Assuming couple has one event
+
+  // Get permissions for the event
+  const { data: eventPermissions } = trpc.events.getPermissions.useQuery(
+    { id: coupleEvent?.id || 0 },
+    { enabled: !!coupleEvent }
+  );
+
+  useEffect(() => {
+    if (eventPermissions) {
+      setPermissions(eventPermissions);
+    }
+  }, [eventPermissions]);
 
   const { data: stats } = trpc.events.stats.useQuery(
     { id: coupleEvent?.id || 0 },
@@ -207,7 +220,14 @@ export default function CoupleDashboard() {
       <div>
         <h2 className="text-2xl font-serif text-[#2C5F5D] mb-6">Your Wedding Planning</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickLinks.map((link) => {
+          {quickLinks.filter((link) => {
+            // Check permissions for each section
+            if (link.title === "Guest List" && !permissions?.guestListEnabled) return false;
+            if (link.title === "Seating Chart" && !permissions?.seatingEnabled) return false;
+            if (link.title === "Timeline" && !permissions?.timelineEnabled) return false;
+            if (link.title === "Menu Selection" && !permissions?.menuEnabled) return false;
+            return true;
+          }).map((link) => {
             const Icon = link.icon;
             return (
               <Card

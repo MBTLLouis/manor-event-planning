@@ -1,0 +1,2 @@
+DROP TABLE `eventPermissions`;--> statement-breakpoint
+ALTER TABLE `events` ADD `permissions` json DEFAULT ('{"guestListEnabled":true,"seatingEnabled":true,"timelineEnabled":true,"menuEnabled":true,"notesEnabled":true,"hotelEnabled":true,"websiteEnabled":true}');

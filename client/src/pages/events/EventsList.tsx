@@ -15,7 +15,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { LoginDetailsModal } from "@/components/LoginDetailsModal";
-import { Key } from "lucide-react";
+import PermissionsModal from "@/components/PermissionsModal";
+import { Key, Lock } from "lucide-react";
 
 export default function EventsList() {
   const [, setLocation] = useLocation();
@@ -24,6 +25,7 @@ export default function EventsList() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoginDetailsOpen, setIsLoginDetailsOpen] = useState(false);
+  const [isPermissionsOpen, setIsPermissionsOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -177,6 +179,14 @@ export default function EventsList() {
               }}>
                 <Key className="w-4 h-4 mr-2" />
                 Login Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation();
+                setSelectedEvent(event);
+                setIsPermissionsOpen(true);
+              }}>
+                <Lock className="w-4 h-4 mr-2" />
+                Permissions
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -447,6 +457,16 @@ export default function EventsList() {
             eventId={selectedEvent.id}
             isOpen={isLoginDetailsOpen}
             onClose={() => setIsLoginDetailsOpen(false)}
+          />
+        )}
+
+        {/* Permissions Modal */}
+        {selectedEvent && (
+          <PermissionsModal
+            eventId={selectedEvent.id}
+            eventTitle={selectedEvent.title}
+            isOpen={isPermissionsOpen}
+            onClose={() => setIsPermissionsOpen(false)}
           />
         )}
       </div>

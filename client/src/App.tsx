@@ -38,6 +38,7 @@ import Vendors from "./pages/Vendors";
 import CoupleDashboard from "./pages/couple/CoupleDashboard";
 import CoupleGuests from "./pages/couple/CoupleGuests";
 import CoupleSeating from "./pages/couple/CoupleSeating";
+import CoupleSeatingV2 from "./pages/couple/CoupleSeatingV2";
 import CoupleTimeline from "./pages/couple/CoupleTimeline";
 import CoupleMenu from "./pages/couple/CoupleMenu";
 import CoupleNotes from "./pages/couple/CoupleNotes";
@@ -163,7 +164,7 @@ function Router() {
         {() => <ProtectedRoute component={CoupleGuests} />}
       </Route>
       <Route path="/couple/seating">
-        {() => <ProtectedRoute component={CoupleSeating} />}
+        {() => <ProtectedRoute component={CoupleSeatingV2} />}
       </Route>
       <Route path="/couple/timeline">
         {() => <ProtectedRoute component={CoupleTimeline} />}

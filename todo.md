@@ -438,3 +438,8 @@
 - [x] Show multiline description without truncation
 - [x] Add expand/collapse button to each row
 - [x] Preserve all description information
+
+## Couple Seating Plan Update - Complete
+- [x] Update couple seating plan to use new table planner (SeatingPlanV2)
+- [x] Test couple seating plan functionality
+- [x] Verify table and seat assignments work for couples

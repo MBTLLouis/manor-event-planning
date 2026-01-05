@@ -369,3 +369,11 @@
 - [x] Add drag-and-drop guest assignment to tables
 - [x] Add table capacity and allocation tracking
 - [x] Test couple seating functionality end-to-end
+
+
+## Couple Website Editing - Complete
+- [x] Audit employee wedding website editor
+- [x] Create CoupleWebsite page with content editing
+- [x] Implement photo gallery management
+- [x] Add story/about section editing
+- [x] Test couple website editing end-to-end

@@ -33,7 +33,6 @@ export default function CoupleSeating() {
   const [editingTable, setEditingTable] = useState<any>(null);
   const [selectedTableForGuest, setSelectedTableForGuest] = useState<number | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
-  const [tableGuestAssignments, setTableGuestAssignments] = useState<Record<number, number[]>>({});
 
   const utils = trpc.useUtils();
 
@@ -73,15 +72,26 @@ export default function CoupleSeating() {
       toast.success('Table deleted');
       if (coupleEvent) {
         utils.floorPlans.list.invalidate({ eventId: coupleEvent.id });
+        utils.guests.list.invalidate({ eventId: coupleEvent.id });
       }
-      setTableGuestAssignments((prev) => {
-        const newAssignments = { ...prev };
-        delete newAssignments[editingTable?.id];
-        return newAssignments;
-      });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to delete table');
+    },
+  });
+
+  const updateGuestMutation = trpc.guests.update.useMutation({
+    onSuccess: () => {
+      toast.success('Guest assigned to table');
+      setIsAddGuestDialogOpen(false);
+      setSelectedGuestId('');
+      setSelectedTableForGuest(null);
+      if (coupleEvent) {
+        utils.guests.list.invalidate({ eventId: coupleEvent.id });
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to assign guest');
     },
   });
 
@@ -128,32 +138,24 @@ export default function CoupleSeating() {
 
     const guestId = parseInt(selectedGuestId);
     
-    const isAlreadyAssigned = Object.values(tableGuestAssignments).some((guests) =>
-      guests.includes(guestId)
-    );
-
-    if (isAlreadyAssigned) {
+    // Check if guest is already assigned to a table
+    const guest = guests.find((g: any) => g.id === guestId);
+    if (guest?.tableId) {
       toast.error('Guest is already assigned to a table');
       return;
     }
 
-    setTableGuestAssignments((prev) => ({
-      ...prev,
-      [selectedTableForGuest]: [...(prev[selectedTableForGuest] || []), guestId],
-    }));
-
-    toast.success('Guest added to table');
-    setIsAddGuestDialogOpen(false);
-    setSelectedGuestId('');
-    setSelectedTableForGuest(null);
+    updateGuestMutation.mutate({
+      id: guestId,
+      tableId: selectedTableForGuest,
+    });
   };
 
-  const handleRemoveGuestFromTable = (tableId: number, guestId: number) => {
-    setTableGuestAssignments((prev) => ({
-      ...prev,
-      [tableId]: prev[tableId]?.filter((id) => id !== guestId) || [],
-    }));
-    toast.success('Guest removed from table');
+  const handleRemoveGuestFromTable = (guestId: number) => {
+    updateGuestMutation.mutate({
+      id: guestId,
+      tableId: null,
+    });
   };
 
   const openEditDialog = (table: any) => {
@@ -163,6 +165,7 @@ export default function CoupleSeating() {
     setIsEditTableDialogOpen(true);
   };
 
+  // Get all tables from all floor plans
   const allTables = floorPlans.flatMap((plan: any) => 
     (plan.tables || []).map((table: any) => ({
       ...table,
@@ -170,14 +173,18 @@ export default function CoupleSeating() {
     }))
   );
 
-  const assignedGuestIds = new Set(Object.values(tableGuestAssignments).flat());
-  const unassignedGuests = guests.filter((g: any) => !assignedGuestIds.has(g.id));
+  // Get unassigned guests
+  const unassignedGuests = guests.filter((g: any) => !g.tableId);
 
   if (!coupleEvent) {
     return (
       <CoupleLayout>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Loading...</p>
+        <div className="container mx-auto py-8">
+          <Card className="bg-muted">
+            <CardContent className="py-12 text-center">
+              <p className="text-lg text-gray-600">No event found</p>
+            </CardContent>
+          </Card>
         </div>
       </CoupleLayout>
     );
@@ -185,15 +192,15 @@ export default function CoupleSeating() {
 
   return (
     <CoupleLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto py-8 max-w-6xl">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-serif text-[#2C5F5D] mb-2">Table Planning</h1>
-            <p className="text-gray-600">Organize your seating arrangement</p>
+            <h1 className="text-3xl font-serif font-bold">Table Planning</h1>
+            <p className="text-muted-foreground">{coupleEvent?.title}</p>
           </div>
           <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+              <Button className="bg-rose-600 hover:bg-rose-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Table
               </Button>
@@ -201,14 +208,14 @@ export default function CoupleSeating() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add New Table</DialogTitle>
-                <DialogDescription>Create a new table for your event</DialogDescription>
+                <DialogDescription>Create a new table for your reception</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="tableName">Table Name</Label>
                   <Input
                     id="tableName"
-                    placeholder="e.g., Table 1, VIP Table, Family Table"
+                    placeholder="e.g., Table 1, Family Table"
                     value={newTableName}
                     onChange={(e) => setNewTableName(e.target.value)}
                   />
@@ -226,7 +233,7 @@ export default function CoupleSeating() {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleAddTable} className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                <Button onClick={handleAddTable} className="bg-rose-600 hover:bg-rose-700">
                   Add Table
                 </Button>
               </DialogFooter>
@@ -235,10 +242,10 @@ export default function CoupleSeating() {
         </div>
 
         {allTables.length === 0 ? (
-          <Card className="bg-gray-50">
+          <Card className="bg-muted">
             <CardContent className="py-12 text-center">
               <p className="text-lg text-gray-600 mb-2">No tables yet</p>
-              <p className="text-sm text-muted-foreground">Add tables to start planning your seating arrangement</p>
+              <p className="text-sm text-muted-foreground">Add tables to plan your seating arrangements</p>
             </CardContent>
           </Card>
         ) : (
@@ -251,9 +258,7 @@ export default function CoupleSeating() {
 
               <div className="space-y-3">
                 {allTables.map((table: any) => {
-                  const tableGuests = (tableGuestAssignments[table.id] || [])
-                    .map((guestId) => guests.find((g: any) => g.id === guestId))
-                    .filter(Boolean);
+                  const tableGuests = guests.filter((g: any) => g.tableId === table.id);
                   const capacity = table.seatCount || 8;
                   const occupancy = tableGuests.length;
                   const isFull = occupancy >= capacity;
@@ -292,7 +297,7 @@ export default function CoupleSeating() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                           <div
-                            className={`h-2 rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-teal-500'}`}
+                            className={`h-2 rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-rose-500'}`}
                             style={{ width: `${Math.min((occupancy / capacity) * 100, 100)}%` }}
                           />
                         </div>
@@ -311,7 +316,7 @@ export default function CoupleSeating() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleRemoveGuestFromTable(table.id, guest.id)}
+                                  onClick={() => handleRemoveGuestFromTable(guest.id)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -337,7 +342,7 @@ export default function CoupleSeating() {
 
                 <Dialog open={isAddGuestDialogOpen} onOpenChange={setIsAddGuestDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-[#2C5F5D] hover:bg-[#1e4441]">
+                    <Button className="w-full bg-rose-600 hover:bg-rose-700">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Guest to Table
                     </Button>
@@ -356,7 +361,7 @@ export default function CoupleSeating() {
                           </SelectTrigger>
                           <SelectContent>
                             {allTables.map((table: any) => {
-                              const occupancy = (tableGuestAssignments[table.id] || []).length;
+                              const occupancy = guests.filter((g: any) => g.tableId === table.id).length;
                               const capacity = table.seatCount || 8;
                               const isFull = occupancy >= capacity;
                               return (
@@ -385,29 +390,28 @@ export default function CoupleSeating() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button onClick={handleAddGuestToTable} className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                      <Button onClick={handleAddGuestToTable} className="bg-rose-600 hover:bg-rose-700">
                         Add Guest
                       </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
 
-                <Card className="bg-gray-50">
-                  <CardContent className="p-3 space-y-2 max-h-96 overflow-y-auto">
-                    {unassignedGuests.length === 0 ? (
-                      <p className="text-xs text-gray-500 text-center py-4">All guests seated!</p>
-                    ) : (
-                      unassignedGuests.map((guest: any) => (
+                {unassignedGuests.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Guests to assign:</h3>
+                    <div className="space-y-1 max-h-96 overflow-y-auto">
+                      {unassignedGuests.map((guest: any) => (
                         <div
                           key={guest.id}
-                          className="p-2 bg-white border border-gray-200 rounded text-sm hover:bg-gray-50"
+                          className="p-2 bg-gray-50 rounded border border-gray-200 text-sm"
                         >
                           {guest.firstName} {guest.lastName}
                         </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -425,13 +429,25 @@ export default function CoupleSeating() {
                 <Label htmlFor="editTableName">Table Name</Label>
                 <Input
                   id="editTableName"
+                  placeholder="e.g., Table 1"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="editCapacity">Capacity</Label>
+                <Input
+                  id="editCapacity"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={newTableCapacity}
+                  onChange={(e) => setNewTableCapacity(e.target.value)}
+                />
+              </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleEditTable} className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+              <Button onClick={handleEditTable} className="bg-rose-600 hover:bg-rose-700">
                 Save Changes
               </Button>
             </DialogFooter>

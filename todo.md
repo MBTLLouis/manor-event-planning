@@ -397,3 +397,11 @@
 - [x] Update employee seating plan to add guests to tables
 - [x] Update couple seating plan to add guests to tables
 - [x] Remove floor plans section from navigation
+
+## Seating Plan Card-Based Rebuild - Complete
+- [x] Rebuild employee seating plan with card-based interface (table cards showing name, capacity, assigned guests, add/remove buttons)
+- [x] Rebuild couple seating plan with card-based interface
+- [x] Show unassigned guests at top/side
+- [x] Add button opens dropdown to select from unassigned guests
+- [x] Remove button next to each guest returns them to unassigned list
+- [x] Test add/remove functionality for both employee and couple

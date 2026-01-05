@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Edit2, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function SeatingPlan() {
@@ -29,7 +29,6 @@ export default function SeatingPlan() {
   const [editingTable, setEditingTable] = useState<any>(null);
   const [selectedTableForGuest, setSelectedTableForGuest] = useState<number | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
-  const [tableGuestAssignments, setTableGuestAssignments] = useState<Record<number, number[]>>({});
 
   const utils = trpc.useUtils();
 
@@ -64,15 +63,23 @@ export default function SeatingPlan() {
     onSuccess: () => {
       toast.success('Table deleted');
       utils.floorPlans.list.invalidate({ eventId });
-      // Remove assignments for deleted table
-      setTableGuestAssignments((prev) => {
-        const newAssignments = { ...prev };
-        delete newAssignments[editingTable?.id];
-        return newAssignments;
-      });
+      utils.guests.list.invalidate({ eventId });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to delete table');
+    },
+  });
+
+  const updateGuestMutation = trpc.guests.update.useMutation({
+    onSuccess: () => {
+      toast.success('Guest assigned to table');
+      setIsAddGuestDialogOpen(false);
+      setSelectedGuestId('');
+      setSelectedTableForGuest(null);
+      utils.guests.list.invalidate({ eventId });
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to assign guest');
     },
   });
 
@@ -114,33 +121,24 @@ export default function SeatingPlan() {
 
     const guestId = parseInt(selectedGuestId);
     
-    // Check if guest is already assigned
-    const isAlreadyAssigned = Object.values(tableGuestAssignments).some((guests) =>
-      guests.includes(guestId)
-    );
-
-    if (isAlreadyAssigned) {
+    // Check if guest is already assigned to a table
+    const guest = guests.find((g: any) => g.id === guestId);
+    if (guest?.tableId) {
       toast.error('Guest is already assigned to a table');
       return;
     }
 
-    setTableGuestAssignments((prev) => ({
-      ...prev,
-      [selectedTableForGuest]: [...(prev[selectedTableForGuest] || []), guestId],
-    }));
-
-    toast.success('Guest added to table');
-    setIsAddGuestDialogOpen(false);
-    setSelectedGuestId('');
-    setSelectedTableForGuest(null);
+    updateGuestMutation.mutate({
+      id: guestId,
+      tableId: selectedTableForGuest,
+    });
   };
 
-  const handleRemoveGuestFromTable = (tableId: number, guestId: number) => {
-    setTableGuestAssignments((prev) => ({
-      ...prev,
-      [tableId]: prev[tableId]?.filter((id) => id !== guestId) || [],
-    }));
-    toast.success('Guest removed from table');
+  const handleRemoveGuestFromTable = (guestId: number) => {
+    updateGuestMutation.mutate({
+      id: guestId,
+      tableId: null,
+    });
   };
 
   const openEditDialog = (table: any) => {
@@ -159,8 +157,7 @@ export default function SeatingPlan() {
   );
 
   // Get unassigned guests
-  const assignedGuestIds = new Set(Object.values(tableGuestAssignments).flat());
-  const unassignedGuests = guests.filter((g: any) => !assignedGuestIds.has(g.id));
+  const unassignedGuests = guests.filter((g: any) => !g.tableId);
 
   return (
     <EmployeeLayout>
@@ -234,9 +231,7 @@ export default function SeatingPlan() {
 
               <div className="space-y-3">
                 {allTables.map((table: any) => {
-                  const tableGuests = (tableGuestAssignments[table.id] || [])
-                    .map((guestId) => guests.find((g: any) => g.id === guestId))
-                    .filter(Boolean);
+                  const tableGuests = guests.filter((g: any) => g.tableId === table.id);
                   const capacity = table.seatCount || 8;
                   const occupancy = tableGuests.length;
                   const isFull = occupancy >= capacity;
@@ -294,7 +289,7 @@ export default function SeatingPlan() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleRemoveGuestFromTable(table.id, guest.id)}
+                                  onClick={() => handleRemoveGuestFromTable(guest.id)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
                                   <Trash2 className="w-3 h-3" />
@@ -339,7 +334,7 @@ export default function SeatingPlan() {
                           </SelectTrigger>
                           <SelectContent>
                             {allTables.map((table: any) => {
-                              const occupancy = (tableGuestAssignments[table.id] || []).length;
+                              const occupancy = guests.filter((g: any) => g.tableId === table.id).length;
                               const capacity = table.seatCount || 8;
                               const isFull = occupancy >= capacity;
                               return (
@@ -375,22 +370,21 @@ export default function SeatingPlan() {
                   </DialogContent>
                 </Dialog>
 
-                <Card className="bg-gray-50">
-                  <CardContent className="p-3 space-y-2 max-h-96 overflow-y-auto">
-                    {unassignedGuests.length === 0 ? (
-                      <p className="text-xs text-gray-500 text-center py-4">All guests seated!</p>
-                    ) : (
-                      unassignedGuests.map((guest: any) => (
+                {unassignedGuests.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">Guests to assign:</h3>
+                    <div className="space-y-1 max-h-96 overflow-y-auto">
+                      {unassignedGuests.map((guest: any) => (
                         <div
                           key={guest.id}
-                          className="p-2 bg-white border border-gray-200 rounded text-sm hover:bg-gray-50"
+                          className="p-2 bg-gray-50 rounded border border-gray-200 text-sm"
                         >
                           {guest.firstName} {guest.lastName}
                         </div>
-                      ))
-                    )}
-                  </CardContent>
-                </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -408,8 +402,20 @@ export default function SeatingPlan() {
                 <Label htmlFor="editTableName">Table Name</Label>
                 <Input
                   id="editTableName"
+                  placeholder="e.g., Table 1, VIP Table"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editCapacity">Capacity</Label>
+                <Input
+                  id="editCapacity"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={newTableCapacity}
+                  onChange={(e) => setNewTableCapacity(e.target.value)}
                 />
               </div>
             </div>

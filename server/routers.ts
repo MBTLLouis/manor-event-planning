@@ -340,8 +340,13 @@ export const appRouter = router({
         const cleanData = Object.fromEntries(
           Object.entries(data).filter(([_, v]) => v !== null && v !== undefined)
         );
-        await db.updateGuest(id, cleanData);
-        return { success: true };
+        // Only update if there are fields to update
+        if (Object.keys(cleanData).length > 0) {
+          await db.updateGuest(id, cleanData);
+        }
+        // Return the updated guest
+        const updatedGuest = await db.getGuestById(id);
+        return updatedGuest;
       }),
 
     delete: protectedProcedure

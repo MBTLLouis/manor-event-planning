@@ -134,12 +134,15 @@ export default function SeatingPlan() {
     });
   }, [floorPlans]);
 
+  const utils = trpc.useUtils();
+
   const createTableMutation = trpc.tables.create.useMutation({
     onSuccess: () => {
       toast.success('Table added');
       setIsAddTableDialogOpen(false);
       setNewTableName('');
       setNewTableCapacity('8');
+      utils.floorPlans.list.invalidate({ eventId });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to add table');
@@ -149,6 +152,7 @@ export default function SeatingPlan() {
   const deleteTableMutation = trpc.tables.delete.useMutation({
     onSuccess: () => {
       toast.success('Table deleted');
+      utils.floorPlans.list.invalidate({ eventId });
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to delete table');

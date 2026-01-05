@@ -387,3 +387,7 @@
 - [x] Update employee SeatingPlan with card-based table visualization
 - [x] Update couple CoupleSeating with card-based table visualization
 - [x] Test seating plan functionality end-to-end
+
+
+## Bugs to Fix
+- [x] Tables not displaying after being added in seating plan - fixed by adding query invalidation

@@ -138,12 +138,17 @@ export default function CoupleSeating() {
     });
   }, [floorPlans]);
 
+  const utils = trpc.useUtils();
+
   const createTableMutation = trpc.tables.create.useMutation({
     onSuccess: () => {
       toast.success('Table added');
       setIsAddTableDialogOpen(false);
       setNewTableName('');
       setNewTableCapacity('8');
+      if (coupleEvent) {
+        utils.floorPlans.list.invalidate({ eventId: coupleEvent.id });
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to add table');
@@ -153,6 +158,9 @@ export default function CoupleSeating() {
   const deleteTableMutation = trpc.tables.delete.useMutation({
     onSuccess: () => {
       toast.success('Table deleted');
+      if (coupleEvent) {
+        utils.floorPlans.list.invalidate({ eventId: coupleEvent.id });
+      }
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to delete table');

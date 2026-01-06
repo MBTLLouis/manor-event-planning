@@ -654,3 +654,7 @@
 ## Bug Fixes - Couple Seating
 - [x] Fix guest search not visible in add guest dialog
 - [x] Fix tables disappearing when adding guests
+
+## Bug Fixes - Couple Seating (Persistent)
+- [x] Tables still disappearing after adding guests
+- [x] Dropdown for table selection still visible - should be search only

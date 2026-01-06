@@ -36,6 +36,7 @@ export default function CoupleSeating() {
   const [selectedTableForGuest, setSelectedTableForGuest] = useState<number | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
   const [guestSearchQuery, setGuestSearchQuery] = useState<string>('');
+  const [tableSearchQuery, setTableSearchQuery] = useState<string>('');
 
   const utils = trpc.useUtils();
 
@@ -90,6 +91,7 @@ export default function CoupleSeating() {
       setSelectedGuestId('');
       setSelectedTableForGuest(null);
       setGuestSearchQuery('');
+      setTableSearchQuery('');
       if (coupleEvent) {
         utils.guests.list.invalidate({ eventId: coupleEvent.id });
         utils.floorPlans.list.invalidate({ eventId: coupleEvent.id });
@@ -352,24 +354,59 @@ export default function CoupleSeating() {
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="table">Select Table</Label>
-                        <Select value={selectedTableForGuest?.toString() || ''} onValueChange={(value) => setSelectedTableForGuest(Number(value))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a table" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allTables.map((table: any) => {
+                        <Label htmlFor="table">Search Table</Label>
+                        <div className="relative">
+                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search by table name..."
+                            value={tableSearchQuery}
+                            onChange={(e) => setTableSearchQuery(e.target.value)}
+                            className="pl-8"
+                          />
+                        </div>
+                        {allTables.length > 0 ? (
+                          <div className="border rounded-md max-h-64 overflow-y-auto">
+                            {allTables
+                              .filter((table: any) => {
+                                const occupancy = guests.filter((g: any) => g.tableId === table.id).length;
+                                const capacity = table.seatCount || 8;
+                                const isFull = occupancy >= capacity;
+                                return !isFull && (!tableSearchQuery || table.name.toLowerCase().includes(tableSearchQuery.toLowerCase()));
+                              })
+                              .map((table: any) => {
+                                const occupancy = guests.filter((g: any) => g.tableId === table.id).length;
+                                const capacity = table.seatCount || 8;
+                                return (
+                                  <button
+                                    key={table.id}
+                                    onClick={() => {
+                                      setSelectedTableForGuest(table.id);
+                                      setTableSearchQuery("");
+                                    }}
+                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0 transition-colors"
+                                  >
+                                    <div className="font-medium text-sm">{table.name}</div>
+                                    <div className="text-xs text-gray-500">{occupancy}/{capacity} guests</div>
+                                  </button>
+                                );
+                              })}
+                            {allTables.filter((table: any) => {
                               const occupancy = guests.filter((g: any) => g.tableId === table.id).length;
                               const capacity = table.seatCount || 8;
                               const isFull = occupancy >= capacity;
-                              return (
-                                <SelectItem key={table.id} value={table.id.toString()} disabled={isFull}>
-                                  {table.name} ({occupancy}/{capacity})
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                              return !isFull && (!tableSearchQuery || table.name.toLowerCase().includes(tableSearchQuery.toLowerCase()));
+                            }).length === 0 && (
+                              <div className="px-3 py-2 text-sm text-gray-500">No available tables</div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="border rounded-md px-3 py-2 text-sm text-gray-500">No tables available</div>
+                        )}
+                        {selectedTableForGuest && (
+                          <div className="text-sm text-green-600 font-medium">
+                            Selected: {allTables.find((t: any) => t.id === selectedTableForGuest)?.name}
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="guest">Search Guest</Label>

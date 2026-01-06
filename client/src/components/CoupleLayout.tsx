@@ -24,7 +24,7 @@ export default function CoupleLayout({ children }: CoupleLayoutProps) {
     { name: "Timeline", href: "/couple/timeline", icon: Calendar },
     { name: "Menu", href: "/couple/menu", icon: Utensils },
     { name: "Notes", href: "/couple/notes", icon: FileText },
-    { name: "Hotels", href: "/couple/hotels", icon: Hotel },
+    { name: "Accommodations", href: "/couple/hotels", icon: Hotel },
     { name: "Website", href: "/couple/website", icon: Globe },
   ];
 

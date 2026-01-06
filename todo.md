@@ -493,3 +493,8 @@
 - [x] Update button text to "Continue as Planner"
 - [x] Remove "Login" from all titles
 - [x] Test login page displays correctly
+
+## Couple Accommodation Display - Complete
+- [x] Update CoupleHotels.tsx to display event rooms
+- [x] Add Accommodation link to couple dashboard
+- [x] Test accommodation display for couples

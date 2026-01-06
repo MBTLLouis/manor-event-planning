@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import CoupleLayout from "@/components/CoupleLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Calendar, Utensils, CheckCircle2, Clock } from "lucide-react";
+import { Users, MapPin, Calendar, Utensils, CheckCircle2, Clock, Home } from "lucide-react";
 import { useLocation } from "wouter";
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 
@@ -102,6 +102,15 @@ export default function CoupleDashboard() {
       stat: "View menu",
       color: "text-yellow-600",
       bgColor: "bg-yellow-50",
+    },
+    {
+      title: "Accommodations",
+      description: "View room assignments",
+      icon: Home,
+      href: "/couple/hotels",
+      stat: "View rooms",
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
     },
   ];
 
@@ -226,6 +235,7 @@ export default function CoupleDashboard() {
             if (link.title === "Seating Chart" && !permissions?.seatingEnabled) return false;
             if (link.title === "Timeline" && !permissions?.timelineEnabled) return false;
             if (link.title === "Menu Selection" && !permissions?.menuEnabled) return false;
+            if (link.title === "Accommodations" && !permissions?.accommodationsEnabled) return false;
             return true;
           }).map((link) => {
             const Icon = link.icon;

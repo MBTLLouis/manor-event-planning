@@ -1210,7 +1210,7 @@ export const appRouter = router({
           eventId: website.eventId,
           websiteId: input.websiteId,
           photoUrl: url,
-          caption: input.caption || "",
+          caption: input.caption || null,
           isFeatured: false,
         });
         return { id: photoId, url };

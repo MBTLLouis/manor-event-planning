@@ -376,7 +376,7 @@ export default function CoupleWebsite() {
           fileData: base64Data,
           fileName: newImageFile.name,
           mimeType: newImageFile.type,
-          caption: newImageCaption,
+          caption: newImageCaption || undefined,
         });
       };
       reader.readAsDataURL(newImageFile);
@@ -397,7 +397,9 @@ export default function CoupleWebsite() {
 
   const handleRemoveImage = (id: string) => {
     const photoId = parseInt(id, 10);
-    removePhotoMutation.mutate({ id: photoId });
+    if (!isNaN(photoId)) {
+      removePhotoMutation.mutate({ id: photoId });
+    }
     setGallery(gallery.filter(img => img.id !== id));
   };
 

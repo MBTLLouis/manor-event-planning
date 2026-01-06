@@ -844,6 +844,14 @@ export async function getWeddingWebsiteBySlug(slug: string) {
   return result[0] ?? null;
 }
 
+export async function getWeddingWebsiteById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select().from(weddingWebsites).where(eq(weddingWebsites.id, id)).limit(1);
+  return result[0] ?? null;
+}
+
 export async function updateWeddingWebsite(id: number, data: Partial<InsertWeddingWebsite>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

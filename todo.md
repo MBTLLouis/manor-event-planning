@@ -557,3 +557,13 @@
 - [x] Convert event details to custom timeline interface
 - [x] Convert FAQ to individual Q&A items with add/edit/delete
 - [ ] Enhance visual design to match Manor By The Lake branding
+
+### Timeline Event Management Enhancements
+- [x] Add edit button to timeline events to modify time/title/description
+- [x] Add delete button to timeline events
+- [x] Test edit/delete functionality for timeline events
+## Photo Upload System
+- [x] Replace photo URL input with file upload field
+- [x] Implement S3 file upload for photos
+- [x] Add photo preview after upload
+- [x] Test photo upload functionality

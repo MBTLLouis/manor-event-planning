@@ -63,11 +63,19 @@ export default function CoupleWebsite() {
   const [newTimelineTitle, setNewTimelineTitle] = useState("");
   const [newTimelineDescription, setNewTimelineDescription] = useState("");
 
+  // Timeline editing
+  const [editingTimelineId, setEditingTimelineId] = useState<number | null>(null);
+  const [editTimelineTime, setEditTimelineTime] = useState("");
+  const [editTimelineTitle, setEditTimelineTitle] = useState("");
+  const [editTimelineDescription, setEditTimelineDescription] = useState("");
+  const [isEditingTimeline, setIsEditingTimeline] = useState(false);
+
   // Gallery
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [isAddingImage, setIsAddingImage] = useState(false);
-  const [newImageUrl, setNewImageUrl] = useState("");
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [newImageCaption, setNewImageCaption] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // tRPC mutations
   const createMutation = trpc.weddingWebsite.create.useMutation({
@@ -168,6 +176,20 @@ export default function CoupleWebsite() {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to delete timeline item");
+    },
+  });
+
+  const updateTimelineItemMutation = trpc.weddingWebsite.updateTimelineItem.useMutation({
+    onSuccess: () => {
+      toast.success("Timeline item updated");
+      setEditingTimelineId(null);
+      setIsEditingTimeline(false);
+      if (website) {
+        utils.weddingWebsite.getTimelineItems.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update timeline item");
     },
   });
 
@@ -289,28 +311,109 @@ export default function CoupleWebsite() {
     deleteTimelineItemMutation.mutate({ id });
   };
 
-  const handleAddImage = () => {
-    if (!newImageUrl.trim()) {
-      toast.error("Please enter an image URL");
+  const handleEditTimelineItem = (item: any) => {
+    setEditingTimelineId(item.id);
+    setEditTimelineTime(item.time);
+    setEditTimelineTitle(item.title);
+    setEditTimelineDescription(item.description || "");
+    setIsEditingTimeline(true);
+  };
+
+  const handleUpdateTimelineItem = () => {
+    if (!editTimelineTime.trim() || !editTimelineTitle.trim()) {
+      toast.error("Please enter both time and title");
       return;
     }
 
-    const newImage: GalleryImage = {
-      id: Date.now().toString(),
-      url: newImageUrl,
-      caption: newImageCaption,
-    };
+    if (!editingTimelineId) return;
 
-    setGallery([...gallery, newImage]);
-    setNewImageUrl("");
-    setNewImageCaption("");
-    setIsAddingImage(false);
-    toast.success("Image added to gallery");
+    updateTimelineItemMutation.mutate({
+      id: editingTimelineId,
+      time: editTimelineTime,
+      title: editTimelineTitle,
+      description: editTimelineDescription || undefined,
+    });
   };
 
+  const uploadPhotoMutation = trpc.weddingWebsite.uploadPhoto.useMutation({
+    onSuccess: (data) => {
+      toast.success("Photo uploaded successfully");
+      const newImage: GalleryImage = {
+        id: data.id.toString(),
+        url: data.url,
+        caption: newImageCaption,
+      };
+      setGallery([...gallery, newImage]);
+      setNewImageFile(null);
+      setNewImageCaption("");
+      setIsAddingImage(false);
+      setIsUploadingImage(false);
+    },
+    onError: (error: any) => {
+      setIsUploadingImage(false);
+      toast.error(error.message || "Failed to upload photo");
+    },
+  });
+
+  const handleAddImage = async () => {
+    if (!newImageFile) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (!website) {
+      toast.error("Please save the website first");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64Data = (e.target?.result as string).split(',')[1];
+        uploadPhotoMutation.mutate({
+          websiteId: website.id,
+          fileData: base64Data,
+          fileName: newImageFile.name,
+          mimeType: newImageFile.type,
+          caption: newImageCaption,
+        });
+      };
+      reader.readAsDataURL(newImageFile);
+    } catch (error) {
+      setIsUploadingImage(false);
+      toast.error("Failed to process image");
+    }
+  };
+
+  const removePhotoMutation = trpc.weddingWebsite.deletePhoto.useMutation({
+    onSuccess: () => {
+      toast.success("Photo removed");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to remove photo");
+    },
+  });
+
   const handleRemoveImage = (id: string) => {
+    const photoId = parseInt(id, 10);
+    removePhotoMutation.mutate({ id: photoId });
     setGallery(gallery.filter(img => img.id !== id));
-    toast.success("Image removed from gallery");
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select an image file");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error("Image size must be less than 10MB");
+        return;
+      }
+      setNewImageFile(file);
+    }
   };
 
   const handleUpdateCaption = (id: string, caption: string) => {
@@ -544,23 +647,33 @@ export default function CoupleWebsite() {
               {timelineItems.length > 0 && (
                 <div className="space-y-2 border-l-2 border-[#2C5F5D] pl-4">
                   {timelineItems.map((item: any) => (
-                    <div key={item.id} className="pb-4">
+                    <div key={item.id} className="border rounded-lg p-3 space-y-2">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <p className="font-semibold text-sm text-[#2C5F5D]">{item.time}</p>
+                          <p className="font-medium text-sm text-[#2C5F5D]">{item.time}</p>
                           <p className="font-medium text-sm">{item.title}</p>
                           {item.description && (
                             <p className="text-xs text-gray-600 mt-1">{item.description}</p>
                           )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteTimelineItem(item.id!)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditTimelineItem(item)}
+                            className="text-[#2C5F5D] hover:text-[#1e4441]"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTimelineItem(item.id!)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -682,6 +795,62 @@ export default function CoupleWebsite() {
           </CardContent>
         </Card>
 
+        {/* Edit Timeline Item Dialog */}
+        <Dialog open={isEditingTimeline} onOpenChange={setIsEditingTimeline}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Timeline Event</DialogTitle>
+              <DialogDescription>Modify the event time, title, and description</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="editTimelineTime">Time *</Label>
+                <Input
+                  id="editTimelineTime"
+                  placeholder="e.g., 14:00, 2:00 PM"
+                  value={editTimelineTime}
+                  onChange={(e) => setEditTimelineTime(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editTimelineTitle">Event Title *</Label>
+                <Input
+                  id="editTimelineTitle"
+                  placeholder="e.g., Ceremony, Reception, Dinner"
+                  value={editTimelineTitle}
+                  onChange={(e) => setEditTimelineTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editTimelineDescription">Description (optional)</Label>
+                <Textarea
+                  id="editTimelineDescription"
+                  placeholder="Add any additional details..."
+                  value={editTimelineDescription}
+                  onChange={(e) => setEditTimelineDescription(e.target.value)}
+                  rows={2}
+                  className="resize-none"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditingTimeline(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleUpdateTimelineItem}
+                disabled={updateTimelineItemMutation.isPending}
+                className="bg-[#2C5F5D] hover:bg-[#1e4441]"
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Photo Gallery Section */}
         <Card>
           <CardHeader>
@@ -700,20 +869,27 @@ export default function CoupleWebsite() {
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Add Photo to Gallery</DialogTitle>
-                    <DialogDescription>Add a photo URL and optional caption</DialogDescription>
+                    <DialogDescription>Upload a photo from your device</DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label htmlFor="imageUrl">Photo URL *</Label>
-                      <Input
-                        id="imageUrl"
-                        placeholder="https://example.com/photo.jpg"
-                        value={newImageUrl}
-                        onChange={(e) => setNewImageUrl(e.target.value)}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Paste the URL of your photo. You can upload photos to cloud storage services like Google Drive, Dropbox, or Imgur.
-                      </p>
+                      <Label htmlFor="imageFile">Photo File *</Label>
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:bg-gray-50">
+                        <input
+                          id="imageFile"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          className="hidden"
+                        />
+                        <label htmlFor="imageFile" className="cursor-pointer block">
+                          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm font-medium text-gray-700">
+                            {newImageFile ? newImageFile.name : "Click to select or drag and drop"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 10MB</p>
+                        </label>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="imageCaption">Caption (optional)</Label>
@@ -726,8 +902,12 @@ export default function CoupleWebsite() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button onClick={handleAddImage} className="bg-[#2C5F5D] hover:bg-[#1e4441]">
-                      Add Photo
+                    <Button 
+                      onClick={handleAddImage} 
+                      disabled={!newImageFile || isUploadingImage}
+                      className="bg-[#2C5F5D] hover:bg-[#1e4441]"
+                    >
+                      {isUploadingImage ? "Uploading..." : "Add Photo"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

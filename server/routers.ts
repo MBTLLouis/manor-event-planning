@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import * as permStore from "./permissionsStore";
 import bcrypt from "bcryptjs";
+import { storagePut } from "./storage";
 
 export const appRouter = router({
   system: systemRouter,
@@ -1184,6 +1185,35 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteTimelineItem(input.id);
         return { success: true };
+      }),
+
+    uploadPhoto: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        fileData: z.string(),
+        fileName: z.string(),
+        mimeType: z.string(),
+        caption: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const buffer = Buffer.from(input.fileData, "base64");
+        const timestamp = Date.now();
+        const randomSuffix = Math.random().toString(36).substring(2, 8);
+        const ext = input.fileName.split(".").pop() || "jpg";
+        const fileKey = `wedding-photos/${input.websiteId}/${timestamp}-${randomSuffix}.${ext}`;
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        const website = await db.getWeddingWebsiteById(input.websiteId);
+        if (!website) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Website not found" });
+        }
+        const photoId = await db.addWeddingWebsitePhoto({
+          eventId: website.eventId,
+          websiteId: input.websiteId,
+          photoUrl: url,
+          caption: input.caption || "",
+          isFeatured: false,
+        });
+        return { id: photoId, url };
       }),
   }),
 

@@ -8,8 +8,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Globe, ExternalLink, Save, Upload, Trash2, Plus, Image as ImageIcon } from "lucide-react";
+import { Globe, ExternalLink, Save, Upload, Trash2, Plus, Image as ImageIcon, Edit2, Link2, Clock, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+
+interface RegistryLink {
+  id?: number;
+  title: string;
+  url: string;
+}
+
+interface FaqItem {
+  id?: number;
+  question: string;
+  answer: string;
+}
+
+interface TimelineItem {
+  id?: number;
+  time: string;
+  title: string;
+  description?: string | null;
+}
 
 interface GalleryImage {
   id: string;
@@ -26,39 +45,31 @@ export default function CoupleWebsite() {
     { enabled: !!coupleEvent }
   );
 
+  // Website basic settings
   const [slug, setSlug] = useState("");
   const [isPublished, setIsPublished] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [ourStory, setOurStory] = useState("");
-  const [registryLinks, setRegistryLinks] = useState("");
-  const [eventDetails, setEventDetails] = useState("");
   const [travelInfo, setTravelInfo] = useState("");
-  const [faqContent, setFaqContent] = useState("");
   const [dressCode, setDressCode] = useState("");
   const [rsvpEnabled, setRsvpEnabled] = useState(true);
+
+  // Form inputs
+  const [newRegistryTitle, setNewRegistryTitle] = useState("");
+  const [newRegistryUrl, setNewRegistryUrl] = useState("");
+  const [newFaqQuestion, setNewFaqQuestion] = useState("");
+  const [newFaqAnswer, setNewFaqAnswer] = useState("");
+  const [newTimelineTime, setNewTimelineTime] = useState("");
+  const [newTimelineTitle, setNewTimelineTitle] = useState("");
+  const [newTimelineDescription, setNewTimelineDescription] = useState("");
+
+  // Gallery
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newImageCaption, setNewImageCaption] = useState("");
 
-  useEffect(() => {
-    if (website) {
-      setSlug(website.slug || "");
-      setIsPublished(website.isPublished);
-      setWelcomeMessage(website.welcomeMessage || "");
-      setOurStory(website.ourStory || "");
-      setRegistryLinks(website.registryLinks || "");
-      setEventDetails(website.eventDetails || "");
-      setTravelInfo(website.travelInfo || "");
-      setFaqContent(website.faqContent || "");
-      setDressCode(website.dressCode || "");
-      setRsvpEnabled(website.rsvpEnabled);
-      
-      // Gallery data will be stored in registryLinks field for now
-      // This can be migrated to a separate field later
-    }
-  }, [website]);
-
+  // tRPC mutations
   const createMutation = trpc.weddingWebsite.create.useMutation({
     onSuccess: () => {
       toast.success("Wedding website created");
@@ -79,6 +90,115 @@ export default function CoupleWebsite() {
     },
   });
 
+  const utils = trpc.useUtils();
+
+  const addRegistryLinkMutation = trpc.weddingWebsite.addRegistryLink.useMutation({
+    onSuccess: () => {
+      toast.success("Registry link added");
+      setNewRegistryTitle("");
+      setNewRegistryUrl("");
+      if (website) {
+        utils.weddingWebsite.getRegistryLinks.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add registry link");
+    },
+  });
+
+  const deleteRegistryLinkMutation = trpc.weddingWebsite.deleteRegistryLink.useMutation({
+    onSuccess: () => {
+      toast.success("Registry link deleted");
+      if (website) {
+        utils.weddingWebsite.getRegistryLinks.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete registry link");
+    },
+  });
+
+  const addFaqItemMutation = trpc.weddingWebsite.addFaqItem.useMutation({
+    onSuccess: () => {
+      toast.success("FAQ item added");
+      setNewFaqQuestion("");
+      setNewFaqAnswer("");
+      if (website) {
+        utils.weddingWebsite.getFaqItems.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add FAQ item");
+    },
+  });
+
+  const deleteFaqItemMutation = trpc.weddingWebsite.deleteFaqItem.useMutation({
+    onSuccess: () => {
+      toast.success("FAQ item deleted");
+      if (website) {
+        utils.weddingWebsite.getFaqItems.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete FAQ item");
+    },
+  });
+
+  const addTimelineItemMutation = trpc.weddingWebsite.addTimelineItem.useMutation({
+    onSuccess: () => {
+      toast.success("Timeline item added");
+      setNewTimelineTime("");
+      setNewTimelineTitle("");
+      setNewTimelineDescription("");
+      if (website) {
+        utils.weddingWebsite.getTimelineItems.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add timeline item");
+    },
+  });
+
+  const deleteTimelineItemMutation = trpc.weddingWebsite.deleteTimelineItem.useMutation({
+    onSuccess: () => {
+      toast.success("Timeline item deleted");
+      if (website) {
+        utils.weddingWebsite.getTimelineItems.invalidate({ websiteId: website.id });
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete timeline item");
+    },
+  });
+
+  // Load data using queries
+  const { data: registryLinks = [] } = trpc.weddingWebsite.getRegistryLinks.useQuery(
+    { websiteId: website?.id || 0 },
+    { enabled: !!website }
+  );
+
+  const { data: faqItems = [] } = trpc.weddingWebsite.getFaqItems.useQuery(
+    { websiteId: website?.id || 0 },
+    { enabled: !!website }
+  );
+
+  const { data: timelineItems = [] } = trpc.weddingWebsite.getTimelineItems.useQuery(
+    { websiteId: website?.id || 0 },
+    { enabled: !!website }
+  );
+
+  useEffect(() => {
+    if (website) {
+      setSlug(website.slug || "");
+      setIsPublished(website.isPublished);
+      setWelcomeMessage(website.welcomeMessage || "");
+      setOurStory(website.ourStory || "");
+      setTravelInfo(website.travelInfo || "");
+      setDressCode(website.dressCode || "");
+      setRsvpEnabled(website.rsvpEnabled);
+    }
+  }, [website]);
+
   const handleSave = () => {
     if (!coupleEvent) {
       toast.error("Event not found");
@@ -90,10 +210,7 @@ export default function CoupleWebsite() {
       isPublished,
       welcomeMessage,
       ourStory,
-      registryLinks,
-      eventDetails,
       travelInfo,
-      faqContent,
       dressCode,
       rsvpEnabled,
     };
@@ -103,6 +220,73 @@ export default function CoupleWebsite() {
     } else {
       createMutation.mutate({ eventId: coupleEvent.id, ...data });
     }
+  };
+
+  const handleAddRegistryLink = () => {
+    if (!newRegistryTitle.trim() || !newRegistryUrl.trim()) {
+      toast.error("Please enter both title and URL");
+      return;
+    }
+
+    if (!website) {
+      toast.error("Please save the website first");
+      return;
+    }
+
+    addRegistryLinkMutation.mutate({
+      websiteId: website.id,
+      title: newRegistryTitle,
+      url: newRegistryUrl,
+    });
+  };
+
+  const handleDeleteRegistryLink = (id: number) => {
+    deleteRegistryLinkMutation.mutate({ id });
+  };
+
+  const handleAddFaqItem = () => {
+    if (!newFaqQuestion.trim() || !newFaqAnswer.trim()) {
+      toast.error("Please enter both question and answer");
+      return;
+    }
+
+    if (!website) {
+      toast.error("Please save the website first");
+      return;
+    }
+
+    addFaqItemMutation.mutate({
+      websiteId: website.id,
+      question: newFaqQuestion,
+      answer: newFaqAnswer,
+    });
+  };
+
+  const handleDeleteFaqItem = (id: number) => {
+    deleteFaqItemMutation.mutate({ id });
+  };
+
+  const handleAddTimelineItem = () => {
+    if (!newTimelineTime.trim() || !newTimelineTitle.trim()) {
+      toast.error("Please enter both time and title");
+      return;
+    }
+
+    if (!website) {
+      toast.error("Please save the website first");
+      return;
+    }
+
+    addTimelineItemMutation.mutate({
+      websiteId: website.id,
+      time: newTimelineTime,
+      title: newTimelineTitle,
+      description: newTimelineDescription || undefined,
+    });
+  };
+
+  const handleDeleteTimelineItem = (id: number) => {
+    deleteTimelineItemMutation.mutate({ id });
   };
 
   const handleAddImage = () => {
@@ -244,30 +428,17 @@ export default function CoupleWebsite() {
               <p className="text-xs text-muted-foreground">{ourStory.length}/2000 characters</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="registryLinks">Registry Links</Label>
-              <Textarea
-                id="registryLinks"
-                value={registryLinks}
-                onChange={(e) => setRegistryLinks(e.target.value)}
-                rows={4}
-                placeholder="Add registry links (one per line)&#10;https://registry1.com&#10;https://registry2.com"
-                className="resize-none font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">Enter one URL per line. You can also add links to your honeymoon fund, charity donations, or other registries.</p>
-            </div>
-
             <div className="space-y-2 pt-4 border-t">
-              <Label htmlFor="eventDetails">Event Details</Label>
+              <Label htmlFor="dressCode">Dress Code</Label>
               <Textarea
-                id="eventDetails"
-                value={eventDetails}
-                onChange={(e) => setEventDetails(e.target.value)}
-                rows={4}
-                placeholder="Share event details like date, time, location, venue name, and parking information..."
+                id="dressCode"
+                value={dressCode}
+                onChange={(e) => setDressCode(e.target.value)}
+                rows={3}
+                placeholder="e.g., Black Tie, Cocktail Attire, Garden Party, etc."
                 className="resize-none"
               />
-              <p className="text-xs text-muted-foreground">{eventDetails.length}/2000 characters</p>
+              <p className="text-xs text-muted-foreground">{dressCode.length}/500 characters</p>
             </div>
 
             <div className="space-y-2">
@@ -282,35 +453,236 @@ export default function CoupleWebsite() {
               />
               <p className="text-xs text-muted-foreground">{travelInfo.length}/2000 characters</p>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="dressCode">Dress Code</Label>
-              <Textarea
-                id="dressCode"
-                value={dressCode}
-                onChange={(e) => setDressCode(e.target.value)}
-                rows={3}
-                placeholder="e.g., Black Tie, Cocktail Attire, Garden Party, etc."
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground">{dressCode.length}/500 characters</p>
+        {/* Registry Links Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Link2 className="w-5 h-5 text-[#2C5F5D]" />
+                <div>
+                  <CardTitle>Registry Links</CardTitle>
+                  <CardDescription>Add links to your registries and honeymoon fund</CardDescription>
+                </div>
+              </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {registryLinks.length > 0 && (
+                <div className="space-y-2">
+                  {registryLinks.map((link: any) => (
+                    <div key={link.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-medium text-sm">{link.title}</p>
+                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline truncate">
+                          {link.url}
+                        </a>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteRegistryLink(link.id!)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
 
-            <div className="space-y-2">
-              <Label htmlFor="faqContent">Frequently Asked Questions</Label>
-              <Textarea
-                id="faqContent"
-                value={faqContent}
-                onChange={(e) => setFaqContent(e.target.value)}
-                rows={6}
-                placeholder="Add common questions and answers for your guests..."
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground">{faqContent.length}/3000 characters</p>
+              <div className="pt-2 border-t space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="registryTitle">Registry Name *</Label>
+                  <Input
+                    id="registryTitle"
+                    placeholder="e.g., John Lewis, Honeymoon Fund"
+                    value={newRegistryTitle}
+                    onChange={(e) => setNewRegistryTitle(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="registryUrl">Registry URL *</Label>
+                  <Input
+                    id="registryUrl"
+                    placeholder="https://..."
+                    value={newRegistryUrl}
+                    onChange={(e) => setNewRegistryUrl(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddRegistryLink}
+                  disabled={addRegistryLinkMutation.isPending}
+                  className="w-full bg-[#2C5F5D] hover:bg-[#1e4441]"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Registry Link
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Timeline Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-[#2C5F5D]" />
+                <div>
+                  <CardTitle>Event Timeline</CardTitle>
+                  <CardDescription>Create a timeline of your wedding day events</CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {timelineItems.length > 0 && (
+                <div className="space-y-2 border-l-2 border-[#2C5F5D] pl-4">
+                  {timelineItems.map((item: any) => (
+                    <div key={item.id} className="pb-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm text-[#2C5F5D]">{item.time}</p>
+                          <p className="font-medium text-sm">{item.title}</p>
+                          {item.description && (
+                            <p className="text-xs text-gray-600 mt-1">{item.description}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTimelineItem(item.id!)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="pt-2 border-t space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="timelineTime">Time *</Label>
+                  <Input
+                    id="timelineTime"
+                    placeholder="e.g., 14:00, 2:00 PM"
+                    value={newTimelineTime}
+                    onChange={(e) => setNewTimelineTime(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="timelineTitle">Event Title *</Label>
+                  <Input
+                    id="timelineTitle"
+                    placeholder="e.g., Ceremony, Reception, Dinner"
+                    value={newTimelineTitle}
+                    onChange={(e) => setNewTimelineTitle(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="timelineDescription">Description (optional)</Label>
+                  <Textarea
+                    id="timelineDescription"
+                    placeholder="Add any additional details..."
+                    value={newTimelineDescription}
+                    onChange={(e) => setNewTimelineDescription(e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddTimelineItem}
+                  disabled={addTimelineItemMutation.isPending}
+                  className="w-full bg-[#2C5F5D] hover:bg-[#1e4441]"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Timeline Event
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* FAQ Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-[#2C5F5D]" />
+                <div>
+                  <CardTitle>Frequently Asked Questions</CardTitle>
+                  <CardDescription>Add common questions and answers for your guests</CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {faqItems.length > 0 && (
+                <div className="space-y-2">
+                  {faqItems.map((item: any) => (
+                    <div key={item.id} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.question}</p>
+                          <p className="text-sm text-gray-600 mt-1">{item.answer}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteFaqItem(item.id!)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="pt-2 border-t space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="faqQuestion">Question *</Label>
+                  <Input
+                    id="faqQuestion"
+                    placeholder="e.g., What is the dress code?"
+                    value={newFaqQuestion}
+                    onChange={(e) => setNewFaqQuestion(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="faqAnswer">Answer *</Label>
+                  <Textarea
+                    id="faqAnswer"
+                    placeholder="Provide the answer to the question..."
+                    value={newFaqAnswer}
+                    onChange={(e) => setNewFaqAnswer(e.target.value)}
+                    rows={3}
+                    className="resize-none"
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddFaqItem}
+                  disabled={addFaqItemMutation.isPending}
+                  className="w-full bg-[#2C5F5D] hover:bg-[#1e4441]"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add FAQ Item
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Photo Gallery Section */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">

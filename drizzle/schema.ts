@@ -418,6 +418,55 @@ export const drinks = mysqlTable("drinks", {
 export type Drink = typeof drinks.$inferSelect;
 export type InsertDrink = typeof drinks.$inferInsert;
 
+/**
+ * Wedding Website Registry Links table - stores registry links with titles
+ */
+export const weddingWebsiteRegistryLinks = mysqlTable("weddingWebsiteRegistryLinks", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(), // e.g., "John Lewis", "Honeymoon Fund"
+  url: varchar("url", { length: 500 }).notNull(), // The actual link
+  displayOrder: int("displayOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeddingWebsiteRegistryLink = typeof weddingWebsiteRegistryLinks.$inferSelect;
+export type InsertWeddingWebsiteRegistryLink = typeof weddingWebsiteRegistryLinks.$inferInsert;
+
+/**
+ * Wedding Website FAQ Items table - stores individual FAQ questions and answers
+ */
+export const weddingWebsiteFaqItems = mysqlTable("weddingWebsiteFaqItems", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  displayOrder: int("displayOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeddingWebsiteFaqItem = typeof weddingWebsiteFaqItems.$inferSelect;
+export type InsertWeddingWebsiteFaqItem = typeof weddingWebsiteFaqItems.$inferInsert;
+
+/**
+ * Wedding Website Timeline Items table - stores custom timeline events for event details
+ */
+export const weddingWebsiteTimelineItems = mysqlTable("weddingWebsiteTimelineItems", {
+  id: int("id").autoincrement().primaryKey(),
+  websiteId: int("websiteId").notNull(),
+  time: varchar("time", { length: 50 }).notNull(), // e.g., "14:00", "2:00 PM"
+  title: varchar("title", { length: 255 }).notNull(), // e.g., "Ceremony", "Reception"
+  description: text("description"), // Optional description
+  displayOrder: int("displayOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeddingWebsiteTimelineItem = typeof weddingWebsiteTimelineItems.$inferSelect;
+export type InsertWeddingWebsiteTimelineItem = typeof weddingWebsiteTimelineItems.$inferInsert;
+
 
 /**
  * Accommodation Rooms table - stores room information for events

@@ -1069,6 +1069,122 @@ export const appRouter = router({
         await db.deleteWeddingWebsitePhoto(input.id);
         return { success: true };
       }),
+
+    // Registry Links
+    addRegistryLink: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        title: z.string(),
+        url: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.addRegistryLink(input);
+        return { id };
+      }),
+
+    getRegistryLinks: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getRegistryLinksByWebsiteId(input.websiteId);
+      }),
+
+    updateRegistryLink: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        url: z.string().optional(),
+        displayOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateRegistryLink(id, data);
+        return { success: true };
+      }),
+
+    deleteRegistryLink: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteRegistryLink(input.id);
+        return { success: true };
+      }),
+
+    // FAQ Items
+    addFaqItem: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        question: z.string(),
+        answer: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.addFaqItem(input);
+        return { id };
+      }),
+
+    getFaqItems: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFaqItemsByWebsiteId(input.websiteId);
+      }),
+
+    updateFaqItem: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        question: z.string().optional(),
+        answer: z.string().optional(),
+        displayOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateFaqItem(id, data);
+        return { success: true };
+      }),
+
+    deleteFaqItem: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteFaqItem(input.id);
+        return { success: true };
+      }),
+
+    // Timeline Items
+    addTimelineItem: protectedProcedure
+      .input(z.object({
+        websiteId: z.number(),
+        time: z.string(),
+        title: z.string(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.addTimelineItem(input);
+        return { id };
+      }),
+
+    getTimelineItems: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getTimelineItemsByWebsiteId(input.websiteId);
+      }),
+
+    updateTimelineItem: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        time: z.string().optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        displayOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateTimelineItem(id, data);
+        return { success: true };
+      }),
+
+    deleteTimelineItem: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteTimelineItem(input.id);
+        return { success: true };
+      }),
   }),
 
   menu: router({

@@ -549,3 +549,11 @@
 - [x] Implement drag-and-drop section reordering
 - [x] Add photo captions and metadata support
 - [ ] Test all new features
+
+## Website UI Improvements
+- [ ] Update database schema for registry links with titles
+- [ ] Update database schema for FAQ items with individual Q&A
+- [x] Implement registry links with titles and hyperlinks
+- [x] Convert event details to custom timeline interface
+- [x] Convert FAQ to individual Q&A items with add/edit/delete
+- [ ] Enhance visual design to match Manor By The Lake branding

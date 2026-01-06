@@ -646,3 +646,6 @@
 ## Couple Accommodation Updates
 - [x] Remove guest allocation box from couple accommodation section
 - [x] Replace guest dropdown with search function for adding guests to rooms
+
+## Couple Seating - Guest Search Function
+- [x] Replace guest dropdown with search function when adding guests to tables

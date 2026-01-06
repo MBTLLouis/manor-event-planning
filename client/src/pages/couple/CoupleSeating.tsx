@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CoupleSeating() {
@@ -33,6 +33,7 @@ export default function CoupleSeating() {
   const [editingTable, setEditingTable] = useState<any>(null);
   const [selectedTableForGuest, setSelectedTableForGuest] = useState<number | null>(null);
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
+  const [guestSearchQuery, setGuestSearchQuery] = useState<string>('');
 
   const utils = trpc.useUtils();
 
@@ -374,19 +375,46 @@ export default function CoupleSeating() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="guest">Select Guest</Label>
-                        <Select value={selectedGuestId} onValueChange={setSelectedGuestId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a guest" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {unassignedGuests.map((guest: any) => (
-                              <SelectItem key={guest.id} value={guest.id.toString()}>
-                                {guest.firstName} {guest.lastName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="guest">Search Guest</Label>
+                        <div className="relative">
+                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Search by name..."
+                            value={guestSearchQuery}
+                            onChange={(e) => setGuestSearchQuery(e.target.value)}
+                            className="pl-8"
+                          />
+                        </div>
+                        {guestSearchQuery && (
+                          <div className="border rounded-md max-h-64 overflow-y-auto">
+                            {unassignedGuests
+                              .filter((guest: any) =>
+                                `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase())
+                              )
+                              .map((guest: any) => (
+                                <button
+                                  key={guest.id}
+                                  onClick={() => {
+                                    setSelectedGuestId(guest.id.toString());
+                                    setGuestSearchQuery("");
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0 transition-colors"
+                                >
+                                  <div className="font-medium text-sm">{guest.firstName} {guest.lastName}</div>
+                                </button>
+                              ))}
+                            {unassignedGuests.filter((guest: any) =>
+                              `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase())
+                            ).length === 0 && (
+                              <div className="px-3 py-2 text-sm text-gray-500">No guests found</div>
+                            )}
+                          </div>
+                        )}
+                        {selectedGuestId && (
+                          <div className="text-sm text-green-600 font-medium">
+                            Selected: {unassignedGuests.find((g: any) => g.id.toString() === selectedGuestId)?.firstName} {unassignedGuests.find((g: any) => g.id.toString() === selectedGuestId)?.lastName}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <DialogFooter>

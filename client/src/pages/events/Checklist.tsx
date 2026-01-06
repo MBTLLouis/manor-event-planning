@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, CheckCircle2, Circle, AlertCircle, Edit2 } from "lucide-react";
+import { Plus, CheckCircle2, Circle, AlertCircle, Edit2, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ChecklistEnhanced() {
@@ -104,21 +104,44 @@ export default function ChecklistEnhanced() {
     });
   };
 
+  // Check if task is overdue
+  const isOverdue = (item: any) => {
+    if (!item.dueDate || item.completed) return false;
+    const dueDate = new Date(item.dueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate < today;
+  };
+
   // Filter items by assignment
   const manorItems = checklistItems.filter(item => item.assignedTo === "Manor");
   const coupleItems = checklistItems.filter(item => item.assignedTo === "Couple");
 
-  // Group items by priority
-  const groupByPriority = (items: typeof checklistItems) => {
-    const priorities = ["high", "medium", "low"];
-    return priorities.reduce((acc, priority) => {
-      acc[priority] = items.filter(item => item.priority === priority);
+  // Group items by category and sort by priority
+  const groupItems = (items: typeof checklistItems) => {
+    const grouped = items.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = [];
+      }
+      acc[item.category].push(item);
       return acc;
     }, {} as Record<string, typeof checklistItems>);
+
+    // Sort items within each category by priority (high, medium, low)
+    Object.keys(grouped).forEach(category => {
+      grouped[category].sort((a, b) => {
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        return (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - 
+               (priorityOrder[b.priority as keyof typeof priorityOrder] || 3);
+      });
+    });
+
+    return grouped;
   };
 
-  const groupedManorItems = groupByPriority(manorItems);
-  const groupedCoupleItems = groupByPriority(coupleItems);
+  const groupedManorItems = groupItems(manorItems);
+  const groupedCoupleItems = groupItems(coupleItems);
 
   // Calculate progress for each tab
   const manorCompleted = manorItems.filter(item => item.completed).length;
@@ -129,24 +152,8 @@ export default function ChecklistEnhanced() {
   const coupleTotal = coupleItems.length;
   const coupleProgress = coupleTotal > 0 ? Math.round((coupleCompleted / coupleTotal) * 100) : 0;
 
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "🔴 High Priority";
-      case "medium":
-        return "🟡 Medium Priority";
-      case "low":
-        return "🟢 Low Priority";
-      default:
-        return priority;
-    }
-  };
-
   const renderTaskList = (groupedItems: Record<string, typeof checklistItems>) => {
-    const priorities = ["high", "medium", "low"];
-    const hasAnyTasks = priorities.some(p => groupedItems[p]?.length > 0);
-
-    if (!hasAnyTasks) {
+    if (Object.keys(groupedItems).length === 0) {
       return (
         <Card>
           <CardContent className="py-12 text-center">
@@ -158,26 +165,24 @@ export default function ChecklistEnhanced() {
 
     return (
       <div className="space-y-6">
-        {priorities.map((priority) => {
-          const items = groupedItems[priority] || [];
-          if (items.length === 0) return null;
-
-          return (
-            <Card key={priority}>
-              <CardHeader>
-                <CardTitle>{getPriorityLabel(priority)}</CardTitle>
-                <CardDescription>
-                  {items.filter(i => i.completed).length} of {items.length} completed
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {items.map((item) => (
+        {Object.entries(groupedItems).map(([category, items]) => (
+          <Card key={category}>
+            <CardHeader>
+              <CardTitle className="capitalize">{category}</CardTitle>
+              <CardDescription>
+                {items.filter(i => i.completed).length} of {items.length} completed
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {items.map((item) => {
+                  const overdue = isOverdue(item);
+                  return (
                     <div
                       key={item.id}
                       className={`border rounded-lg p-4 transition-all ${
                         item.completed ? "bg-muted/50 opacity-75" : ""
-                      }`}
+                      } ${overdue ? "border-red-500 bg-red-50" : ""}`}
                     >
                       <div className="flex items-start gap-3">
                         <button
@@ -198,6 +203,12 @@ export default function ChecklistEnhanced() {
                             {item.priority === "high" && (
                               <AlertCircle className="w-4 h-4 text-destructive" />
                             )}
+                            {overdue && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-red-200 text-red-800 font-medium flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                Overdue
+                              </span>
+                            )}
                             <span
                               className={`text-xs px-2 py-0.5 rounded-full ${
                                 item.priority === "high"
@@ -207,7 +218,7 @@ export default function ChecklistEnhanced() {
                                   : "bg-gray-100 text-gray-800"
                               }`}
                             >
-                              {item.category}
+                              {item.priority}
                             </span>
                           </div>
                           {item.description && (
@@ -215,7 +226,9 @@ export default function ChecklistEnhanced() {
                           )}
                           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                             {item.dueDate && (
-                              <span>📅 Due: {new Date(item.dueDate).toLocaleDateString()}</span>
+                              <span className={overdue ? "text-red-600 font-medium" : ""}>
+                                📅 Due: {new Date(item.dueDate).toLocaleDateString()}
+                              </span>
                             )}
                             {item.completedAt && (
                               <span className="text-green-600">
@@ -246,12 +259,12 @@ export default function ChecklistEnhanced() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     );
   };

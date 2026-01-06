@@ -616,5 +616,6 @@
 
 ## Checklist Task Fixes
 - [x] Add edit functionality to employee Checklist component
-- [x] Reorganize task display by priority (High, Medium, Low)
-- [x] Test edit and priority grouping functionality
+- [x] Revert to category-based grouping (keep edit functionality)
+- [x] Add red highlighting for overdue tasks
+- [x] Test overdue highlighting with category grouping

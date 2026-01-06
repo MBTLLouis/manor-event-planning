@@ -688,3 +688,9 @@
 - [x] Implement table name edit form
 - [x] Add table update mutation to save changes
 - [x] Persist table name changes to database
+
+## Seating Plan Synchronization (Employee & Couple)
+- [x] Update employee seating plan to use same interface as couple
+- [x] Ensure both roles share same table and guest assignment data
+- [x] Test real-time synchronization between employee and couple views
+- [x] Verify changes made by couple are visible to employee and vice versa

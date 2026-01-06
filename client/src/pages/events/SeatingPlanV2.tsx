@@ -5,14 +5,8 @@ import EmployeeLayout from '@/components/EmployeeLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Search } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Guest {
   id: number;
@@ -48,6 +42,7 @@ export default function SeatingPlanV2() {
   const [newTableName, setNewTableName] = useState('');
   const [newTableCapacity, setNewTableCapacity] = useState('8');
   const [selectedGuests, setSelectedGuests] = useState<Record<string, string>>({});
+  const [guestSearchQueries, setGuestSearchQueries] = useState<Record<string, string>>({});
 
   // Track which guests are already assigned
   const assignedGuestIds = new Set(
@@ -70,6 +65,13 @@ export default function SeatingPlanV2() {
     { floorPlanId: floorPlanId || 0 },
     { enabled: !!floorPlanId }
   );
+
+  // Table mutations for persistence
+  const createTableMutation = trpc.tables.create.useMutation();
+  const deleteTableMutation = trpc.tables.delete.useMutation();
+  const updateTableMutation = trpc.tables.update.useMutation();
+  const updateGuestMutation = trpc.guests.update.useMutation();
+  const utils = trpc.useUtils();
 
   // Initialize floor plan and load tables on mount
   useEffect(() => {
@@ -107,18 +109,28 @@ export default function SeatingPlanV2() {
   }, [tables]);
 
   const handleAddTable = () => {
-    if (!newTableName.trim()) return;
+    if (!newTableName.trim() || !floorPlanId) return;
 
-    const newTable: Table = {
-      id: Date.now().toString(),
-      name: newTableName,
-      capacity: parseInt(newTableCapacity) || 8,
-      guests: [],
-    };
+    const capacity = parseInt(newTableCapacity) || 8;
 
-    setTables([...tables, newTable]);
-    setNewTableName('');
-    setNewTableCapacity('8');
+    createTableMutation.mutate(
+      {
+        floorPlanId,
+        name: newTableName,
+        tableType: 'round',
+        seatCount: capacity,
+        positionX: 0,
+        positionY: 0,
+      },
+      {
+        onSuccess: () => {
+          utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+          setNewTableName('');
+          setNewTableCapacity('8');
+          toast.success('Table added');
+        },
+      }
+    );
   };
 
   const handleAddGuest = (tableId: string) => {
@@ -129,53 +141,90 @@ export default function SeatingPlanV2() {
     const guest = eventGuests.find((g: any) => g.id === guestId);
     if (!guest) return;
 
-    setTables(
-      tables.map((table) => {
-        if (table.id === tableId) {
-          const nextSeatNumber = table.guests.length + 1;
-          return {
-            ...table,
-            guests: [
-              ...table.guests,
-              {
-                guestId: guest.id,
-                firstName: guest.firstName,
-                lastName: guest.lastName,
-                seatNumber: nextSeatNumber,
-              },
-            ],
-          };
-        }
-        return table;
-      })
-    );
+    const table = tables.find((t) => t.id === tableId);
+    if (!table) return;
 
-    setSelectedGuests({ ...selectedGuests, [tableId]: '' });
+    const nextSeatNumber = table.guests.length + 1;
+    const tableIdNum = parseInt(tableId);
+
+    updateGuestMutation.mutate(
+      {
+        id: guestId,
+        tableId: tableIdNum,
+      },
+      {
+        onSuccess: () => {
+          setTables(
+            tables.map((t) => {
+              if (t.id === tableId) {
+                return {
+                  ...t,
+                  guests: [
+                    ...t.guests,
+                    {
+                      guestId: guest.id,
+                      firstName: guest.firstName,
+                      lastName: guest.lastName,
+                      seatNumber: nextSeatNumber,
+                    },
+                  ],
+                };
+              }
+              return t;
+            })
+          );
+          setSelectedGuests({ ...selectedGuests, [tableId]: '' });
+          utils.guests.list.invalidate({ eventId });
+          toast.success('Guest assigned to table');
+        },
+      }
+    );
   };
 
   const handleRemoveGuest = (tableId: string, guestId: number) => {
-    setTables(
-      tables.map((table) => {
-        if (table.id === tableId) {
-          // Remove the guest and renumber remaining seats
-          const updatedGuests = table.guests
-            .filter((g) => g.guestId !== guestId)
-            .map((g, index) => ({
-              ...g,
-              seatNumber: index + 1,
-            }));
-          return {
-            ...table,
-            guests: updatedGuests,
-          };
-        }
-        return table;
-      })
+    updateGuestMutation.mutate(
+      {
+        id: guestId,
+        tableId: null,
+      },
+      {
+        onSuccess: () => {
+          setTables(
+            tables.map((table) => {
+              if (table.id === tableId) {
+                const updatedGuests = table.guests
+                  .filter((g) => g.guestId !== guestId)
+                  .map((g, index) => ({
+                    ...g,
+                    seatNumber: index + 1,
+                  }));
+                return {
+                  ...table,
+                  guests: updatedGuests,
+                };
+              }
+              return table;
+            })
+          );
+          utils.guests.list.invalidate({ eventId });
+          toast.success('Guest removed from table');
+        },
+      }
     );
   };
 
   const handleDeleteTable = (tableId: string) => {
-    setTables(tables.filter((table) => table.id !== tableId));
+    const tableIdNum = parseInt(tableId);
+    deleteTableMutation.mutate(
+      { id: tableIdNum },
+      {
+        onSuccess: () => {
+          setTables(tables.filter((table) => table.id !== tableId));
+          utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+          toast.success('Table deleted');
+        },
+      }
+    );
   };
 
   // Get seating info for a guest
@@ -310,34 +359,64 @@ export default function SeatingPlanV2() {
 
                         {/* Add Guest Selection */}
                         {!isFull && unassignedGuests.length > 0 && (
-                          <div className="flex gap-2 pt-2 border-t">
-                            <Select
-                              value={selectedGuests[table.id] || ''}
-                              onValueChange={(value) =>
-                                setSelectedGuests({
-                                  ...selectedGuests,
-                                  [table.id]: value,
-                                })
-                              }
-                            >
-                              <SelectTrigger className="text-sm">
-                                <SelectValue placeholder="Select guest" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {unassignedGuests.map((guest: any) => (
-                                  <SelectItem key={guest.id} value={guest.id.toString()}>
-                                    {guest.firstName} {guest.lastName}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddGuest(table.id)}
-                              className="bg-teal-600 hover:bg-teal-700"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
+                          <div className="space-y-2 pt-2 border-t">
+                            <div className="relative">
+                              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                              <Input
+                                placeholder="Search guest..."
+                                value={guestSearchQueries[table.id] || ''}
+                                onChange={(e) =>
+                                  setGuestSearchQueries({
+                                    ...guestSearchQueries,
+                                    [table.id]: e.target.value,
+                                  })
+                                }
+                                className="pl-8 text-sm"
+                              />
+                            </div>
+                            {(guestSearchQueries[table.id] || unassignedGuests.length > 0) && (
+                              <div className="border rounded-md max-h-48 overflow-y-auto">
+                                {unassignedGuests
+                                  .filter((guest: any) => {
+                                    const query = guestSearchQueries[table.id] || '';
+                                    return (
+                                      !query ||
+                                      `${guest.firstName} ${guest.lastName}`
+                                        .toLowerCase()
+                                        .includes(query.toLowerCase())
+                                    );
+                                  })
+                                  .map((guest: any) => (
+                                    <button
+                                      key={guest.id}
+                                      onClick={() => {
+                                        setSelectedGuests({
+                                          ...selectedGuests,
+                                          [table.id]: guest.id.toString(),
+                                        });
+                                        setGuestSearchQueries({
+                                          ...guestSearchQueries,
+                                          [table.id]: '',
+                                        });
+                                        handleAddGuest(table.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0 transition-colors text-sm"
+                                    >
+                                      {guest.firstName} {guest.lastName}
+                                    </button>
+                                  ))}
+                                {guestSearchQueries[table.id] &&
+                                  unassignedGuests.filter((guest: any) =>
+                                    `${guest.firstName} ${guest.lastName}`
+                                      .toLowerCase()
+                                      .includes(guestSearchQueries[table.id].toLowerCase())
+                                  ).length === 0 && (
+                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                      No guests found
+                                    </div>
+                                  )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </CardContent>

@@ -670,3 +670,14 @@
 - [x] Fix tables disappearing when navigating away from couple seating page
 - [x] Implement database save when creating/deleting tables
 - [x] Load saved tables from database on page load
+
+
+## Couple Seating - Guest List Enhancement
+- [x] Display table name and seat number in guest list sidebar after allocation (already implemented)
+
+
+## Couple Seating - Guest Assignment Persistence
+- [x] Add guest assignment mutations (update guest tableId and seatNumber)
+- [x] Update handleAddGuest to save to database
+- [x] Update handleRemoveGuest to save to database
+- [x] Load guest assignments from database on page load

@@ -77,6 +77,9 @@ export default function CoupleSeatingV2() {
   const deleteTableMutation = trpc.tables.delete.useMutation();
   const utils = trpc.useUtils();
 
+  // Guest assignment mutations
+  const updateGuestMutation = trpc.guests.update.useMutation();
+
   // Initialize floor plan and load tables on mount
   useEffect(() => {
     if (floorPlans.length > 0) {
@@ -102,10 +105,29 @@ export default function CoupleSeatingV2() {
         capacity: table.seatCount,
         guests: []
       }));
-      setTables(convertedTables);
+      
+      // Load guest assignments from eventGuests
+      const tablesWithGuests = convertedTables.map(table => {
+        const tableGuests = eventGuests
+          .filter((guest: any) => guest.tableId === parseInt(table.id))
+          .sort((a: any, b: any) => (a.seatNumber || 0) - (b.seatNumber || 0))
+          .map((guest: any) => ({
+            guestId: guest.id,
+            firstName: guest.firstName,
+            lastName: guest.lastName,
+            seatNumber: guest.seatNumber || 0,
+          }));
+        
+        return {
+          ...table,
+          guests: tableGuests,
+        };
+      });
+      
+      setTables(tablesWithGuests);
       setSaveStatus('saved');
     }
-  }, [floorPlanId, savedTables]);
+  }, [floorPlanId, savedTables, eventGuests]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -156,48 +178,76 @@ export default function CoupleSeatingV2() {
     const guest = eventGuests.find((g: any) => g.id === guestId);
     if (!guest) return;
 
-    setTables(
-      tables.map((table) => {
-        if (table.id === tableId) {
-          const nextSeatNumber = table.guests.length + 1;
-          return {
-            ...table,
-            guests: [
-              ...table.guests,
-              {
-                guestId: guest.id,
-                firstName: guest.firstName,
-                lastName: guest.lastName,
-                seatNumber: nextSeatNumber,
-              },
-            ],
-          };
-        }
-        return table;
-      })
-    );
+    const table = tables.find(t => t.id === tableId);
+    if (!table) return;
 
-    setSelectedGuests({ ...selectedGuests, [tableId]: '' });
+    const nextSeatNumber = table.guests.length + 1;
+    const tableIdNum = parseInt(tableId);
+
+    // Save guest assignment to database
+    updateGuestMutation.mutate(
+      {
+        id: guestId,
+        tableId: tableIdNum,
+      },
+      {
+        onSuccess: () => {
+          setTables(
+            tables.map((t) => {
+              if (t.id === tableId) {
+                return {
+                  ...t,
+                  guests: [
+                    ...t.guests,
+                    {
+                      guestId: guest.id,
+                      firstName: guest.firstName,
+                      lastName: guest.lastName,
+                      seatNumber: nextSeatNumber,
+                    },
+                  ],
+                };
+              }
+              return t;
+            })
+          );
+          setSelectedGuests({ ...selectedGuests, [tableId]: '' });
+          utils.guests.list.invalidate({ eventId });
+        },
+      }
+    );
   };
 
   const handleRemoveGuest = (tableId: string, guestId: number) => {
-    setTables(
-      tables.map((table) => {
-        if (table.id === tableId) {
-          // Remove the guest and renumber remaining seats
-          const updatedGuests = table.guests
-            .filter((g) => g.guestId !== guestId)
-            .map((g, index) => ({
-              ...g,
-              seatNumber: index + 1,
-            }));
-          return {
-            ...table,
-            guests: updatedGuests,
-          };
-        }
-        return table;
-      })
+    // Clear guest table assignment in database
+    updateGuestMutation.mutate(
+      {
+        id: guestId,
+        tableId: null,
+      },
+      {
+        onSuccess: () => {
+          setTables(
+            tables.map((table) => {
+              if (table.id === tableId) {
+                // Remove the guest and renumber remaining seats
+                const updatedGuests = table.guests
+                  .filter((g) => g.guestId !== guestId)
+                  .map((g, index) => ({
+                    ...g,
+                    seatNumber: index + 1,
+                  }));
+                return {
+                  ...table,
+                  guests: updatedGuests,
+                };
+              }
+              return table;
+            })
+          );
+          utils.guests.list.invalidate({ eventId });
+        },
+      }
     );
   };
 

@@ -5,20 +5,14 @@ import CoupleLayout from '@/components/CoupleLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ArrowLeft, Plus, Trash2, Search, Edit } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Guest {
   id: number;
   firstName: string;
   lastName: string;
-  tableId?: string;
+  tableId?: number;
   seatNumber?: number;
 }
 
@@ -61,14 +55,12 @@ export default function CoupleSeatingV2() {
 
   const [selectedGuests, setSelectedGuests] = useState<Record<string, string>>({});
   const [guestSearchQueries, setGuestSearchQueries] = useState<Record<string, string>>({});
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'unsaved' | 'saving'>('idle');
   const [floorPlanId, setFloorPlanId] = useState<number | null>(null);
 
   // Get or create floor plan
   const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId }, { enabled: !!coupleEvent });
   const createFloorPlanMutation = trpc.floorPlans.create.useMutation();
-  
+
   // Load saved tables from database
   const { data: savedTables = [] } = trpc.tables.list.useQuery(
     { floorPlanId: floorPlanId || 0 },
@@ -94,7 +86,7 @@ export default function CoupleSeatingV2() {
         {
           onSuccess: (result) => {
             setFloorPlanId(result.id);
-          }
+          },
         }
       );
     }
@@ -103,15 +95,15 @@ export default function CoupleSeatingV2() {
   // Load tables from database when floorPlanId changes
   useEffect(() => {
     if (floorPlanId && savedTables.length > 0) {
-      const convertedTables = savedTables.map(table => ({
+      const convertedTables = savedTables.map((table: any) => ({
         id: table.id.toString(),
         name: table.name,
         capacity: table.seatCount,
-        guests: []
+        guests: [],
       }));
-      
+
       // Load guest assignments from eventGuests
-      const tablesWithGuests = convertedTables.map(table => {
+      const tablesWithGuests = convertedTables.map((table) => {
         const tableGuests = eventGuests
           .filter((guest: any) => guest.tableId === parseInt(table.id))
           .sort((a: any, b: any) => (a.seatNumber || 0) - (b.seatNumber || 0))
@@ -121,24 +113,16 @@ export default function CoupleSeatingV2() {
             lastName: guest.lastName,
             seatNumber: guest.seatNumber || 0,
           }));
-        
+
         return {
           ...table,
           guests: tableGuests,
         };
       });
-      
+
       setTables(tablesWithGuests);
-      setSaveStatus('saved');
     }
   }, [floorPlanId, savedTables, eventGuests]);
-
-  // Track unsaved changes
-  useEffect(() => {
-    if (tables.length > 0 && saveStatus !== 'saving') {
-      setSaveStatus('unsaved');
-    }
-  }, [tables]);
 
   // Track which guests are already assigned
   const assignedGuestIds = new Set(
@@ -152,7 +136,7 @@ export default function CoupleSeatingV2() {
     if (!newTableName.trim() || !floorPlanId) return;
 
     const capacity = parseInt(newTableCapacity) || 8;
-    
+
     createTableMutation.mutate(
       {
         floorPlanId,
@@ -168,12 +152,11 @@ export default function CoupleSeatingV2() {
           utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
           setNewTableName('');
           setNewTableCapacity('8');
-          setSaveStatus('saved');
+          toast.success('Table added');
         },
       }
     );
   };
-
 
   const handleEditTable = (tableId: string, currentName: string) => {
     setEditingTableId(tableId);
@@ -182,7 +165,7 @@ export default function CoupleSeatingV2() {
 
   const handleSaveTableName = (tableId: string) => {
     if (!editingTableName.trim()) return;
-    
+
     const tableIdNum = parseInt(tableId);
     updateTableMutation.mutate(
       {
@@ -199,6 +182,7 @@ export default function CoupleSeatingV2() {
           setEditingTableId(null);
           setEditingTableName('');
           utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+          toast.success('Table name updated');
         },
       }
     );
@@ -217,7 +201,7 @@ export default function CoupleSeatingV2() {
     const guest = eventGuests.find((g: any) => g.id === guestId);
     if (!guest) return;
 
-    const table = tables.find(t => t.id === tableId);
+    const table = tables.find((t) => t.id === tableId);
     if (!table) return;
 
     const nextSeatNumber = table.guests.length + 1;
@@ -252,6 +236,7 @@ export default function CoupleSeatingV2() {
           );
           setSelectedGuests({ ...selectedGuests, [tableId]: '' });
           utils.guests.list.invalidate({ eventId });
+          toast.success('Guest assigned to table');
         },
       }
     );
@@ -285,6 +270,7 @@ export default function CoupleSeatingV2() {
             })
           );
           utils.guests.list.invalidate({ eventId });
+          toast.success('Guest removed from table');
         },
       }
     );
@@ -298,7 +284,7 @@ export default function CoupleSeatingV2() {
         onSuccess: () => {
           setTables(tables.filter((table) => table.id !== tableId));
           utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
-          setSaveStatus('saved');
+          toast.success('Table deleted');
         },
       }
     );
@@ -331,7 +317,7 @@ export default function CoupleSeatingV2() {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             {/* Add Table Section */}
-            <Card className="bg-teal-50 border-teal-200">
+            <Card className="bg-rose-50 border-rose-200">
               <CardHeader>
                 <CardTitle className="text-lg">Add New Table</CardTitle>
               </CardHeader>
@@ -354,7 +340,7 @@ export default function CoupleSeatingV2() {
                   />
                   <Button
                     onClick={handleAddTable}
-                    className="bg-teal-600 hover:bg-teal-700"
+                    className="bg-rose-600 hover:bg-rose-700"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add
@@ -391,7 +377,7 @@ export default function CoupleSeatingV2() {
                               <Button
                                 size="sm"
                                 onClick={() => handleSaveTableName(table.id)}
-                                className="bg-teal-600 hover:bg-teal-700"
+                                className="bg-rose-600 hover:bg-rose-700"
                               >
                                 Save
                               </Button>
@@ -433,7 +419,7 @@ export default function CoupleSeatingV2() {
                         <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                           <div
                             className={`h-2 rounded-full transition-all ${
-                              isFull ? 'bg-red-500' : 'bg-teal-500'
+                              isFull ? 'bg-red-500' : 'bg-rose-500'
                             }`}
                             style={{
                               width: `${Math.min((occupancy / table.capacity) * 100, 100)}%`,
@@ -479,10 +465,12 @@ export default function CoupleSeatingV2() {
                               <Input
                                 placeholder="Search guest..."
                                 value={guestSearchQueries[table.id] || ''}
-                                onChange={(e) => setGuestSearchQueries({
-                                  ...guestSearchQueries,
-                                  [table.id]: e.target.value
-                                })}
+                                onChange={(e) =>
+                                  setGuestSearchQueries({
+                                    ...guestSearchQueries,
+                                    [table.id]: e.target.value,
+                                  })
+                                }
                                 className="pl-8 text-sm"
                               />
                             </div>
@@ -491,7 +479,12 @@ export default function CoupleSeatingV2() {
                                 {unassignedGuests
                                   .filter((guest: any) => {
                                     const query = guestSearchQueries[table.id] || '';
-                                    return !query || `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(query.toLowerCase());
+                                    return (
+                                      !query ||
+                                      `${guest.firstName} ${guest.lastName}`
+                                        .toLowerCase()
+                                        .includes(query.toLowerCase())
+                                    );
                                   })
                                   .map((guest: any) => (
                                     <button
@@ -512,11 +505,16 @@ export default function CoupleSeatingV2() {
                                       {guest.firstName} {guest.lastName}
                                     </button>
                                   ))}
-                                {guestSearchQueries[table.id] && unassignedGuests.filter((guest: any) =>
-                                  `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQueries[table.id].toLowerCase())
-                                ).length === 0 && (
-                                  <div className="px-3 py-2 text-sm text-gray-500">No guests found</div>
-                                )}
+                                {guestSearchQueries[table.id] &&
+                                  unassignedGuests.filter((guest: any) =>
+                                    `${guest.firstName} ${guest.lastName}`
+                                      .toLowerCase()
+                                      .includes(guestSearchQueries[table.id].toLowerCase())
+                                  ).length === 0 && (
+                                    <div className="px-3 py-2 text-sm text-gray-500">
+                                      No guests found
+                                    </div>
+                                  )}
                               </div>
                             )}
                           </div>
@@ -534,9 +532,7 @@ export default function CoupleSeatingV2() {
             <Card className="sticky top-4">
               <CardHeader>
                 <CardTitle className="text-lg">Guest List</CardTitle>
-                <p className="text-xs text-gray-600 mt-1">
-                  {eventGuests.length} total guests
-                </p>
+                <p className="text-xs text-gray-600 mt-1">{eventGuests.length} total guests</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -547,7 +543,7 @@ export default function CoupleSeatingV2() {
                         key={guest.id}
                         className={`p-2 rounded border text-sm ${
                           seatingInfo
-                            ? 'bg-teal-50 border-teal-200'
+                            ? 'bg-rose-50 border-rose-200'
                             : 'bg-gray-50 border-gray-200'
                         }`}
                       >
@@ -555,7 +551,7 @@ export default function CoupleSeatingV2() {
                           {guest.firstName} {guest.lastName}
                         </p>
                         {seatingInfo ? (
-                          <p className="text-xs text-teal-700">
+                          <p className="text-xs text-rose-700">
                             📍 {seatingInfo.table} • Seat {seatingInfo.seat}
                           </p>
                         ) : (

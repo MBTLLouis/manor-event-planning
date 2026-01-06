@@ -535,3 +535,8 @@
 - [x] Investigate why rooms aren't showing in couple's Accommodations section
 - [x] Fix room display and guest allocation functionality
 - [x] Test and verify rooms are visible to couples
+
+
+## Fix Back Button Navigation in Accommodations
+- [x] Fix the back button to navigate to the specific event instead of events list
+- [x] Test the back button navigation

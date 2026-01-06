@@ -42,7 +42,7 @@ interface Guest {
 }
 
 export default function Accommodations() {
-  const { eventId } = useParams<{ eventId: string }>();
+  const { id: eventId } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
@@ -162,7 +162,7 @@ export default function Accommodations() {
       <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => setLocation("/events")}>
+          <Button variant="ghost" size="sm" onClick={() => setLocation(`/events/${eventId}`)}>
             <ChevronLeft className="h-4 w-4" />
             Back to Event
           </Button>

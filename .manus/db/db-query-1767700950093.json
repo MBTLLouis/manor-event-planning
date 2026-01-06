@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, coupleName1, coupleName2, coupleUsername, couplePassword FROM events LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, coupleName1, coupleName2, coupleUsername, couplePassword FROM events LIMIT 5;",
+  "rows": [
+    {
+      "id": "300001",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Seren Jones",
+      "coupleUsername": "LouisRen",
+      "couplePassword": "Manor1854"
+    },
+    {
+      "id": "360001",
+      "coupleName1": "Jeremy Lando",
+      "coupleName2": "Donna Rust",
+      "coupleUsername": "Lando",
+      "couplePassword": "Manor1854"
+    },
+    {
+      "id": "390002",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767625673003_gryfpj",
+      "couplePassword": "c3d0fpwiyriqjk6pa4n4q"
+    },
+    {
+      "id": "390003",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767625673087_pibcnx",
+      "couplePassword": "j8oef67y6hilz6qv8i3oh"
+    },
+    {
+      "id": "390004",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767625673200_p1k1sl",
+      "couplePassword": "l7tt7lxdt18oa33ozjm0w"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcoupleName1\tcoupleName2\tcoupleUsername\tcouplePassword\n300001\tLouis Givens\tSeren Jones\tLouisRen\tManor1854\n360001\tJeremy Lando\tDonna Rust\tLando\tManor1854\n390002\tAlice\tBob\tcouple_1767625673003_gryfpj\tc3d0fpwiyriqjk6pa4n4q\n390003\tTest\tCouple\tcouple_1767625673087_pibcnx\tj8oef67y6hilz6qv8i3oh\n390004\tCharlie\tDiana\tcouple_1767625673200_p1k1sl\tl7tt7lxdt18oa33ozjm0w\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

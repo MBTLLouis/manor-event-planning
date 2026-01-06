@@ -3,10 +3,10 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import * as permStore from "./permissionsStore";
 import bcrypt from "bcryptjs";
-import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
   system: systemRouter,
@@ -123,9 +123,9 @@ export const appRouter = router({
 
   events: router({
     list: protectedProcedure.query(async ({ ctx }) => {
-      // For couples, return only their event
-      if (ctx.user.role === 'couple') {
-        const coupleEvent = await db.getEventByCoupleUsername(ctx.user.username || '');
+      // For couples, return only their event by ID
+      if (ctx.user?.role === 'couple') {
+        const coupleEvent = await db.getEventById(ctx.user.id);
         return coupleEvent ? [coupleEvent] : [];
       }
       // For employees/admins, return all events
@@ -148,7 +148,11 @@ export const appRouter = router({
 
     getById: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
+        // For couples, only allow access to their own event
+        if (ctx.user?.role === 'couple' && ctx.user.id !== input.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         return await db.getEventById(input.id);
       }),
 
@@ -162,6 +166,10 @@ export const appRouter = router({
         status: z.enum(["planning", "confirmed", "completed", "cancelled"]).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
+        // Couples cannot create events
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot create events' });
+        }
         const id = await db.createEvent({
           ...input,
           eventDate: new Date(input.eventDate),
@@ -180,7 +188,11 @@ export const appRouter = router({
         eventCode: z.string().optional(),
         status: z.enum(["planning", "confirmed", "completed", "cancelled"]).optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Couples cannot update event details
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot update event details' });
+        }
         const { id, ...data } = input;
         const updateData: any = { ...data };
         if (data.eventDate) {
@@ -192,7 +204,11 @@ export const appRouter = router({
 
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Couples cannot delete events
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot delete events' });
+        }
         await db.deleteEvent(input.id);
         return { success: true };
       }),
@@ -202,14 +218,22 @@ export const appRouter = router({
         id: z.number(),
         coupleCanView: z.boolean()
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Couples cannot toggle visibility (security)
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         await db.updateEvent(input.id, { coupleCanView: input.coupleCanView });
         return { success: true };
       }),
 
     stats: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
+        // For couples, only allow access to their own event stats
+        if (ctx.user?.role === 'couple' && ctx.user.id !== input.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         const guestStats = await db.getGuestStats(input.id);
         return {
           guests: guestStats.total,
@@ -225,7 +249,11 @@ export const appRouter = router({
 
     getCoupleLoginDetails: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
+      .query(async ({ input, ctx }) => {
+        // Couples cannot view login details (security)
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         const event = await db.getEventById(input.id);
         if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
         return {
@@ -240,7 +268,11 @@ export const appRouter = router({
         username: z.string().optional(),
         password: z.string().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Couples cannot update login details (security)
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         const { id, username, password } = input;
         const updateData: any = {};
         if (username) updateData.coupleUsername = username;
@@ -251,7 +283,11 @@ export const appRouter = router({
 
     getPermissions: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .query(({ input }) => {
+      .query(({ input, ctx }) => {
+        // For couples, only allow access to their own event permissions
+        if (ctx.user?.role === 'couple' && ctx.user.id !== input.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
         return permStore.getPermissions(input.id);
       }),
 
@@ -268,7 +304,11 @@ export const appRouter = router({
           websiteEnabled: z.boolean(),
         }),
       }))
-      .mutation(({ input }) => {
+      .mutation(({ input, ctx }) => {
+        // Couples cannot update permissions
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot update permissions' });
+        }
         permStore.setPermissions(input.id, input.permissions);
         return { success: true };
       }),

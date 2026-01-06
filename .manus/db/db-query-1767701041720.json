@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, title, coupleName1, coupleUsername FROM events LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, title, coupleName1, coupleUsername FROM events LIMIT 10;",
+  "rows": [
+    {
+      "id": "300001",
+      "title": "Louis & Ren",
+      "coupleName1": "Louis Givens",
+      "coupleUsername": "LouisRen"
+    },
+    {
+      "id": "360001",
+      "title": "Jeremy & Donna",
+      "coupleName1": "Jeremy Lando",
+      "coupleUsername": "Lando"
+    },
+    {
+      "id": "390002",
+      "title": "Test Wedding - 3 Stage",
+      "coupleName1": "Alice",
+      "coupleUsername": "couple_1767625673003_gryfpj"
+    },
+    {
+      "id": "390003",
+      "title": "Budget Test Event",
+      "coupleName1": "Test",
+      "coupleUsername": "couple_1767625673087_pibcnx"
+    },
+    {
+      "id": "390004",
+      "title": "Test Wedding - Stage Progression",
+      "coupleName1": "Charlie",
+      "coupleUsername": "couple_1767625673200_p1k1sl"
+    },
+    {
+      "id": "390005",
+      "title": "Test Wedding - RSVP Access",
+      "coupleName1": "Eve",
+      "coupleUsername": "couple_1767625673213_xb82np"
+    },
+    {
+      "id": "390006",
+      "title": "Test Wedding - RSVP Submission",
+      "coupleName1": "Grace",
+      "coupleUsername": "couple_1767625673225_q1mjtr"
+    },
+    {
+      "id": "390007",
+      "title": "Vendor Test Event",
+      "coupleName1": "Test",
+      "coupleUsername": "couple_1767625673234_uy3rbl"
+    },
+    {
+      "id": "390008",
+      "title": "Checklist Test Event",
+      "coupleName1": "Test",
+      "coupleUsername": "couple_1767625673274_wur72p"
+    },
+    {
+      "id": "390009",
+      "title": "Test Wedding - Final Database",
+      "coupleName1": "Ivy",
+      "coupleUsername": "couple_1767625673283_milcsi"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcoupleName1\tcoupleUsername\n300001\tLouis & Ren\tLouis Givens\tLouisRen\n360001\tJeremy & Donna\tJeremy Lando\tLando\n390002\tTest Wedding - 3 Stage\tAlice\tcouple_1767625673003_gryfpj\n390003\tBudget Test Event\tTest\tcouple_1767625673087_pibcnx\n390004\tTest Wedding - Stage Progression\tCharlie\tcouple_1767625673200_p1k1sl\n390005\tTest Wedding - RSVP Access\tEve\tcouple_1767625673213_xb82np\n390006\tTest Wedding - RSVP Submission\tGrace\tcouple_1767625673225_q1mjtr\n390007\tVendor Test Event\tTest\tcouple_1767625673234_uy3rbl\n390008\tChecklist Test Event\tTest\tcouple_1767625673274_wur72p\n390009\tTest Wedding - Final Database\tIvy\tcouple_1767625673283_milcsi\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

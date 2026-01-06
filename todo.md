@@ -498,3 +498,8 @@
 - [x] Update CoupleHotels.tsx to display event rooms
 - [x] Add Accommodation link to couple dashboard
 - [x] Test accommodation display for couples
+
+## Couple Guest Allocation - Complete
+- [x] Add guest allocation UI to couple accommodations page
+- [x] Implement room capacity and guest assignment logic
+- [x] Test guest allocation workflow for couples

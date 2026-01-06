@@ -479,3 +479,9 @@
 - [x] Test public access without login
 - [x] Test elegant/formal design and responsiveness
 - [x] Write and pass unit tests for wedding website functionality
+
+## Couple Navigation - Add Wedding Website Link - Complete
+- [x] Add wedding website editor link to couple navigation menu (already exists in CoupleLayout)
+- [x] Make it visible and accessible from couple dashboard
+- [x] Test navigation link works correctly
+- [x] Website link uses Globe icon and points to /couple/website route

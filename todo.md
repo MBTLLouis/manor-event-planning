@@ -485,3 +485,9 @@
 - [x] Make it visible and accessible from couple dashboard
 - [x] Test navigation link works correctly
 - [x] Website link uses Globe icon and points to /couple/website route
+
+## Login Page Updates - Complete
+- [x] Change "Employee Login" to "Planner"
+- [x] Change "Couple Login" to "Couple"
+- [x] Remove "Login" from both titles
+- [x] Test login page displays correctly

@@ -38,7 +38,7 @@ export default function CoupleLogin() {
           <div className="mx-auto w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-4">
             <Heart className="w-8 h-8 text-accent" />
           </div>
-          <CardTitle className="text-3xl">Couple Login</CardTitle>
+          <CardTitle className="text-3xl">Couple</CardTitle>
           <CardDescription>
             Sign in to view your event details
           </CardDescription>

@@ -38,9 +38,9 @@ export default function EmployeeLogin() {
           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
             <Users className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="text-3xl">Employee Login</CardTitle>
+          <CardTitle className="text-3xl">Planner</CardTitle>
           <CardDescription>
-            Sign in to access the staff dashboard
+            Sign in to access the planning dashboard
           </CardDescription>
         </CardHeader>
         <CardContent>

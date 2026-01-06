@@ -21,6 +21,12 @@ export default function PublicWeddingWebsite() {
     { enabled: !!slug }
   );
 
+  // Fetch timeline items by slug (public procedure)
+  const { data: timelineItems = [] } = trpc.weddingWebsite.getTimelineItemsBySlug.useQuery(
+    { slug: slug || '' },
+    { enabled: !!slug }
+  );
+
   // Update countdown timer
   useEffect(() => {
     if (!event) return;
@@ -160,16 +166,36 @@ export default function PublicWeddingWebsite() {
         </section>
       )}
 
-      {/* Timeline Section - Coming Soon */}
-      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">The Day's Timeline</h2>
-          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
-          <p className="text-[#5A7A78] text-lg text-center font-light">
-            Timeline details coming soon. We'll share the schedule for our special day.
-          </p>
-        </div>
-      </section>
+      {/* Timeline Section */}
+      {timelineItems && timelineItems.length > 0 && (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">The Day's Timeline</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="space-y-8">
+              {timelineItems.map((item: any, index: number) => (
+                <div key={item.id} className="flex gap-6">
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-[#D4AF37] flex items-center justify-center text-white font-serif text-lg shadow-lg">
+                      {index + 1}
+                    </div>
+                    {index < timelineItems.length - 1 && (
+                      <div className="w-1 h-16 bg-[#D4AF37] mt-2"></div>
+                    )}
+                  </div>
+                  <div className="pb-8">
+                    <div className="text-2xl font-serif text-[#2C5F5D] mb-2">{item.title}</div>
+                    <div className="text-[#D4AF37] font-light mb-3">{item.time}</div>
+                    {item.description && (
+                      <div className="text-[#5A7A78] font-light leading-relaxed">{item.description}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Event Details */}
       <section className="py-20 px-4 bg-white">

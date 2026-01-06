@@ -1003,6 +1003,14 @@ export const appRouter = router({
         return await db.getWeddingWebsiteBySlug(input.slug);
       }),
 
+    getTimelineItemsBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) return [];
+        return await db.getTimelineItemsByWebsiteId(website.id);
+      }),
+
     get: protectedProcedure
       .input(z.object({ eventId: z.number() }))
       .query(async ({ input }) => {

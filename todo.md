@@ -599,3 +599,7 @@
 - [x] Redesign footer with Manor By The Lake branding
 - [x] Add decorative elements (dividers, icons, flourishes)
 - [x] Test responsive design across devices
+
+
+## Bug Fixes
+- [x] Fix timeline section to display actual timeline items on public website

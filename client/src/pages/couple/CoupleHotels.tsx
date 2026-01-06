@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Home, Plus, Trash2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useEffect as useEffectDebug } from "react";
 import { toast } from "sonner";
 
 interface Room {
@@ -39,28 +41,43 @@ interface Guest {
 
 export default function CoupleHotels() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [showAllocationDialog, setShowAllocationDialog] = useState(false);
   const [selectedGuestId, setSelectedGuestId] = useState<string>("");
 
-  // Get couple's event
-  const { data: events = [] } = trpc.events.list.useQuery();
-  const coupleEvent = events[0]; // Assuming couple has one event
+  // Get couple's event - for couples, the user.id is the event ID
+  const { data: events = [] } = trpc.events.list.useQuery(undefined, {
+    enabled: !!user, // Only fetch when user is authenticated
+  });
+  const coupleEvent = user?.role === 'couple' && user?.id ? events.find(e => e.id === user.id) : events[0];
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('CoupleHotels Debug:', {
+      userRole: user?.role,
+      userId: user?.id,
+      eventsCount: events.length,
+      events: events.map(e => ({ id: e.id, title: e.title })),
+      coupleEventId: coupleEvent?.id,
+      coupleEventTitle: coupleEvent?.title,
+    });
+  }, [user, events, coupleEvent]);
 
   // Queries
   const { data: roomsData, isLoading: roomsLoading } = trpc.accommodations.getRooms.useQuery(
     { eventId: coupleEvent?.id || 0 },
-    { enabled: !!coupleEvent }
+    { enabled: !!user && !!coupleEvent && coupleEvent.id > 0 }
   );
   const { data: allocationsData } = trpc.accommodations.getAllocations.useQuery(
     { eventId: coupleEvent?.id || 0 },
-    { enabled: !!coupleEvent }
+    { enabled: !!user && !!coupleEvent && coupleEvent.id > 0 }
   );
   const { data: guestsData } = trpc.guests.list.useQuery(
     { eventId: coupleEvent?.id || 0 },
-    { enabled: !!coupleEvent }
+    { enabled: !!user && !!coupleEvent && coupleEvent.id > 0 }
   );
 
   // Mutations
@@ -140,11 +157,11 @@ export default function CoupleHotels() {
     }
   };
 
-  if (!coupleEvent) {
+  if (!coupleEvent || coupleEvent.id === 0) {
     return (
       <CoupleLayout>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Loading your accommodation details...</p>
+          <p className="text-muted-foreground">Unable to load your accommodation details. Please try logging in again.</p>
         </div>
       </CoupleLayout>
     );

@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, title, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleUsername = 'test_couple' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, title, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleUsername = 'test_couple' LIMIT 1;",
+  "rows": [
+    {
+      "id": "300001",
+      "title": "Louis & Ren",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Seren Jones",
+      "coupleUsername": "test_couple"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcoupleName1\tcoupleName2\tcoupleUsername\n300001\tLouis & Ren\tLouis Givens\tSeren Jones\ttest_couple\n",
+  "stderr": "",
+  "execution_time_ms": 48
+}

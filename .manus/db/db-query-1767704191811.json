@@ -1,0 +1,94 @@
+{
+  "query": "SELECT id, eventId, roomName, roomNumber FROM accommodationRooms WHERE eventId = 1 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, eventId, roomName, roomNumber FROM accommodationRooms WHERE eventId = 1 LIMIT 20;",
+  "rows": [
+    {
+      "id": "30001",
+      "eventId": "1",
+      "roomName": "Cottage",
+      "roomNumber": "NULL"
+    },
+    {
+      "id": "30002",
+      "eventId": "1",
+      "roomName": "Lodge",
+      "roomNumber": "NULL"
+    },
+    {
+      "id": "30003",
+      "eventId": "1",
+      "roomName": "Room 1",
+      "roomNumber": "1"
+    },
+    {
+      "id": "30004",
+      "eventId": "1",
+      "roomName": "Room 2",
+      "roomNumber": "2"
+    },
+    {
+      "id": "30005",
+      "eventId": "1",
+      "roomName": "Room 3",
+      "roomNumber": "3"
+    },
+    {
+      "id": "30006",
+      "eventId": "1",
+      "roomName": "Room 4",
+      "roomNumber": "4"
+    },
+    {
+      "id": "30007",
+      "eventId": "1",
+      "roomName": "Room 5",
+      "roomNumber": "5"
+    },
+    {
+      "id": "30008",
+      "eventId": "1",
+      "roomName": "Room 6",
+      "roomNumber": "6"
+    },
+    {
+      "id": "30009",
+      "eventId": "1",
+      "roomName": "Room 7",
+      "roomNumber": "7"
+    },
+    {
+      "id": "30010",
+      "eventId": "1",
+      "roomName": "Room 8",
+      "roomNumber": "8"
+    },
+    {
+      "id": "30011",
+      "eventId": "1",
+      "roomName": "Room 9",
+      "roomNumber": "9"
+    },
+    {
+      "id": "30012",
+      "eventId": "1",
+      "roomName": "Room 10",
+      "roomNumber": "10"
+    },
+    {
+      "id": "30013",
+      "eventId": "1",
+      "roomName": "Room 11",
+      "roomNumber": "11"
+    },
+    {
+      "id": "30014",
+      "eventId": "1",
+      "roomName": "Room 12",
+      "roomNumber": "12"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\teventId\troomName\troomNumber\n30001\t1\tCottage\tNULL\n30002\t1\tLodge\tNULL\n30003\t1\tRoom 1\t1\n30004\t1\tRoom 2\t2\n30005\t1\tRoom 3\t3\n30006\t1\tRoom 4\t4\n30007\t1\tRoom 5\t5\n30008\t1\tRoom 6\t6\n30009\t1\tRoom 7\t7\n30010\t1\tRoom 8\t8\n30011\t1\tRoom 9\t9\n30012\t1\tRoom 10\t10\n30013\t1\tRoom 11\t11\n30014\t1\tRoom 12\t12\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

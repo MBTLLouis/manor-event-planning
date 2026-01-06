@@ -529,3 +529,9 @@
 ## Allow Courses Without Menu Items
 - [x] Update UI to allow course creation without requiring initial menu items
 - [x] Test course creation and item addition workflow
+
+
+## Fix Accommodations Section for Couples
+- [x] Investigate why rooms aren't showing in couple's Accommodations section
+- [x] Fix room display and guest allocation functionality
+- [x] Test and verify rooms are visible to couples

@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, eventId, roomName FROM accommodationRooms WHERE eventId = 420001 LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, eventId, roomName FROM accommodationRooms WHERE eventId = 420001 LIMIT 20;",
+  "rows": [
+    {
+      "id": "30015",
+      "eventId": "420001",
+      "roomName": "Room 1"
+    },
+    {
+      "id": "30016",
+      "eventId": "420001",
+      "roomName": "Room 2"
+    },
+    {
+      "id": "30017",
+      "eventId": "420001",
+      "roomName": "Room 3"
+    },
+    {
+      "id": "30018",
+      "eventId": "420001",
+      "roomName": "Room 4"
+    },
+    {
+      "id": "30019",
+      "eventId": "420001",
+      "roomName": "Room 5"
+    },
+    {
+      "id": "30020",
+      "eventId": "420001",
+      "roomName": "Room 6"
+    },
+    {
+      "id": "30021",
+      "eventId": "420001",
+      "roomName": "Room 7"
+    },
+    {
+      "id": "30022",
+      "eventId": "420001",
+      "roomName": "Room 8"
+    },
+    {
+      "id": "30023",
+      "eventId": "420001",
+      "roomName": "Room 9"
+    },
+    {
+      "id": "30024",
+      "eventId": "420001",
+      "roomName": "Room 10"
+    },
+    {
+      "id": "30025",
+      "eventId": "420001",
+      "roomName": "Room 11"
+    },
+    {
+      "id": "30026",
+      "eventId": "420001",
+      "roomName": "Room 12"
+    },
+    {
+      "id": "30027",
+      "eventId": "420001",
+      "roomName": "Lodge"
+    },
+    {
+      "id": "30028",
+      "eventId": "420001",
+      "roomName": "Cottage"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\teventId\troomName\n30015\t420001\tRoom 1\n30016\t420001\tRoom 2\n30017\t420001\tRoom 3\n30018\t420001\tRoom 4\n30019\t420001\tRoom 5\n30020\t420001\tRoom 6\n30021\t420001\tRoom 7\n30022\t420001\tRoom 8\n30023\t420001\tRoom 9\n30024\t420001\tRoom 10\n30025\t420001\tRoom 11\n30026\t420001\tRoom 12\n30027\t420001\tLodge\n30028\t420001\tCottage\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

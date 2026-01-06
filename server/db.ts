@@ -199,6 +199,9 @@ export async function createEvent(event: InsertEvent) {
     });
   }
 
+  // Initialize accommodation rooms
+  await initializeAccommodationRooms(eventId);
+
   return eventId;
 }
 

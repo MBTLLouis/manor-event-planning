@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, title, coupleUsername, couplePassword FROM events WHERE coupleUsername LIKE '%test%' OR coupleUsername LIKE '%couple%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, title, coupleUsername, couplePassword FROM events WHERE coupleUsername LIKE '%test%' OR coupleUsername LIKE '%couple%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "300001",
+      "title": "Louis & Ren",
+      "coupleUsername": "test_couple",
+      "couplePassword": "test123"
+    },
+    {
+      "id": "390002",
+      "title": "Test Wedding - 3 Stage",
+      "coupleUsername": "couple_1767625673003_gryfpj",
+      "couplePassword": "c3d0fpwiyriqjk6pa4n4q"
+    },
+    {
+      "id": "390003",
+      "title": "Budget Test Event",
+      "coupleUsername": "couple_1767625673087_pibcnx",
+      "couplePassword": "j8oef67y6hilz6qv8i3oh"
+    },
+    {
+      "id": "390004",
+      "title": "Test Wedding - Stage Progression",
+      "coupleUsername": "couple_1767625673200_p1k1sl",
+      "couplePassword": "l7tt7lxdt18oa33ozjm0w"
+    },
+    {
+      "id": "390005",
+      "title": "Test Wedding - RSVP Access",
+      "coupleUsername": "couple_1767625673213_xb82np",
+      "couplePassword": "m186i9zr1w8sik55tvbr6k"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcoupleUsername\tcouplePassword\n300001\tLouis & Ren\ttest_couple\ttest123\n390002\tTest Wedding - 3 Stage\tcouple_1767625673003_gryfpj\tc3d0fpwiyriqjk6pa4n4q\n390003\tBudget Test Event\tcouple_1767625673087_pibcnx\tj8oef67y6hilz6qv8i3oh\n390004\tTest Wedding - Stage Progression\tcouple_1767625673200_p1k1sl\tl7tt7lxdt18oa33ozjm0w\n390005\tTest Wedding - RSVP Access\tcouple_1767625673213_xb82np\tm186i9zr1w8sik55tvbr6k\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

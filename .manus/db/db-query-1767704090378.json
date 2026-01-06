@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO accommodationRooms (eventId, roomName, roomNumber, isAccessible, isBlocked, createdAt, updatedAt)\nVALUES \n  (1, 'Cottage', NULL, 0, 0, NOW(), NOW()),\n  (1, 'Lodge', NULL, 0, 0, NOW(), NOW()),\n  (1, 'Room 1', 1, 0, 0, NOW(), NOW()),\n  (1, 'Room 2', 2, 0, 0, NOW(), NOW()),\n  (1, 'Room 3', 3, 0, 0, NOW(), NOW()),\n  (1, 'Room 4', 4, 0, 0, NOW(), NOW()),\n  (1, 'Room 5', 5, 0, 0, NOW(), NOW()),\n  (1, 'Room 6', 6, 0, 0, NOW(), NOW()),\n  (1, 'Room 7', 7, 0, 0, NOW(), NOW()),\n  (1, 'Room 8', 8, 0, 0, NOW(), NOW()),\n  (1, 'Room 9', 9, 0, 0, NOW(), NOW()),\n  (1, 'Room 10', 10, 0, 0, NOW(), NOW()),\n  (1, 'Room 11', 11, 0, 0, NOW(), NOW()),\n  (1, 'Room 12', 12, 1, 0, NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute INSERT INTO accommodationRooms (eventId, roomName, roomNumber, isAccessible, isBlocked, createdAt, updatedAt)\nVALUES \n  (1, 'Cottage', NULL, 0, 0, NOW(), NOW()),\n  (1, 'Lodge', NULL, 0, 0, NOW(), NOW()),\n  (1, 'Room 1', 1, 0, 0, NOW(), NOW()),\n  (1, 'Room 2', 2, 0, 0, NOW(), NOW()),\n  (1, 'Room 3', 3, 0, 0, NOW(), NOW()),\n  (1, 'Room 4', 4, 0, 0, NOW(), NOW()),\n  (1, 'Room 5', 5, 0, 0, NOW(), NOW()),\n  (1, 'Room 6', 6, 0, 0, NOW(), NOW()),\n  (1, 'Room 7', 7, 0, 0, NOW(), NOW()),\n  (1, 'Room 8', 8, 0, 0, NOW(), NOW()),\n  (1, 'Room 9', 9, 0, 0, NOW(), NOW()),\n  (1, 'Room 10', 10, 0, 0, NOW(), NOW()),\n  (1, 'Room 11', 11, 0, 0, NOW(), NOW()),\n  (1, 'Room 12', 12, 1, 0, NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 73
+}

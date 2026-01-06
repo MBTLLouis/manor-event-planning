@@ -27,6 +27,13 @@ export default function ChecklistEnhanced() {
     priority: "medium" as const,
     dueDate: "",
   });
+  const [addFormData, setAddFormData] = useState({
+    title: "",
+    description: "",
+    priority: "medium" as const,
+    assignedTo: "Manor",
+    dueDate: "",
+  });
 
   const { data: checklistItems = [], refetch } = trpc.checklist.list.useQuery({ eventId });
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
@@ -57,19 +64,31 @@ export default function ChecklistEnhanced() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     
+    if (!addFormData.title.trim()) {
+      toast.error("Task title is required");
+      return;
+    }
+
     const data = {
       eventId,
       category: "general",
-      title: formData.get("title") as string,
-      description: formData.get("description") as string || undefined,
-      priority: (formData.get("priority") as "low" | "medium" | "high") || "medium",
-      assignedTo: formData.get("assignedTo") as string,
-      dueDate: formData.get("dueDate") ? new Date(formData.get("dueDate") as string) : undefined,
+      title: addFormData.title,
+      description: addFormData.description || undefined,
+      priority: addFormData.priority,
+      assignedTo: addFormData.assignedTo,
+      dueDate: addFormData.dueDate ? new Date(addFormData.dueDate) : undefined,
     };
 
     createMutation.mutate(data);
+    // Reset form
+    setAddFormData({
+      title: "",
+      description: "",
+      priority: "medium",
+      assignedTo: "Manor",
+      dueDate: "",
+    });
   };
 
   const handleEditSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -280,8 +299,8 @@ export default function ChecklistEnhanced() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="assignedTo">Assign to</Label>
-                  <Select defaultValue="Manor">
-                    <SelectTrigger name="assignedTo">
+                  <Select value={addFormData.assignedTo} onValueChange={(value) => setAddFormData({...addFormData, assignedTo: value})}>
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -293,17 +312,28 @@ export default function ChecklistEnhanced() {
                 <input type="hidden" name="category" value="general" />
                 <div>
                   <Label htmlFor="title">Task Title</Label>
-                  <Input name="title" placeholder="Enter task title" required />
+                  <Input 
+                    name="title" 
+                    placeholder="Enter task title" 
+                    required 
+                    value={addFormData.title}
+                    onChange={(e) => setAddFormData({...addFormData, title: e.target.value})}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="description">Description</Label>
-                  <Textarea name="description" placeholder="Enter task description" />
+                  <Textarea 
+                    name="description" 
+                    placeholder="Enter task description"
+                    value={addFormData.description}
+                    onChange={(e) => setAddFormData({...addFormData, description: e.target.value})}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="priority">Priority</Label>
-                    <Select defaultValue="medium">
-                      <SelectTrigger name="priority">
+                    <Select value={addFormData.priority} onValueChange={(value) => setAddFormData({...addFormData, priority: value as any})}>
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -315,7 +345,12 @@ export default function ChecklistEnhanced() {
                   </div>
                   <div>
                     <Label htmlFor="dueDate">Due Date</Label>
-                    <Input name="dueDate" type="date" />
+                    <Input 
+                      name="dueDate" 
+                      type="date"
+                      value={addFormData.dueDate}
+                      onChange={(e) => setAddFormData({...addFormData, dueDate: e.target.value})}
+                    />
                   </div>
                 </div>
                 <DialogFooter>

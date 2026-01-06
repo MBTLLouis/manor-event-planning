@@ -636,3 +636,6 @@
 
 ## Couple Menu Navigation
 - [x] Add checklist menu item to couple layout navigation bar
+
+## Bug Fixes - Add Task Form
+- [x] Fix add task form submission not working - form appears but clicking add does nothing

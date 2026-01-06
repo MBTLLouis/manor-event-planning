@@ -681,3 +681,10 @@
 - [x] Update handleAddGuest to save to database
 - [x] Update handleRemoveGuest to save to database
 - [x] Load guest assignments from database on page load
+
+
+## Couple Seating - Table Editing
+- [x] Add edit button to table cards
+- [x] Implement table name edit form
+- [x] Add table update mutation to save changes
+- [x] Persist table name changes to database

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Search, Edit } from 'lucide-react';
 
 interface Guest {
   id: number;
@@ -56,6 +56,9 @@ export default function CoupleSeatingV2() {
   const [tables, setTables] = useState<Table[]>([]);
   const [newTableName, setNewTableName] = useState('');
   const [newTableCapacity, setNewTableCapacity] = useState('8');
+  const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [editingTableName, setEditingTableName] = useState('');
+
   const [selectedGuests, setSelectedGuests] = useState<Record<string, string>>({});
   const [guestSearchQueries, setGuestSearchQueries] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -75,6 +78,7 @@ export default function CoupleSeatingV2() {
   // Table mutations for persistence
   const createTableMutation = trpc.tables.create.useMutation();
   const deleteTableMutation = trpc.tables.delete.useMutation();
+  const updateTableMutation = trpc.tables.update.useMutation();
   const utils = trpc.useUtils();
 
   // Guest assignment mutations
@@ -168,6 +172,41 @@ export default function CoupleSeatingV2() {
         },
       }
     );
+  };
+
+
+  const handleEditTable = (tableId: string, currentName: string) => {
+    setEditingTableId(tableId);
+    setEditingTableName(currentName);
+  };
+
+  const handleSaveTableName = (tableId: string) => {
+    if (!editingTableName.trim()) return;
+    
+    const tableIdNum = parseInt(tableId);
+    updateTableMutation.mutate(
+      {
+        id: tableIdNum,
+        name: editingTableName,
+      },
+      {
+        onSuccess: () => {
+          setTables(
+            tables.map((t) =>
+              t.id === tableId ? { ...t, name: editingTableName } : t
+            )
+          );
+          setEditingTableId(null);
+          setEditingTableName('');
+          utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+        },
+      }
+    );
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTableId(null);
+    setEditingTableName('');
   };
 
   const handleAddGuest = (tableId: string) => {
@@ -341,15 +380,52 @@ export default function CoupleSeatingV2() {
                     <Card key={table.id} className={isFull ? 'opacity-75' : ''}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">{table.name}</CardTitle>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTable(table.id)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {editingTableId === table.id ? (
+                            <div className="flex gap-2 flex-1">
+                              <Input
+                                value={editingTableName}
+                                onChange={(e) => setEditingTableName(e.target.value)}
+                                className="flex-1"
+                                autoFocus
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveTableName(table.id)}
+                                className="bg-teal-600 hover:bg-teal-700"
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelEdit}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <CardTitle className="text-lg">{table.name}</CardTitle>
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditTable(table.id, table.name)}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteTable(table.id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600">
                           {occupancy}/{table.capacity} guests

@@ -257,7 +257,7 @@ export default function ChecklistEnhanced() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLocation(`/employee/events/${eventId}`)}
+              onClick={() => setLocation(`/events/${eventId}`)}
               className="mb-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

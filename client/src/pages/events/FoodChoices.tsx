@@ -38,8 +38,6 @@ export default function FoodChoices() {
     course: "",
     name: "",
     description: "",
-    isAvailable: true,
-    orderIndex: 0,
   });
   
   // Drinks state
@@ -104,11 +102,16 @@ export default function FoodChoices() {
   
   // Menu mutations
   const createItemMutation = trpc.menu.create.useMutation({
-    onSuccess: () => {
-      toast.success("Menu item added");
+    onSuccess: (data) => {
+      // If we just created a course placeholder (empty name), show course added message
+      if (!data.name) {
+        toast.success("Course added");
+      } else {
+        toast.success("Menu item added");
+      }
       refetchMenu();
       setIsAddItemDialogOpen(false);
-      setNewItem({ course: "", name: "", description: "", isAvailable: true, orderIndex: 0 });
+      setNewItem({ course: "", name: "", description: "" });
     },
     onError: (error) => toast.error(error.message),
   });
@@ -181,10 +184,16 @@ export default function FoodChoices() {
       return;
     }
     
-    setNewItem({ ...newItem, course: newCourseName });
+    // Create a dummy menu item with the course name to establish the course
+    createItemMutation.mutate({
+      eventId,
+      course: newCourseName,
+      name: "",
+      description: "",
+    });
+    
     setNewCourseName("");
     setIsAddCourseDialogOpen(false);
-    setIsAddItemDialogOpen(true);
   };
   
   const handleAddDrink = () => {
@@ -256,7 +265,6 @@ export default function FoodChoices() {
               </Button>
               <Button 
                 onClick={() => setIsAddItemDialogOpen(true)}
-                disabled={courses.length === 0}
                 variant="outline"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -269,7 +277,7 @@ export default function FoodChoices() {
                 <CardContent className="flex flex-col items-center justify-center py-12">
                   <ChefHat className="h-12 w-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No courses configured yet</p>
-                  <p className="text-sm text-muted-foreground">Click "Add Course" to get started</p>
+                  <p className="text-sm text-muted-foreground">Click "Add Course" to create your first course</p>
                 </CardContent>
               </Card>
             ) : (
@@ -284,7 +292,7 @@ export default function FoodChoices() {
                 >
                   <div className="grid gap-4">
                     {courses.map((courseName) => {
-                      const courseItems = menuItems.filter(item => item.course === courseName);
+                      const courseItems = menuItems.filter(item => item.course === courseName && item.name.trim() !== "");
                       
                       return (
                         <SortableCourseCard
@@ -700,32 +708,36 @@ function SortableCourseCard({ courseName, courseItems, deleteCourse, setEditingI
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {courseItems.map((item: any) => (
-            <div key={item.id} className="flex items-center justify-between p-2 border rounded">
-              <div>
-                <p className="font-medium">{item.name}</p>
-                {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+        {courseItems.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">No menu items added yet</p>
+        ) : (
+          <div className="space-y-2">
+            {courseItems.map((item: any) => (
+              <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+                <div>
+                  <p className="font-medium">{item.name}</p>
+                  {item.description && <p className="text-sm text-muted-foreground">{item.description}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingItem(item)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteItemMutation.mutate({ id: item.id })}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setEditingItem(item)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteItemMutation.mutate({ id: item.id })}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

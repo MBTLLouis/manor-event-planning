@@ -525,3 +525,7 @@
 - [x] Add role-based access control to menu management
 - [x] Build couple menu choice interface
 - [x] Test role-based menu workflows
+
+## Allow Courses Without Menu Items
+- [x] Update UI to allow course creation without requiring initial menu items
+- [x] Test course creation and item addition workflow

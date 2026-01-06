@@ -642,3 +642,7 @@
 
 ## Couple Checklist - Remove Category
 - [x] Remove category dropdown from couple checklist add task form
+
+## Couple Accommodation Updates
+- [x] Remove guest allocation box from couple accommodation section
+- [x] Replace guest dropdown with search function for adding guests to rooms

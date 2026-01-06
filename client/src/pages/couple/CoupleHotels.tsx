@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Home, Plus, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Home, Plus, Trash2, Search } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -47,6 +48,7 @@ export default function CoupleHotels() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [showAllocationDialog, setShowAllocationDialog] = useState(false);
   const [selectedGuestId, setSelectedGuestId] = useState<string>("");
+  const [guestSearchQuery, setGuestSearchQuery] = useState<string>("");
 
   // Get couple's event - for couples, the user.id is the event ID
   const { data: events = [] } = trpc.events.list.useQuery(undefined, {
@@ -210,28 +212,6 @@ export default function CoupleHotels() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {/* Unassigned Guests Summary */}
-            {getUnallocatedGuests().length > 0 && (
-              <Card className="border-amber-200 bg-amber-50">
-                <CardHeader>
-                  <CardTitle className="text-lg text-amber-900">
-                    Guests to Allocate ({getUnallocatedGuests().length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {getUnallocatedGuests().map((guest) => (
-                      <div
-                        key={guest.id}
-                        className="bg-white border border-amber-300 rounded-full px-3 py-1 text-sm font-medium text-amber-900"
-                      >
-                        {guest.firstName} {guest.lastName}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Room Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -356,20 +336,49 @@ export default function CoupleHotels() {
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <label className="text-sm font-medium">Select Guest</label>
-                              <Select value={selectedGuestId} onValueChange={setSelectedGuestId}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Choose a guest..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {getUnallocatedGuests().map((guest) => (
-                                    <SelectItem key={guest.id} value={guest.id.toString()}>
-                                      {guest.firstName} {guest.lastName}
-                                      {guest.email && ` (${guest.email})`}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <label className="text-sm font-medium">Search Guest</label>
+                              <div className="relative">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                                <Input
+                                  placeholder="Search by name or email..."
+                                  value={guestSearchQuery}
+                                  onChange={(e) => setGuestSearchQuery(e.target.value)}
+                                  className="pl-8"
+                                />
+                              </div>
+                              {guestSearchQuery && (
+                                <div className="border rounded-md max-h-64 overflow-y-auto">
+                                  {getUnallocatedGuests()
+                                    .filter((guest) =>
+                                      `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase()) ||
+                                      (guest.email?.toLowerCase().includes(guestSearchQuery.toLowerCase()) ?? false)
+                                    )
+                                    .map((guest) => (
+                                      <button
+                                        key={guest.id}
+                                        onClick={() => {
+                                          setSelectedGuestId(guest.id.toString());
+                                          setGuestSearchQuery("");
+                                        }}
+                                        className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0 transition-colors"
+                                      >
+                                        <div className="font-medium text-sm">{guest.firstName} {guest.lastName}</div>
+                                        {guest.email && <div className="text-xs text-gray-500">{guest.email}</div>}
+                                      </button>
+                                    ))}
+                                  {getUnallocatedGuests().filter((guest) =>
+                                    `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase()) ||
+                                    (guest.email?.toLowerCase().includes(guestSearchQuery.toLowerCase()) ?? false)
+                                  ).length === 0 && (
+                                    <div className="px-3 py-2 text-sm text-gray-500">No guests found</div>
+                                  )}
+                                </div>
+                              )}
+                              {selectedGuestId && (
+                                <div className="text-sm text-green-600 font-medium">
+                                  Selected: {getUnallocatedGuests().find(g => g.id.toString() === selectedGuestId)?.firstName} {getUnallocatedGuests().find(g => g.id.toString() === selectedGuestId)?.lastName}
+                                </div>
+                              )}
                             </div>
                             <div className="flex gap-2 justify-end">
                               <Button

@@ -21,14 +21,14 @@ export default function RoleSelection() {
               <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="w-10 h-10 text-primary" />
               </div>
-              <CardTitle className="text-2xl">Employee Login</CardTitle>
+              <CardTitle className="text-2xl">Planner</CardTitle>
               <CardDescription className="text-base">
-                Access staff dashboard and event management tools
+                Access planning dashboard and event management tools
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
               <Button className="w-full" size="lg">
-                Continue as Employee
+                Continue as Planner
               </Button>
             </CardContent>
           </Card>
@@ -39,7 +39,7 @@ export default function RoleSelection() {
               <div className="mx-auto w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-4">
                 <Heart className="w-10 h-10 text-accent" />
               </div>
-              <CardTitle className="text-2xl">Couple Login</CardTitle>
+              <CardTitle className="text-2xl">Couple</CardTitle>
               <CardDescription className="text-base">
                 View your event details and planning progress
               </CardDescription>

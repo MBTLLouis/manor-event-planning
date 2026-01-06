@@ -487,7 +487,9 @@
 - [x] Website link uses Globe icon and points to /couple/website route
 
 ## Login Page Updates - Complete
-- [x] Change "Employee Login" to "Planner"
-- [x] Change "Couple Login" to "Couple"
-- [x] Remove "Login" from both titles
+- [x] Change "Employee Login" to "Planner" in EmployeeLogin.tsx
+- [x] Change "Couple Login" to "Couple" in CoupleLogin.tsx
+- [x] Update RoleSelection page titles to "Planner" and "Couple"
+- [x] Update button text to "Continue as Planner"
+- [x] Remove "Login" from all titles
 - [x] Test login page displays correctly

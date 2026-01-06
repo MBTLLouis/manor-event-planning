@@ -1,0 +1,28 @@
+{
+  "query": "SELECT id, eventId, course, name FROM menuItems WHERE eventId = 3;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, eventId, course, name FROM menuItems WHERE eventId = 3;",
+  "rows": [
+    {
+      "id": "120001",
+      "eventId": "3",
+      "course": "Starter",
+      "name": "Starter"
+    },
+    {
+      "id": "120002",
+      "eventId": "3",
+      "course": "Main",
+      "name": "Main"
+    },
+    {
+      "id": "120003",
+      "eventId": "3",
+      "course": "Dessert",
+      "name": "Dessert"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\teventId\tcourse\tname\n120001\t3\tStarter\tStarter\n120002\t3\tMain\tMain\n120003\t3\tDessert\tDessert\n",
+  "stderr": "",
+  "execution_time_ms": 52
+}

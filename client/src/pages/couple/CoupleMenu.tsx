@@ -27,6 +27,13 @@ export default function CoupleMenu() {
     { enabled: !!coupleEvent }
   );
 
+  const [isAddMenuDialogOpen, setIsAddMenuDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<string>("");
+  const [newMenuItem, setNewMenuItem] = useState({
+    name: "",
+    description: "",
+  });
+
   const [isAddDrinkDialogOpen, setIsAddDrinkDialogOpen] = useState(false);
   const [editingDrink, setEditingDrink] = useState<any>(null);
   const [isEditDrinkDialogOpen, setIsEditDrinkDialogOpen] = useState(false);
@@ -41,6 +48,29 @@ export default function CoupleMenu() {
   });
 
   const utils = trpc.useUtils();
+
+  const createMenuItemMutation = trpc.menu.create.useMutation({
+    onSuccess: () => {
+      toast.success("Menu choice added successfully!");
+      setIsAddMenuDialogOpen(false);
+      setSelectedCourse("");
+      setNewMenuItem({ name: "", description: "" });
+      utils.menu.list.invalidate({ eventId: coupleEvent?.id });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add menu choice");
+    },
+  });
+
+  const deleteMenuItemMutation = trpc.menu.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Menu choice removed successfully!");
+      utils.menu.list.invalidate({ eventId: coupleEvent?.id });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to remove menu choice");
+    },
+  });
 
   const createDrinkMutation = trpc.drinks.create.useMutation({
     onSuccess: () => {
@@ -57,7 +87,7 @@ export default function CoupleMenu() {
       });
       utils.drinks.list.invalidate({ eventId: coupleEvent?.id });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message || "Failed to add drink");
     },
   });
@@ -69,7 +99,7 @@ export default function CoupleMenu() {
       setEditingDrink(null);
       utils.drinks.list.invalidate({ eventId: coupleEvent?.id });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message || "Failed to update drink");
     },
   });
@@ -79,10 +109,35 @@ export default function CoupleMenu() {
       toast.success("Drink deleted successfully!");
       utils.drinks.list.invalidate({ eventId: coupleEvent?.id });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(error.message || "Failed to delete drink");
     },
   });
+
+  const handleAddMenuItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMenuItem.name.trim()) {
+      toast.error("Please enter a menu choice name");
+      return;
+    }
+    if (!selectedCourse) {
+      toast.error("Please select a course");
+      return;
+    }
+
+    createMenuItemMutation.mutate({
+      eventId: coupleEvent?.id || 0,
+      course: selectedCourse,
+      name: newMenuItem.name,
+      description: newMenuItem.description || undefined,
+    });
+  };
+
+  const handleDeleteMenuItem = (id: number) => {
+    if (confirm("Are you sure you want to remove this menu choice?")) {
+      deleteMenuItemMutation.mutate({ id });
+    }
+  };
 
   const handleAddDrink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,8 +179,11 @@ export default function CoupleMenu() {
     }
   };
 
-  // Extract unique courses
+  // Get default courses from menu items (these are created when event is initialized)
   const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
+  
+  // If no courses exist, show default course names
+  const availableCourses = courses.length > 0 ? courses : ['Starter', 'Main', 'Dessert'];
 
   if (!coupleEvent) {
     return (
@@ -159,13 +217,72 @@ export default function CoupleMenu() {
 
           {/* Menu Tab */}
           <TabsContent value="menu" className="space-y-6">
+            <div className="flex justify-end">
+              <Dialog open={isAddMenuDialogOpen} onOpenChange={setIsAddMenuDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Menu Choice
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={handleAddMenuItem}>
+                    <DialogHeader>
+                      <DialogTitle>Add Menu Choice</DialogTitle>
+                      <DialogDescription>Add your menu selection to a course</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Course</Label>
+                        <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a course" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableCourses.map((course) => (
+                              <SelectItem key={course} value={course}>
+                                {course}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="menuName">Menu Choice Name</Label>
+                        <Input
+                          id="menuName"
+                          placeholder="e.g., Grilled Salmon"
+                          value={newMenuItem.name}
+                          onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="menuDescription">Description (Optional)</Label>
+                        <Textarea
+                          id="menuDescription"
+                          placeholder="e.g., Pan-seared salmon with lemon butter sauce"
+                          value={newMenuItem.description}
+                          onChange={(e) => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                        Add Choice
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
             {menuItems.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Utensils className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-lg text-gray-600 mb-2">No menu items yet</p>
                   <p className="text-sm text-muted-foreground">
-                    Your event planner will add menu options for you to review
+                    Add your menu choices to each course
                   </p>
                 </CardContent>
               </Card>
@@ -179,20 +296,26 @@ export default function CoupleMenu() {
                         <CardTitle className="text-2xl font-serif text-[#2C5F5D]">{course}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
                           {courseItems.map((item) => (
-                            <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <h3 className="font-medium text-lg mb-1">{item.name}</h3>
-                                  {item.description && (
-                                    <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                                  )}
-                                  {!item.isAvailable && (
-                                    <Badge variant="secondary" className="text-xs">Unavailable</Badge>
-                                  )}
-                                </div>
+                            <div key={item.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-medium text-lg mb-1">{item.name}</h3>
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 mb-2">{item.description}</p>
+                                )}
+                                {!item.isAvailable && (
+                                  <Badge variant="secondary" className="text-xs">Unavailable</Badge>
+                                )}
                               </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteMenuItem(item.id)}
+                                className="ml-2"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -271,30 +394,30 @@ export default function CoupleMenu() {
                               onChange={(e) => setNewDrink({ ...newDrink, cocktailName: e.target.value })}
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label>Corkage</Label>
-                            <Select value={newDrink.corkage} onValueChange={(value: any) => setNewDrink({ ...newDrink, corkage: value })}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="venue_provides">Venue Provides</SelectItem>
-                                <SelectItem value="client_brings">Client Brings</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
                         </>
                       )}
 
                       <div className="space-y-2">
-                        <Label htmlFor="totalQuantity">Total Quantity *</Label>
+                        <Label>Corkage</Label>
+                        <Select value={newDrink.corkage} onValueChange={(value: any) => setNewDrink({ ...newDrink, corkage: value })}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="venue_provides">Venue Provides</SelectItem>
+                            <SelectItem value="client_brings">Client Brings</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="totalQuantity">Total Quantity</Label>
                         <Input
                           id="totalQuantity"
                           type="number"
                           min="1"
                           value={newDrink.totalQuantity}
                           onChange={(e) => setNewDrink({ ...newDrink, totalQuantity: parseInt(e.target.value) || 0 })}
-                          required
                         />
                       </div>
 
@@ -304,13 +427,12 @@ export default function CoupleMenu() {
                           id="description"
                           value={newDrink.description}
                           onChange={(e) => setNewDrink({ ...newDrink, description: e.target.value })}
-                          placeholder="Any special notes about this drink..."
                         />
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button type="submit" disabled={createDrinkMutation.isPending}>
-                        {createDrinkMutation.isPending ? "Adding..." : "Add Drink"}
+                      <Button type="submit" className="bg-[#2C5F5D] hover:bg-[#1e4441]">
+                        Add Drink
                       </Button>
                     </DialogFooter>
                   </form>
@@ -322,9 +444,9 @@ export default function CoupleMenu() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <Wine className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg text-gray-600 mb-2">No drinks added yet</p>
+                  <p className="text-lg text-gray-600 mb-2">No drinks yet</p>
                   <p className="text-sm text-muted-foreground">
-                    Add beverages for your wedding reception
+                    Add beverages for your wedding
                   </p>
                 </CardContent>
               </Card>
@@ -332,161 +454,32 @@ export default function CoupleMenu() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {drinks.map((drink) => (
                   <Card key={drink.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">
-                            {drink.drinkType === "alcoholic"
-                              ? drink.brandProducer || drink.cocktailName
-                              : `${drink.subType || "Soft Drink"}`}
-                          </CardTitle>
-                          {drink.drinkType === "alcoholic" && drink.subType && (
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-medium text-lg">
+                            {drink.cocktailName || drink.brandProducer || "Drink"}
+                          </h3>
+                          {drink.subType && (
                             <p className="text-sm text-gray-600">{drink.subType}</p>
                           )}
                         </div>
-                        <div className="flex gap-2">
-                          <Dialog open={isEditDrinkDialogOpen && editingDrink?.id === drink.id} onOpenChange={(open) => {
-                            if (!open) setEditingDrink(null);
-                            setIsEditDrinkDialogOpen(open);
-                          }}>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingDrink(drink)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <form onSubmit={handleEditDrink}>
-                                <DialogHeader>
-                                  <DialogTitle>Edit Drink</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                  <div className="space-y-2">
-                                    <Label>Drink Type</Label>
-                                    <Select value={editingDrink?.drinkType || "soft"} onValueChange={(value: any) => setEditingDrink({ ...editingDrink, drinkType: value })}>
-                                      <SelectTrigger>
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="soft">Soft Drink</SelectItem>
-                                        <SelectItem value="alcoholic">Alcoholic</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-
-                                  {editingDrink?.drinkType === "soft" && (
-                                    <div className="space-y-2">
-                                      <Label htmlFor="edit-subType">Sub Type</Label>
-                                      <Input
-                                        id="edit-subType"
-                                        value={editingDrink?.subType || ""}
-                                        onChange={(e) => setEditingDrink({ ...editingDrink, subType: e.target.value })}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {editingDrink?.drinkType === "alcoholic" && (
-                                    <>
-                                      <div className="space-y-2">
-                                        <Label htmlFor="edit-subType2">Sub Type</Label>
-                                        <Input
-                                          id="edit-subType2"
-                                          value={editingDrink?.subType || ""}
-                                          onChange={(e) => setEditingDrink({ ...editingDrink, subType: e.target.value })}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label htmlFor="edit-brandProducer">Brand/Producer</Label>
-                                        <Input
-                                          id="edit-brandProducer"
-                                          value={editingDrink?.brandProducer || ""}
-                                          onChange={(e) => setEditingDrink({ ...editingDrink, brandProducer: e.target.value })}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label htmlFor="edit-cocktailName">Cocktail Name</Label>
-                                        <Input
-                                          id="edit-cocktailName"
-                                          value={editingDrink?.cocktailName || ""}
-                                          onChange={(e) => setEditingDrink({ ...editingDrink, cocktailName: e.target.value })}
-                                        />
-                                      </div>
-                                      <div className="space-y-2">
-                                        <Label>Corkage</Label>
-                                        <Select value={editingDrink?.corkage || "venue_provides"} onValueChange={(value: any) => setEditingDrink({ ...editingDrink, corkage: value })}>
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="venue_provides">Venue Provides</SelectItem>
-                                            <SelectItem value="client_brings">Client Brings</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    </>
-                                  )}
-
-                                  <div className="space-y-2">
-                                    <Label htmlFor="edit-totalQuantity">Total Quantity</Label>
-                                    <Input
-                                      id="edit-totalQuantity"
-                                      type="number"
-                                      min="1"
-                                      value={editingDrink?.totalQuantity || 0}
-                                      onChange={(e) => setEditingDrink({ ...editingDrink, totalQuantity: parseInt(e.target.value) || 0 })}
-                                    />
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    <Label htmlFor="edit-description">Description</Label>
-                                    <Textarea
-                                      id="edit-description"
-                                      value={editingDrink?.description || ""}
-                                      onChange={(e) => setEditingDrink({ ...editingDrink, description: e.target.value })}
-                                    />
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <Button type="submit" disabled={updateDrinkMutation.isPending}>
-                                    {updateDrinkMutation.isPending ? "Updating..." : "Update Drink"}
-                                  </Button>
-                                </DialogFooter>
-                              </form>
-                            </DialogContent>
-                          </Dialog>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteDrink(drink.id)}
-                            disabled={deleteDrinkMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteDrink(drink.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </Button>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <div>
-                        <span className="text-gray-600">Quantity: </span>
-                        <span className="font-medium">{drink.totalQuantity}</span>
+                      <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">Type:</span> {drink.drinkType === 'soft' ? 'Soft Drink' : 'Alcoholic'}</p>
+                        <p><span className="font-medium">Corkage:</span> {drink.corkage === 'venue_provides' ? 'Venue Provides' : 'Client Brings'}</p>
+                        <p><span className="font-medium">Quantity:</span> {drink.totalQuantity}</p>
+                        {drink.description && (
+                          <p><span className="font-medium">Notes:</span> {drink.description}</p>
+                        )}
                       </div>
-                      {drink.corkage && (
-                        <div>
-                          <span className="text-gray-600">Corkage: </span>
-                          <span className="font-medium">
-                            {drink.corkage === "venue_provides" ? "Venue Provides" : "Client Brings"}
-                          </span>
-                        </div>
-                      )}
-                      {drink.description && (
-                        <div>
-                          <span className="text-gray-600">Notes: </span>
-                          <p className="text-gray-700 mt-1">{drink.description}</p>
-                        </div>
-                      )}
                     </CardContent>
                   </Card>
                 ))}

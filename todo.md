@@ -510,3 +510,18 @@
 - [x] Recreate couple dashboard with working features
 - [x] Implement and test each couple feature sequentially
 - [x] End-to-end testing of complete couple workflow
+
+
+## Role-Based Menu Management - In Progress
+- [ ] Set up default courses (Starter, Main, Dessert) on event creation
+- [ ] Add role-based access control to menu configuration (employees only)
+- [ ] Build couple menu choice interface (read-only courses, add options)
+- [ ] Test employee course management workflow
+- [ ] Test couple menu choice workflow
+
+
+## Role-Based Menu Management - Complete
+- [x] Set up default courses (Starter, Main, Dessert) on event creation
+- [x] Add role-based access control to menu management
+- [x] Build couple menu choice interface
+- [x] Test role-based menu workflows

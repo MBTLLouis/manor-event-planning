@@ -1037,7 +1037,14 @@ export const appRouter = router({
         description: z.string().nullish(),
         orderIndex: z.number().default(0),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Couples can only add menu items to their own event
+        if (ctx.user?.role === 'couple') {
+          const event = await db.getEventById(input.eventId);
+          if (!event || event.coupleUsername !== ctx.user.username) {
+            throw new TRPCError({ code: 'FORBIDDEN', message: 'You do not have access to this event' });
+          }
+        }
         return await db.createMenuItem({
           eventId: input.eventId,
           course: input.course,
@@ -1055,21 +1062,33 @@ export const appRouter = router({
         isAvailable: z.boolean().optional(),
         orderIndex: z.number().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Only employees can update menu items
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot manage menu items' });
+        }
         const { id, ...data } = input;
         return await db.updateMenuItem(id, data);
       }),
 
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Only employees can delete menu items
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot manage menu items' });
+        }
         await db.deleteMenuItem(input.id);
         return { success: true };
       }),
     
     deleteCourse: protectedProcedure
       .input(z.object({ eventId: z.number(), course: z.string() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Only employees can delete courses
+        if (ctx.user?.role === 'couple') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Couples cannot manage courses' });
+        }
         await db.deleteMenuItemsByCourse(input.eventId, input.course);
         return { success: true };
       }),

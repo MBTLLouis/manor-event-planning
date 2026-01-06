@@ -185,7 +185,21 @@ export async function createEvent(event: InsertEvent) {
   };
 
   const result = await db.insert(events).values(eventWithCredentials);
-  return Number(result[0].insertId);
+  const eventId = Number(result[0].insertId);
+
+  // Create default courses (Starter, Main, Dessert)
+  const defaultCourses = ['Starter', 'Main', 'Dessert'];
+  for (const course of defaultCourses) {
+    await db.insert(menuItems).values({
+      eventId,
+      course,
+      name: course,
+      description: '',
+      isAvailable: true,
+    });
+  }
+
+  return eventId;
 }
 
 export async function getEventById(id: number) {

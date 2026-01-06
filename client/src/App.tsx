@@ -47,6 +47,7 @@ import CoupleMenu from "./pages/couple/CoupleMenu";
 import CoupleNotes from "./pages/couple/CoupleNotes";
 import CoupleHotels from "./pages/couple/CoupleHotels";
 import CoupleWebsite from "./pages/couple/CoupleWebsite";
+import CoupleChecklist from "./pages/couple/CoupleChecklist";
 import PublicRSVP from "./pages/PublicRSVP";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
@@ -186,6 +187,9 @@ function Router() {
       </Route>
       <Route path="/couple/website">
         {() => <ProtectedRoute component={CoupleWebsite} />}
+      </Route>
+      <Route path="/couple/checklist">
+        {() => <ProtectedRoute component={CoupleChecklist} />}
       </Route>
 
       {/* Root redirect */}

@@ -903,6 +903,12 @@ export const appRouter = router({
         return await db.getChecklistItemsByEventId(input.eventId);
       }),
 
+    getByEvent: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getChecklistItemsByEventId(input.eventId);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         eventId: z.number(),
@@ -941,6 +947,17 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await db.deleteChecklistItem(input.id);
+        return { success: true };
+      }),
+
+    toggle: protectedProcedure
+      .input(z.object({ id: z.number(), completed: z.boolean() }))
+      .mutation(async ({ input }) => {
+        const completedAt = input.completed ? new Date() : null;
+        await db.updateChecklistItem(input.id, {
+          completed: input.completed,
+          completedAt: completedAt || undefined,
+        });
         return { success: true };
       }),
   }),

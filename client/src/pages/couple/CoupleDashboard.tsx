@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import CoupleLayout from "@/components/CoupleLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, MapPin, Calendar, Utensils, CheckCircle2, Clock, Home } from "lucide-react";
+import { Users, MapPin, Calendar, Utensils, CheckCircle2, Clock, Home, ListTodo } from "lucide-react";
 import { useLocation } from "wouter";
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
 
@@ -111,6 +111,15 @@ export default function CoupleDashboard() {
       stat: "View rooms",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
+    },
+    {
+      title: "Planning Checklist",
+      description: "Track your wedding tasks",
+      icon: ListTodo,
+      href: "/couple/checklist",
+      stat: "View tasks",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50",
     },
   ];
 

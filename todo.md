@@ -603,3 +603,12 @@
 
 ## Bug Fixes
 - [x] Fix timeline section to display actual timeline items on public website
+
+
+## Couple Checklist Feature
+- [x] Create couple-specific checklist view separate from employee dashboard
+- [x] Add tRPC procedures for couple checklist items (create, read, update, delete, toggle)
+- [x] Create CoupleChecklist component with task management UI
+- [x] Integrate checklist into couple home/dashboard page
+- [x] Add checklist progress tracking (% complete)
+- [x] Test couple checklist CRUD operations

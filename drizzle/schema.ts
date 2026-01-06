@@ -357,9 +357,19 @@ export const weddingWebsites = mysqlTable("weddingWebsites", {
   eventId: int("eventId").notNull().unique(),
   slug: varchar("slug", { length: 100 }).unique(),
   isPublished: boolean("isPublished").default(false).notNull(),
+  // Original content sections
   welcomeMessage: text("welcomeMessage"),
   ourStory: text("ourStory"),
   registryLinks: text("registryLinks"), // JSON array of links
+  // New content sections
+  eventDetails: text("eventDetails"), // Date, time, location, venue info
+  travelInfo: text("travelInfo"), // Travel & accommodation information
+  faqContent: text("faqContent"), // FAQ section content
+  dressCode: text("dressCode"), // Dress code information
+  // Section visibility and ordering
+  sectionOrder: text("sectionOrder").default(JSON.stringify(["welcome", "story", "eventDetails", "travel", "faq", "dressCode", "registry", "photos"])), // JSON array of section IDs in order
+  visibleSections: text("visibleSections").default(JSON.stringify(["welcome", "story", "registry", "photos"])), // JSON array of visible section IDs
+  // RSVP and theme settings
   rsvpEnabled: boolean("rsvpEnabled").default(true).notNull(),
   theme: varchar("theme", { length: 50 }).default("classic").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -368,6 +378,24 @@ export const weddingWebsites = mysqlTable("weddingWebsites", {
 
 export type WeddingWebsite = typeof weddingWebsites.$inferSelect;
 export type InsertWeddingWebsite = typeof weddingWebsites.$inferInsert;
+
+/**
+ * Wedding Website Photos table - stores photos for wedding website gallery with captions
+ */
+export const weddingWebsitePhotos = mysqlTable("weddingWebsitePhotos", {
+  id: int("id").autoincrement().primaryKey(),
+  eventId: int("eventId").notNull(),
+  websiteId: int("websiteId").notNull(),
+  photoUrl: varchar("photoUrl", { length: 500 }).notNull(),
+  caption: text("caption"), // Photo caption/description
+  isFeatured: boolean("isFeatured").default(false).notNull(), // Hero/featured image
+  displayOrder: int("displayOrder").default(0).notNull(), // Order in gallery
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WeddingWebsitePhoto = typeof weddingWebsitePhotos.$inferSelect;
+export type InsertWeddingWebsitePhoto = typeof weddingWebsitePhotos.$inferInsert;
 
 /**
  * Drinks table - stores drink/beverage information for events

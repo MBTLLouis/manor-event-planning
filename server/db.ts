@@ -33,6 +33,8 @@ import {
   InsertAccommodation,
   weddingWebsites,
   InsertWeddingWebsite,
+  weddingWebsitePhotos,
+  InsertWeddingWebsitePhoto,
   menuItems,
   InsertMenuItem,
   drinks,
@@ -841,6 +843,36 @@ export async function updateWeddingWebsite(id: number, data: Partial<InsertWeddi
   if (!db) throw new Error("Database not available");
 
   await db.update(weddingWebsites).set(data).where(eq(weddingWebsites.id, id));
+}
+
+// Wedding Website Photos
+export async function addWeddingWebsitePhoto(photo: InsertWeddingWebsitePhoto) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(weddingWebsitePhotos).values(photo);
+  return Number(result[0].insertId);
+}
+
+export async function getWeddingWebsitePhotos(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(weddingWebsitePhotos).where(eq(weddingWebsitePhotos.eventId, eventId)).orderBy(asc(weddingWebsitePhotos.displayOrder));
+}
+
+export async function updateWeddingWebsitePhoto(id: number, data: Partial<InsertWeddingWebsitePhoto>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.update(weddingWebsitePhotos).set(data).where(eq(weddingWebsitePhotos.id, id));
+}
+
+export async function deleteWeddingWebsitePhoto(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(weddingWebsitePhotos).where(eq(weddingWebsitePhotos.id, id));
 }
 
 

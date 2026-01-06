@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, coupleUsername, couplePassword FROM events LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, coupleUsername, couplePassword FROM events LIMIT 1;",
+  "rows": [
+    {
+      "id": "420001",
+      "coupleUsername": "couple_1767704626289_0k3iey",
+      "couplePassword": "hwty957kq1vlcnhclr0pj"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcoupleUsername\tcouplePassword\n420001\tcouple_1767704626289_0k3iey\thwty957kq1vlcnhclr0pj\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}

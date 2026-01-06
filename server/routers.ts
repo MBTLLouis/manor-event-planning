@@ -988,6 +988,10 @@ export const appRouter = router({
         welcomeMessage: z.string().optional(),
         ourStory: z.string().optional(),
         registryLinks: z.string().optional(),
+        eventDetails: z.string().optional(),
+        travelInfo: z.string().optional(),
+        faqContent: z.string().optional(),
+        dressCode: z.string().optional(),
         rsvpEnabled: z.boolean().optional(),
         theme: z.string().optional(),
       }))
@@ -1004,6 +1008,12 @@ export const appRouter = router({
         welcomeMessage: z.string().optional(),
         ourStory: z.string().optional(),
         registryLinks: z.string().optional(),
+        eventDetails: z.string().optional(),
+        travelInfo: z.string().optional(),
+        faqContent: z.string().optional(),
+        dressCode: z.string().optional(),
+        sectionOrder: z.string().optional(),
+        visibleSections: z.string().optional(),
         rsvpEnabled: z.boolean().optional(),
         theme: z.string().optional(),
       }))
@@ -1019,6 +1029,45 @@ export const appRouter = router({
         const website = await db.getWeddingWebsiteBySlug(input.slug);
         if (!website) return null;
         return await db.getEventById(website.eventId);
+      }),
+
+    addPhoto: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        websiteId: z.number(),
+        photoUrl: z.string(),
+        caption: z.string().optional(),
+        isFeatured: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.addWeddingWebsitePhoto(input);
+        return { id };
+      }),
+
+    getPhotos: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getWeddingWebsitePhotos(input.eventId);
+      }),
+
+    updatePhoto: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        caption: z.string().optional(),
+        isFeatured: z.boolean().optional(),
+        displayOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateWeddingWebsitePhoto(id, data);
+        return { success: true };
+      }),
+
+    deletePhoto: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteWeddingWebsitePhoto(input.id);
+        return { success: true };
       }),
   }),
 

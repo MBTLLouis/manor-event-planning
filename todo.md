@@ -540,3 +540,12 @@
 ## Fix Back Button Navigation in Accommodations
 - [x] Fix the back button to navigate to the specific event instead of events list
 - [x] Test the back button navigation
+
+
+## Wedding Website Section Enhancements
+- [ ] Update database schema to support new content sections and photo metadata
+- [ ] Add preview mode functionality
+- [ ] Expand content sections (Event Details, Travel Info, FAQ, Dress Code)
+- [x] Implement drag-and-drop section reordering
+- [x] Add photo captions and metadata support
+- [ ] Test all new features

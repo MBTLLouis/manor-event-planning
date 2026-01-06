@@ -31,6 +31,10 @@ export default function CoupleWebsite() {
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [ourStory, setOurStory] = useState("");
   const [registryLinks, setRegistryLinks] = useState("");
+  const [eventDetails, setEventDetails] = useState("");
+  const [travelInfo, setTravelInfo] = useState("");
+  const [faqContent, setFaqContent] = useState("");
+  const [dressCode, setDressCode] = useState("");
   const [rsvpEnabled, setRsvpEnabled] = useState(true);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [isAddingImage, setIsAddingImage] = useState(false);
@@ -44,6 +48,10 @@ export default function CoupleWebsite() {
       setWelcomeMessage(website.welcomeMessage || "");
       setOurStory(website.ourStory || "");
       setRegistryLinks(website.registryLinks || "");
+      setEventDetails(website.eventDetails || "");
+      setTravelInfo(website.travelInfo || "");
+      setFaqContent(website.faqContent || "");
+      setDressCode(website.dressCode || "");
       setRsvpEnabled(website.rsvpEnabled);
       
       // Gallery data will be stored in registryLinks field for now
@@ -83,6 +91,10 @@ export default function CoupleWebsite() {
       welcomeMessage,
       ourStory,
       registryLinks,
+      eventDetails,
+      travelInfo,
+      faqContent,
+      dressCode,
       rsvpEnabled,
     };
 
@@ -243,6 +255,58 @@ export default function CoupleWebsite() {
                 className="resize-none font-mono text-sm"
               />
               <p className="text-xs text-muted-foreground">Enter one URL per line. You can also add links to your honeymoon fund, charity donations, or other registries.</p>
+            </div>
+
+            <div className="space-y-2 pt-4 border-t">
+              <Label htmlFor="eventDetails">Event Details</Label>
+              <Textarea
+                id="eventDetails"
+                value={eventDetails}
+                onChange={(e) => setEventDetails(e.target.value)}
+                rows={4}
+                placeholder="Share event details like date, time, location, venue name, and parking information..."
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">{eventDetails.length}/2000 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="travelInfo">Travel & Accommodation Info</Label>
+              <Textarea
+                id="travelInfo"
+                value={travelInfo}
+                onChange={(e) => setTravelInfo(e.target.value)}
+                rows={4}
+                placeholder="Provide travel directions, accommodation recommendations, airport information, and local attractions..."
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">{travelInfo.length}/2000 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dressCode">Dress Code</Label>
+              <Textarea
+                id="dressCode"
+                value={dressCode}
+                onChange={(e) => setDressCode(e.target.value)}
+                rows={3}
+                placeholder="e.g., Black Tie, Cocktail Attire, Garden Party, etc."
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">{dressCode.length}/500 characters</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="faqContent">Frequently Asked Questions</Label>
+              <Textarea
+                id="faqContent"
+                value={faqContent}
+                onChange={(e) => setFaqContent(e.target.value)}
+                rows={6}
+                placeholder="Add common questions and answers for your guests..."
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">{faqContent.length}/3000 characters</p>
             </div>
           </CardContent>
         </Card>

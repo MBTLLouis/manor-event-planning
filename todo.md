@@ -664,3 +664,9 @@
 - [x] Investigate why seating component changes not visible on couple portal
 - [x] Check if correct component is being imported/routed (was using CoupleSeatingV2 instead of CoupleSeating)
 - [x] Updated CoupleSeatingV2 with search functionality
+
+
+## Bug - Table Persistence
+- [x] Fix tables disappearing when navigating away from couple seating page
+- [x] Implement database save when creating/deleting tables
+- [x] Load saved tables from database on page load

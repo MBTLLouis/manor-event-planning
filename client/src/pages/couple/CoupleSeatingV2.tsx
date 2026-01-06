@@ -72,20 +72,15 @@ export default function CoupleSeatingV2() {
     { enabled: !!floorPlanId }
   );
 
+  // Table mutations for persistence
+  const createTableMutation = trpc.tables.create.useMutation();
+  const deleteTableMutation = trpc.tables.delete.useMutation();
+  const utils = trpc.useUtils();
+
   // Initialize floor plan and load tables on mount
   useEffect(() => {
     if (floorPlans.length > 0) {
       setFloorPlanId(floorPlans[0].id);
-      const convertedTables = savedTables.map(table => ({
-        id: table.id.toString(),
-        name: table.name,
-        capacity: table.seatCount,
-        guests: []
-      }));
-      if (convertedTables.length > 0) {
-        setTables(convertedTables);
-        setSaveStatus('saved');
-      }
     } else if (eventId && floorPlans.length === 0 && coupleEvent) {
       createFloorPlanMutation.mutate(
         { eventId, name: 'Main Floor' },
@@ -97,6 +92,20 @@ export default function CoupleSeatingV2() {
       );
     }
   }, [floorPlans, eventId, coupleEvent]);
+
+  // Load tables from database when floorPlanId changes
+  useEffect(() => {
+    if (floorPlanId && savedTables.length > 0) {
+      const convertedTables = savedTables.map(table => ({
+        id: table.id.toString(),
+        name: table.name,
+        capacity: table.seatCount,
+        guests: []
+      }));
+      setTables(convertedTables);
+      setSaveStatus('saved');
+    }
+  }, [floorPlanId, savedTables]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -114,18 +123,29 @@ export default function CoupleSeatingV2() {
   );
 
   const handleAddTable = () => {
-    if (!newTableName.trim()) return;
+    if (!newTableName.trim() || !floorPlanId) return;
 
-    const newTable: Table = {
-      id: Date.now().toString(),
-      name: newTableName,
-      capacity: parseInt(newTableCapacity) || 8,
-      guests: [],
-    };
-
-    setTables([...tables, newTable]);
-    setNewTableName('');
-    setNewTableCapacity('8');
+    const capacity = parseInt(newTableCapacity) || 8;
+    
+    createTableMutation.mutate(
+      {
+        floorPlanId,
+        name: newTableName,
+        tableType: 'round',
+        seatCount: capacity,
+        positionX: 0,
+        positionY: 0,
+      },
+      {
+        onSuccess: () => {
+          // Invalidate tables list to refetch from database
+          utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+          setNewTableName('');
+          setNewTableCapacity('8');
+          setSaveStatus('saved');
+        },
+      }
+    );
   };
 
   const handleAddGuest = (tableId: string) => {
@@ -182,7 +202,17 @@ export default function CoupleSeatingV2() {
   };
 
   const handleDeleteTable = (tableId: string) => {
-    setTables(tables.filter((table) => table.id !== tableId));
+    const tableIdNum = parseInt(tableId);
+    deleteTableMutation.mutate(
+      { id: tableIdNum },
+      {
+        onSuccess: () => {
+          setTables(tables.filter((table) => table.id !== tableId));
+          utils.tables.list.invalidate({ floorPlanId: floorPlanId || 0 });
+          setSaveStatus('saved');
+        },
+      }
+    );
   };
 
   // Get seating info for a guest

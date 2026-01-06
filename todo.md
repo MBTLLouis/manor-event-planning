@@ -649,3 +649,8 @@
 
 ## Couple Seating - Guest Search Function
 - [x] Replace guest dropdown with search function when adding guests to tables
+
+
+## Bug Fixes - Couple Seating
+- [x] Fix guest search not visible in add guest dialog
+- [x] Fix tables disappearing when adding guests

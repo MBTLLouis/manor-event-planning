@@ -1,4 +1,5 @@
-import { useState } from 'react';
+'use client';
+
 import { trpc } from '@/lib/trpc';
 import CoupleLayout from '@/components/CoupleLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Edit2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export default function CoupleSeating() {
   const { data: events = [] } = trpc.events.list.useQuery();
@@ -87,8 +89,10 @@ export default function CoupleSeating() {
       setIsAddGuestDialogOpen(false);
       setSelectedGuestId('');
       setSelectedTableForGuest(null);
+      setGuestSearchQuery('');
       if (coupleEvent) {
         utils.guests.list.invalidate({ eventId: coupleEvent.id });
+        utils.floorPlans.list.invalidate({ eventId: coupleEvent.id });
       }
     },
     onError: (error) => {
@@ -102,15 +106,8 @@ export default function CoupleSeating() {
       return;
     }
 
-    if (!coupleEvent) {
-      toast.error('Event not found');
-      return;
-    }
-
-    const floorPlanId = floorPlans[0]?.id || 1;
-
     createTableMutation.mutate({
-      floorPlanId,
+      floorPlanId: 1,
       name: newTableName,
       tableType: 'round',
       seatCount: parseInt(newTableCapacity),
@@ -119,8 +116,8 @@ export default function CoupleSeating() {
     });
   };
 
-  const handleEditTable = () => {
-    if (!newTableName.trim()) {
+  const handleUpdateTable = () => {
+    if (!newTableName.trim() || !editingTable) {
       toast.error('Please enter a table name');
       return;
     }
@@ -128,7 +125,15 @@ export default function CoupleSeating() {
     updateTableMutation.mutate({
       id: editingTable.id,
       name: newTableName,
+      positionX: editingTable.positionX || 0,
+      positionY: editingTable.positionY || 0,
     });
+  };
+
+  const handleDeleteTable = (tableId: number) => {
+    if (confirm('Are you sure you want to delete this table?')) {
+      deleteTableMutation.mutate({ id: tableId });
+    }
   };
 
   const handleAddGuestToTable = () => {
@@ -180,12 +185,8 @@ export default function CoupleSeating() {
   if (!coupleEvent) {
     return (
       <CoupleLayout>
-        <div className="container mx-auto py-8">
-          <Card className="bg-muted">
-            <CardContent className="py-12 text-center">
-              <p className="text-lg text-gray-600">No event found</p>
-            </CardContent>
-          </Card>
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Unable to load your seating details. Please try logging in again.</p>
         </div>
       </CoupleLayout>
     );
@@ -193,12 +194,15 @@ export default function CoupleSeating() {
 
   return (
     <CoupleLayout>
-      <div className="container mx-auto py-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-serif font-bold">Table Planning</h1>
-            <p className="text-muted-foreground">{coupleEvent?.title}</p>
-          </div>
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-serif text-rose-900 mb-2 flex items-center gap-2">
+            Seating Arrangements
+          </h1>
+          <p className="text-gray-600">Organize your guests at tables</p>
+        </div>
+
+        <div className="flex gap-4 mb-8">
           <Dialog open={isAddTableDialogOpen} onOpenChange={setIsAddTableDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-rose-600 hover:bg-rose-700">
@@ -282,50 +286,43 @@ export default function CoupleSeating() {
                               variant="ghost"
                               size="sm"
                               onClick={() => openEditDialog(table)}
-                              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             >
                               <Edit2 className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteTableMutation.mutate({ id: table.id })}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleDeleteTable(table.id)}
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${isFull ? 'bg-red-500' : 'bg-rose-500'}`}
-                            style={{ width: `${Math.min((occupancy / capacity) * 100, 100)}%` }}
-                          />
-                        </div>
                       </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          {tableGuests.length === 0 ? (
-                            <p className="text-xs text-gray-500">No guests assigned</p>
-                          ) : (
-                            tableGuests.map((guest: any) => (
+                      <CardContent className="space-y-3">
+                        {tableGuests.length > 0 ? (
+                          <div className="space-y-2">
+                            {tableGuests.map((guest: any) => (
                               <div
                                 key={guest.id}
-                                className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200"
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded"
                               >
-                                <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                                <span className="text-sm font-medium">
+                                  {guest.firstName} {guest.lastName}
+                                </span>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => handleRemoveGuestFromTable(guest.id)}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Trash2 className="w-3 h-3 text-red-500" />
                                 </Button>
                               </div>
-                            ))
-                          )}
-                        </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-500 italic">No guests assigned</p>
+                        )}
                       </CardContent>
                     </Card>
                   );
@@ -333,17 +330,17 @@ export default function CoupleSeating() {
               </div>
             </div>
 
-            {/* Unassigned Guests */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-4 space-y-4">
-                <div>
-                  <h2 className="text-xl font-semibold">Unassigned Guests</h2>
+            {/* Add Guest Section */}
+            <div className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Assign Guests</CardTitle>
                   <Badge variant="secondary">{unassignedGuests.length} guests</Badge>
-                </div>
+                </CardHeader>
 
                 <Dialog open={isAddGuestDialogOpen} onOpenChange={setIsAddGuestDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full bg-rose-600 hover:bg-rose-700">
+                    <Button className="w-full bg-rose-600 hover:bg-rose-700 mx-4 mb-4">
                       <Plus className="w-4 h-4 mr-2" />
                       Add Guest to Table
                     </Button>
@@ -385,11 +382,11 @@ export default function CoupleSeating() {
                             className="pl-8"
                           />
                         </div>
-                        {guestSearchQuery && (
+                        {unassignedGuests.length > 0 ? (
                           <div className="border rounded-md max-h-64 overflow-y-auto">
                             {unassignedGuests
                               .filter((guest: any) =>
-                                `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase())
+                                !guestSearchQuery || `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase())
                               )
                               .map((guest: any) => (
                                 <button
@@ -403,12 +400,14 @@ export default function CoupleSeating() {
                                   <div className="font-medium text-sm">{guest.firstName} {guest.lastName}</div>
                                 </button>
                               ))}
-                            {unassignedGuests.filter((guest: any) =>
+                            {guestSearchQuery && unassignedGuests.filter((guest: any) =>
                               `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQuery.toLowerCase())
                             ).length === 0 && (
                               <div className="px-3 py-2 text-sm text-gray-500">No guests found</div>
                             )}
                           </div>
+                        ) : (
+                          <div className="border rounded-md px-3 py-2 text-sm text-gray-500">All guests assigned</div>
                         )}
                         {selectedGuestId && (
                           <div className="text-sm text-green-600 font-medium">
@@ -426,7 +425,7 @@ export default function CoupleSeating() {
                 </Dialog>
 
                 {unassignedGuests.length > 0 && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 px-4 pb-4">
                     <h3 className="text-sm font-medium">Guests to assign:</h3>
                     <div className="space-y-1 max-h-96 overflow-y-auto">
                       {unassignedGuests.map((guest: any) => (
@@ -440,7 +439,7 @@ export default function CoupleSeating() {
                     </div>
                   </div>
                 )}
-              </div>
+              </Card>
             </div>
           </div>
         )}
@@ -450,14 +449,12 @@ export default function CoupleSeating() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Table</DialogTitle>
-              <DialogDescription>Update table details</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="editTableName">Table Name</Label>
                 <Input
                   id="editTableName"
-                  placeholder="e.g., Table 1"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
                 />
@@ -475,8 +472,8 @@ export default function CoupleSeating() {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleEditTable} className="bg-rose-600 hover:bg-rose-700">
-                Save Changes
+              <Button onClick={handleUpdateTable} className="bg-rose-600 hover:bg-rose-700">
+                Update Table
               </Button>
             </DialogFooter>
           </DialogContent>

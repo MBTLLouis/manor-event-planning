@@ -658,3 +658,9 @@
 ## Bug Fixes - Couple Seating (Persistent)
 - [x] Tables still disappearing after adding guests
 - [x] Dropdown for table selection still visible - should be search only
+
+
+## Debug - Seating Changes Not Showing
+- [x] Investigate why seating component changes not visible on couple portal
+- [x] Check if correct component is being imported/routed (was using CoupleSeatingV2 instead of CoupleSeating)
+- [x] Updated CoupleSeatingV2 with search functionality

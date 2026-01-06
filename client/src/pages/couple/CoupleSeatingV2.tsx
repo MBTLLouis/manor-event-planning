@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Search } from 'lucide-react';
 
 interface Guest {
   id: number;
@@ -57,6 +57,7 @@ export default function CoupleSeatingV2() {
   const [newTableName, setNewTableName] = useState('');
   const [newTableCapacity, setNewTableCapacity] = useState('8');
   const [selectedGuests, setSelectedGuests] = useState<Record<string, string>>({});
+  const [guestSearchQueries, setGuestSearchQueries] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'unsaved' | 'saving'>('idle');
   const [floorPlanId, setFloorPlanId] = useState<number | null>(null);
@@ -316,34 +317,52 @@ export default function CoupleSeatingV2() {
 
                         {/* Add Guest Selection */}
                         {!isFull && unassignedGuests.length > 0 && (
-                          <div className="flex gap-2 pt-2 border-t">
-                            <Select
-                              value={selectedGuests[table.id] || ''}
-                              onValueChange={(value) =>
-                                setSelectedGuests({
-                                  ...selectedGuests,
-                                  [table.id]: value,
-                                })
-                              }
-                            >
-                              <SelectTrigger className="text-sm">
-                                <SelectValue placeholder="Select guest" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {unassignedGuests.map((guest: any) => (
-                                  <SelectItem key={guest.id} value={guest.id.toString()}>
-                                    {guest.firstName} {guest.lastName}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddGuest(table.id)}
-                              className="bg-teal-600 hover:bg-teal-700"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </Button>
+                          <div className="space-y-2 pt-2 border-t">
+                            <div className="relative">
+                              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                              <Input
+                                placeholder="Search guest..."
+                                value={guestSearchQueries[table.id] || ''}
+                                onChange={(e) => setGuestSearchQueries({
+                                  ...guestSearchQueries,
+                                  [table.id]: e.target.value
+                                })}
+                                className="pl-8 text-sm"
+                              />
+                            </div>
+                            {(guestSearchQueries[table.id] || unassignedGuests.length > 0) && (
+                              <div className="border rounded-md max-h-48 overflow-y-auto">
+                                {unassignedGuests
+                                  .filter((guest: any) => {
+                                    const query = guestSearchQueries[table.id] || '';
+                                    return !query || `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(query.toLowerCase());
+                                  })
+                                  .map((guest: any) => (
+                                    <button
+                                      key={guest.id}
+                                      onClick={() => {
+                                        setSelectedGuests({
+                                          ...selectedGuests,
+                                          [table.id]: guest.id.toString(),
+                                        });
+                                        setGuestSearchQueries({
+                                          ...guestSearchQueries,
+                                          [table.id]: '',
+                                        });
+                                        handleAddGuest(table.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-gray-100 border-b last:border-b-0 transition-colors text-sm"
+                                    >
+                                      {guest.firstName} {guest.lastName}
+                                    </button>
+                                  ))}
+                                {guestSearchQueries[table.id] && unassignedGuests.filter((guest: any) =>
+                                  `${guest.firstName} ${guest.lastName}`.toLowerCase().includes(guestSearchQueries[table.id].toLowerCase())
+                                ).length === 0 && (
+                                  <div className="px-3 py-2 text-sm text-gray-500">No guests found</div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
                       </CardContent>

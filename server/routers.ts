@@ -462,7 +462,11 @@ export const appRouter = router({
         starterSelection: z.string().nullable(),
         mainSelection: z.string().nullable(),
         dessertSelection: z.string().nullable(),
+        hasDietaryRequirements: z.boolean(),
         dietaryRestrictions: z.string().nullable(),
+        allergySeverity: z.enum(["none", "mild", "severe"]),
+        canOthersConsumeNearby: z.boolean(),
+        dietaryDetails: z.string().nullable(),
       }))
       .mutation(async ({ input }) => {
         await db.updateGuestWebsiteRSVP(input);

@@ -1169,7 +1169,11 @@ export async function updateGuestWebsiteRSVP(input: {
   starterSelection: string | null;
   mainSelection: string | null;
   dessertSelection: string | null;
+  hasDietaryRequirements: boolean;
   dietaryRestrictions: string | null;
+  allergySeverity: "none" | "mild" | "severe";
+  canOthersConsumeNearby: boolean;
+  dietaryDetails: string | null;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -1183,6 +1187,9 @@ export async function updateGuestWebsiteRSVP(input: {
   
   const updateData: any = {
     rsvpStatus: rsvpStatusMap[input.rsvpStatus] || "invited",
+    hasDietaryRequirements: input.hasDietaryRequirements,
+    allergySeverity: input.allergySeverity,
+    canOthersConsumeNearby: input.canOthersConsumeNearby,
   };
   
   // Only set meal selections if attending
@@ -1193,7 +1200,11 @@ export async function updateGuestWebsiteRSVP(input: {
   }
   
   if (input.dietaryRestrictions) {
-    updateData.dietaryDetails = input.dietaryRestrictions;
+    updateData.dietaryRestrictions = input.dietaryRestrictions;
+  }
+  
+  if (input.dietaryDetails) {
+    updateData.dietaryDetails = input.dietaryDetails;
   }
   
   await db.update(guests).set(updateData).where(eq(guests.id, input.guestId));

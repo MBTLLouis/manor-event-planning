@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, Search } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CheckCircle2, Search, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 interface WebsiteRSVPProps {
@@ -37,7 +39,11 @@ export default function WebsiteRSVP({
   const [starterSelection, setStarterSelection] = useState("");
   const [mainSelection, setMainSelection] = useState("");
   const [dessertSelection, setDessertSelection] = useState("");
+  const [hasDietaryRequirements, setHasDietaryRequirements] = useState(false);
   const [dietaryRestrictions, setDietaryRestrictions] = useState("");
+  const [allergySeverity, setAllergySeverity] = useState("none");
+  const [canOthersConsumeNearby, setCanOthersConsumeNearby] = useState(true);
+  const [dietaryDetails, setDietaryDetails] = useState("");
 
   // Search for guest by name
   const searchGuestQuery = trpc.guests.searchByName.useQuery(
@@ -108,7 +114,11 @@ export default function WebsiteRSVP({
       starterSelection: attendance === "yes" ? starterSelection : null,
       mainSelection: attendance === "yes" ? mainSelection : null,
       dessertSelection: attendance === "yes" ? dessertSelection : null,
+      hasDietaryRequirements,
       dietaryRestrictions: dietaryRestrictions || null,
+      allergySeverity: hasDietaryRequirements ? (allergySeverity as "none" | "mild" | "severe") : "none",
+      canOthersConsumeNearby,
+      dietaryDetails: dietaryDetails || null,
     });
   };
 
@@ -120,7 +130,11 @@ export default function WebsiteRSVP({
     setStarterSelection("");
     setMainSelection("");
     setDessertSelection("");
+    setHasDietaryRequirements(false);
     setDietaryRestrictions("");
+    setAllergySeverity("none");
+    setCanOthersConsumeNearby(true);
+    setDietaryDetails("");
   };
 
   // Step 1: Search
@@ -283,19 +297,88 @@ export default function WebsiteRSVP({
               </>
             )}
 
-            {/* Dietary Restrictions */}
-            <div>
-              <Label htmlFor="dietary" className="text-base font-medium">
-                Dietary Restrictions or Allergies (Optional)
-              </Label>
-              <Textarea
-                id="dietary"
-                value={dietaryRestrictions}
-                onChange={(e) => setDietaryRestrictions(e.target.value)}
-                placeholder="Please let us know about any dietary restrictions or food allergies..."
-                className="mt-2"
-                rows={3}
-              />
+            {/* Dietary Requirements */}
+            <div className="border-t pt-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <Checkbox
+                  id="hasDietaryRequirements"
+                  checked={hasDietaryRequirements}
+                  onCheckedChange={(checked) => setHasDietaryRequirements(checked as boolean)}
+                />
+                <Label htmlFor="hasDietaryRequirements" className="text-base font-medium cursor-pointer">
+                  I have dietary requirements or allergies
+                </Label>
+              </div>
+
+              {hasDietaryRequirements && (
+                <div className="ml-6 space-y-4 border-l-2 border-amber-300 pl-4">
+                  {/* Dietary Restrictions */}
+                  <div className="space-y-2">
+                    <Label htmlFor="dietaryRestrictions" className="text-base font-medium">
+                      Dietary Restrictions
+                    </Label>
+                    <Input
+                      id="dietaryRestrictions"
+                      placeholder="e.g., Vegetarian, Gluten-Free, Nut Allergy"
+                      value={dietaryRestrictions}
+                      onChange={(e) => setDietaryRestrictions(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Separate multiple restrictions with commas
+                    </p>
+                  </div>
+
+                  {/* Allergy Severity */}
+                  <div className="space-y-2">
+                    <Label className="text-base font-medium">Allergy Severity</Label>
+                    <RadioGroup value={allergySeverity} onValueChange={setAllergySeverity}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="none" id="severity-none" />
+                        <Label htmlFor="severity-none" className="cursor-pointer">None</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="mild" id="severity-mild" />
+                        <Label htmlFor="severity-mild" className="cursor-pointer">Mild</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="severe" id="severity-severe" />
+                        <Label htmlFor="severity-severe" className="flex items-center gap-2 cursor-pointer">
+                          Severe <AlertTriangle className="w-4 h-4 text-red-500" />
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Can Others Consume Nearby */}
+                  <div className="space-y-2">
+                    <Label className="text-base font-medium">Can others consume around you?</Label>
+                    <RadioGroup value={canOthersConsumeNearby ? "yes" : "no"} onValueChange={(value) => setCanOthersConsumeNearby(value === "yes")}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="consume-yes" />
+                        <Label htmlFor="consume-yes" className="cursor-pointer">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="consume-no" />
+                        <Label htmlFor="consume-no" className="cursor-pointer">No (airborne/contact risk)</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Additional Details */}
+                  <div className="space-y-2">
+                    <Label htmlFor="dietaryDetails" className="text-base font-medium">
+                      Additional Details
+                    </Label>
+                    <Textarea
+                      id="dietaryDetails"
+                      placeholder="Any additional information about dietary requirements..."
+                      value={dietaryDetails}
+                      onChange={(e) => setDietaryDetails(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Buttons */}

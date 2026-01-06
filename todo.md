@@ -577,3 +577,12 @@
 - [x] Create tRPC procedures for guest RSVP updates
 - [x] Add RSVP page link/button to website navigation
 - [x] Test guest RSVP workflow end-to-end
+
+
+## RSVP Dietary Requirements Enhancement
+- [x] Add dietary requirements checkboxes to couple's RSVP page
+- [x] Add allergy severity selection (Mild/Severe)
+- [x] Add "Can others consume around you?" toggle
+- [x] Add dietary details text area for additional information
+- [x] Update tRPC procedures to handle dietary data fields
+- [x] Test dietary requirements submission and storage

@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home, Users, MapPin, Calendar, Utensils, FileText, Hotel, Globe } from "lucide-react";
+import { LogOut, Home, Users, MapPin, Calendar, Utensils, FileText, Hotel, Globe, CheckSquare } from "lucide-react";
 
 interface CoupleLayoutProps {
   children: ReactNode;
@@ -26,6 +26,7 @@ export default function CoupleLayout({ children }: CoupleLayoutProps) {
     { name: "Notes", href: "/couple/notes", icon: FileText },
     { name: "Accommodations", href: "/couple/hotels", icon: Hotel },
     { name: "Website", href: "/couple/website", icon: Globe },
+    { name: "Checklist", href: "/couple/checklist", icon: CheckSquare },
   ];
 
   return (

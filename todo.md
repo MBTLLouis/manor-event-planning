@@ -633,3 +633,6 @@
 ## Checklist Navigation
 - [x] Add back to event button on checklist page
 - [x] Fix back button 404 error - should navigate to /events/:id not /employee/events/:id
+
+## Couple Menu Navigation
+- [x] Add checklist menu item to couple layout navigation bar

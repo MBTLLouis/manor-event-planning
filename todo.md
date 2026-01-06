@@ -624,3 +624,7 @@
 ## Checklist UI Simplification
 - [x] Remove category grouping from checklist display
 - [x] Display all tasks in single list sorted by priority
+
+
+## Remove Category Dropdown
+- [x] Remove category dropdown from Add Task form

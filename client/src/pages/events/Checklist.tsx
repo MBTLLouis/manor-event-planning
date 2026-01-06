@@ -61,7 +61,7 @@ export default function ChecklistEnhanced() {
     
     const data = {
       eventId,
-      category: formData.get("category") as string,
+      category: "general",
       title: formData.get("title") as string,
       description: formData.get("description") as string || undefined,
       priority: (formData.get("priority") as "low" | "medium" | "high") || "medium",
@@ -281,24 +281,7 @@ export default function ChecklistEnhanced() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select defaultValue="general">
-                    <SelectTrigger name="category">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="venue">Venue</SelectItem>
-                      <SelectItem value="catering">Catering</SelectItem>
-                      <SelectItem value="photography">Photography</SelectItem>
-                      <SelectItem value="flowers">Flowers</SelectItem>
-                      <SelectItem value="music">Music</SelectItem>
-                      <SelectItem value="invitations">Invitations</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <input type="hidden" name="category" value="general" />
                 <div>
                   <Label htmlFor="title">Task Title</Label>
                   <Input name="title" placeholder="Enter task title" required />

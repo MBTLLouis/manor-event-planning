@@ -10,13 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, CheckCircle2, Circle, AlertCircle, Edit2, Clock } from "lucide-react";
+import { Plus, CheckCircle2, Circle, AlertCircle, Edit2, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ChecklistEnhanced() {
   const params = useParams();
   const eventId = Number(params.id);
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedTab, setSelectedTab] = useState<"manor" | "couple">("manor");
@@ -254,6 +254,15 @@ export default function ChecklistEnhanced() {
       <div className="container mx-auto py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation(`/employee/events/${eventId}`)}
+              className="mb-2"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Event
+            </Button>
             <h1 className="text-3xl font-bold">Wedding Planning Checklist</h1>
             <p className="text-muted-foreground">Manage tasks for the event</p>
           </div>

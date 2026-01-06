@@ -628,3 +628,7 @@
 
 ## Remove Category Dropdown
 - [x] Remove category dropdown from Add Task form
+
+
+## Checklist Navigation
+- [x] Add back to event button on checklist page

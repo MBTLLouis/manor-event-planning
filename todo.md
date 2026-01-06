@@ -619,3 +619,8 @@
 - [x] Revert to category-based grouping (keep edit functionality)
 - [x] Add red highlighting for overdue tasks
 - [x] Test overdue highlighting with category grouping
+
+
+## Checklist UI Simplification
+- [x] Remove category grouping from checklist display
+- [x] Display all tasks in single list sorted by priority

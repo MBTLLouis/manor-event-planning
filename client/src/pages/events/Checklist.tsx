@@ -118,30 +118,17 @@ export default function ChecklistEnhanced() {
   const manorItems = checklistItems.filter(item => item.assignedTo === "Manor");
   const coupleItems = checklistItems.filter(item => item.assignedTo === "Couple");
 
-  // Group items by category and sort by priority
-  const groupItems = (items: typeof checklistItems) => {
-    const grouped = items.reduce((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = [];
-      }
-      acc[item.category].push(item);
-      return acc;
-    }, {} as Record<string, typeof checklistItems>);
-
-    // Sort items within each category by priority (high, medium, low)
-    Object.keys(grouped).forEach(category => {
-      grouped[category].sort((a, b) => {
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
-        return (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - 
-               (priorityOrder[b.priority as keyof typeof priorityOrder] || 3);
-      });
+  // Sort items by priority (high, medium, low)
+  const sortByPriority = (items: typeof checklistItems) => {
+    return [...items].sort((a, b) => {
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      return (priorityOrder[a.priority as keyof typeof priorityOrder] || 3) - 
+             (priorityOrder[b.priority as keyof typeof priorityOrder] || 3);
     });
-
-    return grouped;
   };
 
-  const groupedManorItems = groupItems(manorItems);
-  const groupedCoupleItems = groupItems(coupleItems);
+  const sortedManorItems = sortByPriority(manorItems);
+  const sortedCoupleItems = sortByPriority(coupleItems);
 
   // Calculate progress for each tab
   const manorCompleted = manorItems.filter(item => item.completed).length;
@@ -152,8 +139,8 @@ export default function ChecklistEnhanced() {
   const coupleTotal = coupleItems.length;
   const coupleProgress = coupleTotal > 0 ? Math.round((coupleCompleted / coupleTotal) * 100) : 0;
 
-  const renderTaskList = (groupedItems: Record<string, typeof checklistItems>) => {
-    if (Object.keys(groupedItems).length === 0) {
+  const renderTaskList = (items: typeof checklistItems) => {
+    if (items.length === 0) {
       return (
         <Card>
           <CardContent className="py-12 text-center">
@@ -164,108 +151,101 @@ export default function ChecklistEnhanced() {
     }
 
     return (
-      <div className="space-y-6">
-        {Object.entries(groupedItems).map(([category, items]) => (
-          <Card key={category}>
-            <CardHeader>
-              <CardTitle className="capitalize">{category}</CardTitle>
-              <CardDescription>
-                {items.filter(i => i.completed).length} of {items.length} completed
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {items.map((item) => {
-                  const overdue = isOverdue(item);
-                  return (
-                    <div
-                      key={item.id}
-                      className={`border rounded-lg p-4 transition-all ${
-                        item.completed ? "bg-muted/50 opacity-75" : ""
-                      } ${overdue ? "border-red-500 bg-red-50" : ""}`}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-3">
+            {items.map((item) => {
+              const overdue = isOverdue(item);
+              return (
+                <div
+                  key={item.id}
+                  className={`border rounded-lg p-4 transition-all ${
+                    item.completed ? "bg-muted/50 opacity-75" : ""
+                  } ${overdue ? "border-red-500 bg-red-50" : ""}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <button
+                      onClick={() => toggleComplete(item)}
+                      className="mt-1 flex-shrink-0"
                     >
-                      <div className="flex items-start gap-3">
-                        <button
-                          onClick={() => toggleComplete(item)}
-                          className="mt-1 flex-shrink-0"
+                      {item.completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-muted-foreground hover:text-primary" />
+                      )}
+                    </button>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className={`font-medium ${item.completed ? "line-through text-muted-foreground" : ""}`}>
+                          {item.title}
+                        </h4>
+                        {item.priority === "high" && (
+                          <AlertCircle className="w-4 h-4 text-destructive" />
+                        )}
+                        {overdue && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-red-200 text-red-800 font-medium flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            Overdue
+                          </span>
+                        )}
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full ${
+                            item.priority === "high"
+                              ? "bg-red-100 text-red-800"
+                              : item.priority === "medium"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
                         >
-                          {item.completed ? (
-                            <CheckCircle2 className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <Circle className="w-5 h-5 text-muted-foreground hover:text-primary" />
-                          )}
-                        </button>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className={`font-medium ${item.completed ? "line-through text-muted-foreground" : ""}`}>
-                              {item.title}
-                            </h4>
-                            {item.priority === "high" && (
-                              <AlertCircle className="w-4 h-4 text-destructive" />
-                            )}
-                            {overdue && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-red-200 text-red-800 font-medium flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                Overdue
-                              </span>
-                            )}
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded-full ${
-                                item.priority === "high"
-                                  ? "bg-red-100 text-red-800"
-                                  : item.priority === "medium"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {item.priority}
-                            </span>
-                          </div>
-                          {item.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
-                          )}
-                          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                            {item.dueDate && (
-                              <span className={overdue ? "text-red-600 font-medium" : ""}>
-                                📅 Due: {new Date(item.dueDate).toLocaleDateString()}
-                              </span>
-                            )}
-                            {item.completedAt && (
-                              <span className="text-green-600">
-                                ✓ Completed: {new Date(item.completedAt).toLocaleDateString()}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 flex-shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditDialog(item)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm("Delete this task?")) {
-                                deleteMutation.mutate({ id: item.id });
-                              }
-                            }}
-                          >
-                            ×
-                          </Button>
-                        </div>
+                          {item.priority}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                          {item.category}
+                        </span>
+                      </div>
+                      {item.description && (
+                        <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        {item.dueDate && (
+                          <span className={overdue ? "text-red-600 font-medium" : ""}>
+                            📅 Due: {new Date(item.dueDate).toLocaleDateString()}
+                          </span>
+                        )}
+                        {item.completedAt && (
+                          <span className="text-green-600">
+                            ✓ Completed: {new Date(item.completedAt).toLocaleDateString()}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(item)}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm("Delete this task?")) {
+                            deleteMutation.mutate({ id: item.id });
+                          }
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
@@ -386,7 +366,7 @@ export default function ChecklistEnhanced() {
                 </div>
               </CardContent>
             </Card>
-            {renderTaskList(groupedManorItems)}
+            {renderTaskList(sortedManorItems)}
           </TabsContent>
 
           <TabsContent value="couple" className="space-y-4">
@@ -409,7 +389,7 @@ export default function ChecklistEnhanced() {
                 </div>
               </CardContent>
             </Card>
-            {renderTaskList(groupedCoupleItems)}
+            {renderTaskList(sortedCoupleItems)}
           </TabsContent>
         </Tabs>
       </div>

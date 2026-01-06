@@ -586,3 +586,16 @@
 - [x] Add dietary details text area for additional information
 - [x] Update tRPC procedures to handle dietary data fields
 - [x] Test dietary requirements submission and storage
+
+
+## Public Website Redesign - Manor By The Lake Branding
+- [x] Move RSVP section to appear after hero section
+- [x] Redesign hero section with Manor By The Lake aesthetic
+- [x] Update color scheme to match Manor By The Lake (golds, creams, deep greens)
+- [x] Add elegant typography and spacing
+- [x] Enhance event details section with upscale styling
+- [x] Redesign timeline section with elegant visual treatment
+- [x] Update gallery section layout
+- [x] Redesign footer with Manor By The Lake branding
+- [x] Add decorative elements (dividers, icons, flourishes)
+- [x] Test responsive design across devices

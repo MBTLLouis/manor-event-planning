@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon, CheckCircle, Sparkles } from 'lucide-react';
 import WebsiteRSVP from '@/components/WebsiteRSVP';
 
 export default function PublicWeddingWebsite() {
@@ -44,9 +44,9 @@ export default function PublicWeddingWebsite() {
 
   if (websiteLoading || eventLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[#F5F1E8] to-[#E8DCC4] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-serif text-slate-800">Loading...</h1>
+          <h1 className="text-3xl font-serif text-[#2C5F5D]">Loading...</h1>
         </div>
       </div>
     );
@@ -54,46 +54,59 @@ export default function PublicWeddingWebsite() {
 
   if (!weddingWebsite || !event || !weddingWebsite.isPublished) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-[#F5F1E8] to-[#E8DCC4] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-serif text-slate-800">Wedding Not Found</h1>
-          <p className="text-slate-600 mt-2">This wedding website is not yet published.</p>
+          <h1 className="text-3xl font-serif text-[#2C5F5D]">Wedding Not Found</h1>
+          <p className="text-[#5A7A78] mt-2">This wedding website is not yet published.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section with Banner */}
-      <section className="relative h-96 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+    <div className="min-h-screen bg-[#FEFDFB]">
+      {/* Hero Section */}
+      <section className="relative h-screen bg-gradient-to-br from-[#2C5F5D] via-[#3A7A77] to-[#1a3a38] overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-[#D4AF37] rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
         <div className="relative h-full flex flex-col items-center justify-center text-center text-white px-4">
-          <h1 className="text-5xl font-serif mb-2">{event.coupleName1} & {event.coupleName2}</h1>
-          <p className="text-xl font-light tracking-wide">{format(new Date(event.eventDate), 'MMMM d, yyyy')}</p>
+          <div className="mb-6 flex items-center justify-center gap-2">
+            <Sparkles className="w-6 h-6 text-[#D4AF37]" />
+            <span className="text-[#D4AF37] font-light tracking-widest uppercase text-sm">We're Getting Married</span>
+            <Sparkles className="w-6 h-6 text-[#D4AF37]" />
+          </div>
+          <h1 className="text-6xl md:text-7xl font-serif mb-4 text-white drop-shadow-lg">{event.coupleName1} & {event.coupleName2}</h1>
+          <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-6"></div>
+          <p className="text-2xl font-light tracking-wide text-[#E8DCC4]">{format(new Date(event.eventDate), 'MMMM d, yyyy')}</p>
+          <p className="text-lg font-light text-[#E8DCC4] mt-4 max-w-2xl">Join us for an elegant celebration of love</p>
         </div>
       </section>
 
       {/* Countdown Section */}
-      <section className="bg-gradient-to-r from-slate-100 to-slate-50 py-12 border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-center text-3xl font-serif text-slate-800 mb-8">Days Until Our Wedding</h2>
-          <div className="grid grid-cols-4 gap-4 text-center">
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-              <div className="text-4xl font-serif text-slate-800">{countdown.days}</div>
-              <div className="text-sm text-slate-600 mt-2">Days</div>
+      <section className="bg-gradient-to-r from-[#F5F1E8] to-[#E8DCC4] py-16 border-b-2 border-[#D4AF37]">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-center text-4xl font-serif text-[#2C5F5D] mb-12">The Countdown Begins</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-[#D4AF37] text-center">
+              <div className="text-5xl font-serif text-[#D4AF37] mb-2">{countdown.days}</div>
+              <div className="text-sm text-[#5A7A78] uppercase tracking-widest font-light">Days</div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-              <div className="text-4xl font-serif text-slate-800">{countdown.hours}</div>
-              <div className="text-sm text-slate-600 mt-2">Hours</div>
+            <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-[#D4AF37] text-center">
+              <div className="text-5xl font-serif text-[#D4AF37] mb-2">{countdown.hours}</div>
+              <div className="text-sm text-[#5A7A78] uppercase tracking-widest font-light">Hours</div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-              <div className="text-4xl font-serif text-slate-800">{countdown.minutes}</div>
-              <div className="text-sm text-slate-600 mt-2">Minutes</div>
+            <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-[#D4AF37] text-center">
+              <div className="text-5xl font-serif text-[#D4AF37] mb-2">{countdown.minutes}</div>
+              <div className="text-sm text-[#5A7A78] uppercase tracking-widest font-light">Minutes</div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6 border border-slate-200">
-              <div className="text-4xl font-serif text-slate-800">0</div>
-              <div className="text-sm text-slate-600 mt-2">Seconds</div>
+            <div className="bg-white rounded-lg shadow-lg p-8 border-t-4 border-[#D4AF37] text-center">
+              <div className="text-5xl font-serif text-[#D4AF37] mb-2">0</div>
+              <div className="text-sm text-[#5A7A78] uppercase tracking-widest font-light">Seconds</div>
             </div>
           </div>
         </div>
@@ -101,128 +114,26 @@ export default function PublicWeddingWebsite() {
 
       {/* Welcome Message */}
       {weddingWebsite?.welcomeMessage && (
-        <section className="py-16 px-4 max-w-4xl mx-auto">
-          <div className="prose prose-slate max-w-none">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-serif text-slate-800">Welcome</h2>
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4">Welcome</h2>
+              <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
             </div>
-            <div className="text-slate-700 text-lg leading-relaxed whitespace-pre-wrap">
+            <div className="text-[#5A7A78] text-lg leading-relaxed whitespace-pre-wrap text-center font-light">
               {weddingWebsite.welcomeMessage}
             </div>
           </div>
         </section>
       )}
 
-      {/* Our Story */}
-      {weddingWebsite?.ourStory && (
-        <section className="py-16 px-4 bg-slate-50 border-y border-slate-200">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-serif text-slate-800 mb-8 text-center">Our Story</h2>
-            <div className="text-slate-700 text-lg leading-relaxed whitespace-pre-wrap">
-              {weddingWebsite.ourStory}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Event Details */}
-      <section className="py-16 px-4 max-w-4xl mx-auto">
-        <h2 className="text-3xl font-serif text-slate-800 mb-12 text-center">Event Details</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="flex gap-4">
-            <Calendar className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-serif text-lg text-slate-800 mb-2">Date & Time</h3>
-              <p className="text-slate-600">{format(new Date(event.eventDate), 'EEEE, MMMM d, yyyy')}</p>
-              <p className="text-slate-600">Time to be confirmed</p>
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <MapPin className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-serif text-lg text-slate-800 mb-2">Location</h3>
-              <p className="text-slate-600">Venue details to be confirmed</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Accommodation */}
-      <section className="py-16 px-4 bg-slate-50 border-y border-slate-200">
+      {/* RSVP Section - Moved here after welcome */}
+      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4] border-y-2 border-[#D4AF37]">
         <div className="max-w-4xl mx-auto">
-          <div className="flex gap-4 items-start mb-8">
-            <Hotel className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="text-3xl font-serif text-slate-800 mb-4">Accommodation</h2>
-              <p className="text-slate-700 leading-relaxed">
-                We have arranged special rates at several nearby hotels. More details coming soon.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Travel & Parking */}
-      <section className="py-16 px-4 max-w-4xl mx-auto">
-        <div className="flex gap-4 items-start">
-          <Car className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-          <div>
-            <h2 className="text-3xl font-serif text-slate-800 mb-4">Travel & Parking</h2>
-            <p className="text-slate-700 leading-relaxed">
-              Parking is available at the venue. For guests traveling from out of town, we recommend arriving the day before.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Gift Registry */}
-      {weddingWebsite?.registryLinks && (
-        <section className="py-16 px-4 bg-slate-50 border-y border-slate-200">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-4 items-start">
-              <Gift className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-3xl font-serif text-slate-800 mb-4">Gift Registry</h2>
-                <p className="text-slate-700 mb-4">
-                  Your presence is the greatest gift, but if you wish to give us something, you can find our registries below:
-                </p>
-                <div className="space-y-2">
-                  {(() => {
-                    try {
-                      const links = JSON.parse(weddingWebsite.registryLinks);
-                      return Array.isArray(links) ? links.map((link: any, idx: number) => (
-                        <a
-                          key={idx}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block text-slate-600 hover:text-slate-800 underline"
-                        >
-                          {link.name}
-                        </a>
-                      )) : null;
-                    } catch {
-                      return null;
-                    }
-                  })()}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* RSVP Section */}
-      <section className="py-16 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex gap-4 items-start mb-8">
-            <CheckCircle className="w-6 h-6 text-[#2C5F5D] flex-shrink-0 mt-1" />
-            <div>
-              <h2 className="text-3xl font-serif text-[#2C5F5D] mb-2">RSVP</h2>
-              <p className="text-slate-700">
-                Please confirm your attendance and let us know your meal preferences
-              </p>
-            </div>
+          <div className="text-center mb-12">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4">We'd Love Your Company</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto"></div>
+            <p className="text-[#5A7A78] mt-4 text-lg font-light">Please confirm your attendance and let us know your meal preferences</p>
           </div>
           {weddingWebsite && event && (
             <WebsiteRSVP
@@ -236,22 +147,95 @@ export default function PublicWeddingWebsite() {
         </div>
       </section>
 
-      {/* Photo Gallery */}
-      <section className="py-16 px-4 max-w-4xl mx-auto">
-        <div className="flex gap-4 items-start">
-          <ImageIcon className="w-6 h-6 text-slate-600 flex-shrink-0 mt-1" />
-          <div>
-            <h2 className="text-3xl font-serif text-slate-800 mb-4">Gallery</h2>
-            <p className="text-slate-700">
-              Photo gallery coming soon. We'll share our favorite moments from the wedding here.
-            </p>
+      {/* Our Story */}
+      {weddingWebsite?.ourStory && (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Our Story</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="text-[#5A7A78] text-lg leading-relaxed whitespace-pre-wrap font-light">
+              {weddingWebsite.ourStory}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Timeline Section - Coming Soon */}
+      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">The Day's Timeline</h2>
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+          <p className="text-[#5A7A78] text-lg text-center font-light">
+            Timeline details coming soon. We'll share the schedule for our special day.
+          </p>
+        </div>
+      </section>
+
+      {/* Event Details */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Event Details</h2>
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4] rounded-lg p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="w-6 h-6 text-[#D4AF37]" />
+                <h3 className="text-2xl font-serif text-[#2C5F5D]">Venue</h3>
+              </div>
+              <p className="text-[#5A7A78] font-light leading-relaxed">Manor By The Lake</p>
+            </div>
+            <div className="bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4] rounded-lg p-8 shadow-lg">
+              <div className="flex items-center gap-3 mb-4">
+                <Hotel className="w-6 h-6 text-[#D4AF37]" />
+                <h3 className="text-2xl font-serif text-[#2C5F5D]">Accommodations</h3>
+              </div>
+              <p className="text-[#5A7A78] font-light leading-relaxed">Guest accommodations available on-site</p>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* Registry Links - Coming Soon */}
+      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gift Registry</h2>
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+          <p className="text-[#5A7A78] text-lg text-center font-light">
+            Registry links coming soon. We'll share our gift registry details here.
+          </p>
+        </div>
+      </section>
+
+      {/* Photo Gallery */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gallery</h2>
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+          <p className="text-[#5A7A78] text-lg text-center font-light">
+            Photo gallery coming soon. We'll share our favorite moments from the wedding here.
+          </p>
+        </div>
+      </section>
+
+      {/* FAQ Section - Coming Soon */}
+      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Frequently Asked Questions</h2>
+          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+          <p className="text-[#5A7A78] text-lg text-center font-light">
+            FAQ section coming soon. We'll answer common questions here.
+          </p>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-8 mt-16 text-center">
-        <p className="text-slate-400">Thank you for celebrating with us</p>
+      <footer className="bg-gradient-to-r from-[#2C5F5D] to-[#1a3a38] text-white py-12 mt-16">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h3 className="text-2xl font-serif mb-2">{event.coupleName1} & {event.coupleName2}</h3>
+          <div className="w-12 h-1 bg-[#D4AF37] mx-auto mb-4"></div>
+          <p className="text-[#E8DCC4] font-light mb-4">{format(new Date(event.eventDate), 'MMMM d, yyyy')}</p>
+          <p className="text-[#D4AF37] font-light">Thank you for celebrating with us</p>
+        </div>
       </footer>
     </div>
   );

@@ -16,7 +16,6 @@ export default function CoupleChecklist() {
   const { user } = useAuth();
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [newTask, setNewTask] = useState({
-    category: "general",
     title: "",
     description: "",
     priority: "medium" as const,
@@ -38,7 +37,6 @@ export default function CoupleChecklist() {
     onSuccess: () => {
       refetch();
       setNewTask({
-        category: "general",
         title: "",
         description: "",
         priority: "medium",
@@ -61,7 +59,7 @@ export default function CoupleChecklist() {
 
     createMutation.mutate({
       eventId: coupleEvent.id,
-      category: newTask.category,
+      category: "general",
       title: newTask.title,
       description: newTask.description || undefined,
       priority: newTask.priority,
@@ -175,25 +173,6 @@ export default function CoupleChecklist() {
                 <DialogTitle>Add New Task</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Category</label>
-                  <Select value={newTask.category} onValueChange={(value) => setNewTask({ ...newTask, category: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="venue">Venue</SelectItem>
-                      <SelectItem value="catering">Catering</SelectItem>
-                      <SelectItem value="photography">Photography</SelectItem>
-                      <SelectItem value="flowers">Flowers</SelectItem>
-                      <SelectItem value="music">Music</SelectItem>
-                      <SelectItem value="invitations">Invitations</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div>
                   <label className="text-sm font-medium">Task Title</label>
                   <Input

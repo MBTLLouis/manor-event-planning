@@ -639,3 +639,6 @@
 
 ## Bug Fixes - Add Task Form
 - [x] Fix add task form submission not working - form appears but clicking add does nothing
+
+## Couple Checklist - Remove Category
+- [x] Remove category dropdown from couple checklist add task form

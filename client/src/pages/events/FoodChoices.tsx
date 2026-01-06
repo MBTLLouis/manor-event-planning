@@ -54,7 +54,7 @@ export default function FoodChoices() {
   });
   
   // Extract unique courses with their order
-  const coursesWithOrder = Array.from(new Set(menuItems.map(item => item.course)))
+  const coursesWithOrder = Array.from(new Set(menuItems.map(item => item.course).filter(Boolean)))
     .map(courseName => {
       const courseItems = menuItems.filter(item => item.course === courseName);
       const minOrder = Math.min(...courseItems.map(item => item.orderIndex));
@@ -62,7 +62,7 @@ export default function FoodChoices() {
     })
     .sort((a, b) => a.orderIndex - b.orderIndex);
   
-  const courses = coursesWithOrder.map(c => c.name);
+  const courses = coursesWithOrder.map(c => c.name).filter(Boolean);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -514,7 +514,7 @@ export default function FoodChoices() {
                       <SelectValue placeholder="Select a course" />
                     </SelectTrigger>
                     <SelectContent>
-                      {courses.map(course => (
+                      {courses.filter(Boolean).map(course => (
                         <SelectItem key={course} value={course}>{course}</SelectItem>
                       ))}
                     </SelectContent>

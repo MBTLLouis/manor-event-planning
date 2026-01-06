@@ -694,3 +694,8 @@
 - [x] Ensure both roles share same table and guest assignment data
 - [x] Test real-time synchronization between employee and couple views
 - [x] Verify changes made by couple are visible to employee and vice versa
+
+## Bug Fix - Select.Item Empty Value Error on Food Choices
+- [x] Fix Select.Item components with empty string values causing React error
+- [x] Ensure all Select.Item values are non-empty strings
+- [x] Test Food Choices page loads without errors

@@ -445,6 +445,29 @@ export const appRouter = router({
       .query(async ({ input }) => {
         return await db.getGuestByToken(input.token);
       }),
+
+    searchByName: publicProcedure
+      .input(z.object({
+        eventId: z.number(),
+        name: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.searchGuestByName(input.eventId, input.name);
+      }),
+
+    updateWebsiteRSVP: publicProcedure
+      .input(z.object({
+        guestId: z.number(),
+        rsvpStatus: z.enum(["yes", "no", "maybe"]),
+        starterSelection: z.string().nullable(),
+        mainSelection: z.string().nullable(),
+        dessertSelection: z.string().nullable(),
+        dietaryRestrictions: z.string().nullable(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateGuestWebsiteRSVP(input);
+        return { success: true };
+      }),
   }),
 
   floorPlans: router({

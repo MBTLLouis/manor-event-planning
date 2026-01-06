@@ -1137,3 +1137,64 @@ export async function deleteTimelineItem(id: number) {
 
   await db.delete(weddingWebsiteTimelineItems).where(eq(weddingWebsiteTimelineItems.id, id));
 }
+
+
+// Website RSVP Functions
+export async function searchGuestByName(eventId: number, name: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  // Search for guest by full name or partial name match (case-insensitive)
+  const nameLower = name.toLowerCase().trim();
+  const result = await db
+    .select()
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        or(
+          sql`LOWER(${guests.name}) LIKE ${`%${nameLower}%`}`,
+          sql`LOWER(CONCAT(${guests.firstName}, ' ', ${guests.lastName})) LIKE ${`%${nameLower}%`}`
+        )
+      )
+    )
+    .limit(1);
+  
+  return result[0] || null;
+}
+
+export async function updateGuestWebsiteRSVP(input: {
+  guestId: number;
+  rsvpStatus: "yes" | "no" | "maybe";
+  starterSelection: string | null;
+  mainSelection: string | null;
+  dessertSelection: string | null;
+  dietaryRestrictions: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Map website RSVP status to internal status
+  const rsvpStatusMap: Record<string, string> = {
+    yes: "confirmed",
+    no: "declined",
+    maybe: "invited",
+  };
+  
+  const updateData: any = {
+    rsvpStatus: rsvpStatusMap[input.rsvpStatus] || "invited",
+  };
+  
+  // Only set meal selections if attending
+  if (input.rsvpStatus === "yes") {
+    updateData.starterSelection = input.starterSelection;
+    updateData.mainSelection = input.mainSelection;
+    updateData.dessertSelection = input.dessertSelection;
+  }
+  
+  if (input.dietaryRestrictions) {
+    updateData.dietaryDetails = input.dietaryRestrictions;
+  }
+  
+  await db.update(guests).set(updateData).where(eq(guests.id, input.guestId));
+}

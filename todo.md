@@ -567,3 +567,13 @@
 - [x] Implement S3 file upload for photos
 - [x] Add photo preview after upload
 - [x] Test photo upload functionality
+
+
+## Public RSVP Page for Guests
+- [x] Create public RSVP page component accessible via website slug
+- [x] Implement guest name search functionality
+- [x] Add attendance confirmation (Yes/No/Maybe)
+- [x] Implement food choices selection on RSVP page
+- [x] Create tRPC procedures for guest RSVP updates
+- [x] Add RSVP page link/button to website navigation
+- [x] Test guest RSVP workflow end-to-end

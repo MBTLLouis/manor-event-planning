@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon } from 'lucide-react';
+import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import WebsiteRSVP from '@/components/WebsiteRSVP';
 
 export default function PublicWeddingWebsite() {
   const { slug } = useParams<{ slug: string }>();
@@ -210,6 +211,30 @@ export default function PublicWeddingWebsite() {
           </div>
         </section>
       )}
+
+      {/* RSVP Section */}
+      <section className="py-16 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex gap-4 items-start mb-8">
+            <CheckCircle className="w-6 h-6 text-[#2C5F5D] flex-shrink-0 mt-1" />
+            <div>
+              <h2 className="text-3xl font-serif text-[#2C5F5D] mb-2">RSVP</h2>
+              <p className="text-slate-700">
+                Please confirm your attendance and let us know your meal preferences
+              </p>
+            </div>
+          </div>
+          {weddingWebsite && event && (
+            <WebsiteRSVP
+              websiteId={weddingWebsite.id}
+              eventId={event.id}
+              coupleName1={event.coupleName1 || undefined}
+              coupleName2={event.coupleName2 || undefined}
+              eventDate={new Date(event.eventDate)}
+            />
+          )}
+        </div>
+      </section>
 
       {/* Photo Gallery */}
       <section className="py-16 px-4 max-w-4xl mx-auto">

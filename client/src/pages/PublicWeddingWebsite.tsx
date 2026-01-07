@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { trpc } from '@/lib/trpc';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon, CheckCircle, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, Hotel, Car, Gift, Image as ImageIcon, CheckCircle, Sparkles, Shirt, MapIcon, HelpCircle } from 'lucide-react';
 import WebsiteRSVP from '@/components/WebsiteRSVP';
 
 export default function PublicWeddingWebsite() {
@@ -26,6 +26,26 @@ export default function PublicWeddingWebsite() {
     { slug: slug || '' },
     { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
   );
+
+  // Parse registry links from JSON with error handling
+  const registryLinks = (() => {
+    try {
+      return weddingWebsite?.registryLinks ? JSON.parse(weddingWebsite.registryLinks) : [];
+    } catch (e) {
+      console.warn('Failed to parse registry links:', e);
+      return [];
+    }
+  })();
+
+  // Parse FAQ content from JSON with error handling
+  const faqItems = (() => {
+    try {
+      return weddingWebsite?.faqContent ? JSON.parse(weddingWebsite.faqContent) : [];
+    } catch (e) {
+      console.warn('Failed to parse FAQ content:', e);
+      return [];
+    }
+  })();
 
   // Update countdown timer
   useEffect(() => {
@@ -221,16 +241,74 @@ export default function PublicWeddingWebsite() {
         </div>
       </section>
 
-      {/* Registry Links - Coming Soon */}
-      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gift Registry</h2>
-          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
-          <p className="text-[#5A7A78] text-lg text-center font-light">
-            Registry links coming soon. We'll share our gift registry details here.
-          </p>
-        </div>
-      </section>
+      {/* Dress Code */}
+      {weddingWebsite?.dressCode && (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Shirt className="w-8 h-8 text-[#2C5F5D]" />
+              <h2 className="text-5xl font-serif text-[#2C5F5D]">Dress Code</h2>
+            </div>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="bg-white rounded-lg p-8 shadow-lg">
+              <p className="text-[#5A7A78] text-lg leading-relaxed font-light whitespace-pre-wrap">{weddingWebsite.dressCode}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Travel & Accommodation Info */}
+      {weddingWebsite?.travelInfo && (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <MapIcon className="w-8 h-8 text-[#2C5F5D]" />
+              <h2 className="text-5xl font-serif text-[#2C5F5D]">Travel & Accommodations</h2>
+            </div>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4] rounded-lg p-8 shadow-lg">
+              <p className="text-[#5A7A78] text-lg leading-relaxed font-light whitespace-pre-wrap">{weddingWebsite.travelInfo}</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Registry Links */}
+      {registryLinks && registryLinks.length > 0 ? (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gift Registry</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {registryLinks.map((link: any, index: number) => (
+                <a
+                  key={index}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <Gift className="w-6 h-6 text-[#D4AF37]" />
+                    <h3 className="text-xl font-serif text-[#2C5F5D]">{link.name}</h3>
+                  </div>
+                  <p className="text-[#5A7A78] font-light text-sm truncate">{link.url}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gift Registry</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <p className="text-[#5A7A78] text-lg text-center font-light">
+              Registry links coming soon. We'll share our gift registry details here.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Photo Gallery */}
       <section className="py-20 px-4 bg-white">
@@ -243,16 +321,36 @@ export default function PublicWeddingWebsite() {
         </div>
       </section>
 
-      {/* FAQ Section - Coming Soon */}
-      <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Frequently Asked Questions</h2>
-          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
-          <p className="text-[#5A7A78] text-lg text-center font-light">
-            FAQ section coming soon. We'll answer common questions here.
-          </p>
-        </div>
-      </section>
+      {/* FAQ Section */}
+      {faqItems && faqItems.length > 0 ? (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Frequently Asked Questions</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="space-y-6">
+              {faqItems.map((item: any, index: number) => (
+                <div key={index} className="bg-white rounded-lg p-6 shadow-lg">
+                  <div className="flex items-start gap-3 mb-3">
+                    <HelpCircle className="w-6 h-6 text-[#D4AF37] flex-shrink-0 mt-1" />
+                    <h3 className="text-lg font-serif text-[#2C5F5D]">{item.question}</h3>
+                  </div>
+                  <p className="text-[#5A7A78] font-light leading-relaxed ml-9">{item.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Frequently Asked Questions</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <p className="text-[#5A7A78] text-lg text-center font-light">
+              FAQ section coming soon. We'll answer common questions here.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="bg-gradient-to-r from-[#2C5F5D] to-[#1a3a38] text-white py-12 mt-16">

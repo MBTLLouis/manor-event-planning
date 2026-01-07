@@ -267,11 +267,9 @@ export default function GuestListEnhanced() {
   const { data: guests } = trpc.guests.list.useQuery({ eventId });
   const { data: stats } = trpc.guests.stats.useQuery({ eventId });
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
-  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
-  const floorPlanId = floorPlans.length > 0 ? floorPlans[0].id : null;
   const { data: tables = [] } = trpc.tables.list.useQuery(
-    { floorPlanId: floorPlanId || 0 },
-    { enabled: !!floorPlanId }
+    { eventId },
+    { enabled: true }
   );
 
   const utils = trpc.useUtils();

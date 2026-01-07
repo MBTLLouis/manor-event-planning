@@ -38,10 +38,7 @@ function CoupleTablePlanningContent() {
     { enabled: eventId > 0 && searchQuery.length > 0 }
   );
 
-  const { data: floorPlans } = trpc.floorPlans.list.useQuery(
-    { eventId },
-    { enabled: eventId > 0 }
-  );
+
 
   // Mutations
   const createTableMutation = trpc.tables.create.useMutation({

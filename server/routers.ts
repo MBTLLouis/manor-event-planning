@@ -532,71 +532,7 @@ export const appRouter = router({
       }),
   }),
 
-  floorPlans: router({
-    list: protectedProcedure
-      .input(z.object({ eventId: z.number() }))
-      .query(async ({ input }) => {
-        return await db.getFloorPlansByEventId(input.eventId);
-      }),
 
-    getById: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        const floorPlan = await db.getFloorPlanById(input.id);
-        if (!floorPlan) return null;
-
-        const tables = await db.getTablesByFloorPlanId(input.id);
-        const seats = await db.getSeatsByFloorPlanId(input.id);
-
-        return { ...floorPlan, tables, seats };
-      }),
-
-    create: protectedProcedure
-      .input(z.object({
-        eventId: z.number(),
-        name: z.string(),
-        mode: z.enum(["ceremony", "reception"]).optional(),
-        orderIndex: z.number().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const id = await db.createFloorPlan(input);
-        return { id };
-      }),
-
-    update: protectedProcedure
-      .input(z.object({
-        id: z.number(),
-        name: z.string().optional(),
-        orderIndex: z.number().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const { id, ...data } = input;
-        await db.updateFloorPlan(id, data);
-        return { success: true };
-      }),
-
-    delete: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        await db.deleteFloorPlan(input.id);
-        return { success: true };
-      }),
-
-    getTables: protectedProcedure
-      .input(z.object({ eventId: z.number() }))
-      .query(async ({ input }) => {
-        const floorPlans = await db.getFloorPlansByEventId(input.eventId);
-        const allTables = [];
-        for (const plan of floorPlans) {
-          const tables = await db.getTablesByFloorPlanId(plan.id);
-          for (const table of tables) {
-            const seats = await db.getSeatsByTableId(table.id);
-            allTables.push({ ...table, seats });
-          }
-        }
-        return allTables;
-      }),
-  }),
 
   tables: router({
     list: protectedProcedure
@@ -613,15 +549,15 @@ export const appRouter = router({
 
     create: protectedProcedure
       .input(z.object({
-        floorPlanId: z.number().nullable().optional(),
-        eventId: z.number().nullable().optional(),
+        floorPlanId: z.number().optional().nullable(),
+        eventId: z.number().optional().nullable(),
         name: z.string(),
         tableType: z.enum(["round", "rectangular"]),
         seatCount: z.number(),
         positionX: z.number().default(0),
         positionY: z.number().default(0),
         rotation: z.number().optional(),
-      }))
+      }).passthrough())
       .mutation(async ({ input }) => {
         const id = await db.createTable(input);
         return { id };

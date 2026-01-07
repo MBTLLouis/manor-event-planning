@@ -197,14 +197,9 @@ export default function CoupleGuests() {
     { enabled: !!coupleEvent }
   );
 
-  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery(
+  const { data: tables = [] } = trpc.tables.list.useQuery(
     { eventId: coupleEvent?.id || 0 },
     { enabled: !!coupleEvent }
-  );
-  const floorPlanId = floorPlans.length > 0 ? floorPlans[0].id : null;
-  const { data: tables = [] } = trpc.tables.list.useQuery(
-    { floorPlanId: floorPlanId || 0 },
-    { enabled: !!floorPlanId }
   );
 
   const utils = trpc.useUtils();

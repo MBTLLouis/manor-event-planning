@@ -21,7 +21,7 @@ import EventDetail from "./pages/events/EventDetail";
 import GuestList from "./pages/events/GuestList";
 import SaveTheDate from "./pages/events/SaveTheDate";
 import FinalGuestDatabase from "./pages/events/FinalGuestDatabase";
-import FloorPlans from "./pages/events/FloorPlans";
+
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
 import TablePlanning from "./pages/events/TablePlanning";
@@ -143,9 +143,7 @@ function Router() {
       <Route path="/events/:id/final-guests">
         {(params) => <ProtectedRoute component={FinalGuestDatabase} params={params} />}
       </Route>
-      <Route path="/events/:id/floor-plans">
-        {(params) => <ProtectedRoute component={FloorPlans} params={params} />}
-      </Route>
+
       <Route path="/events/:id/timeline">
         {(params) => <ProtectedRoute component={Timeline} params={params} />}
       </Route>

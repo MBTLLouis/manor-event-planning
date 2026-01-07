@@ -1351,6 +1351,7 @@ export async function searchGuestsByEventId(eventId: number, query: string) {
     .where(
       and(
         eq(guests.eventId, eventId),
+        isNull(guests.tableId),
         or(
           like(guests.firstName, searchTerm),
           like(guests.lastName, searchTerm),

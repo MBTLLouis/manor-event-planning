@@ -53,7 +53,7 @@ export default function FoodChoices() {
     description: "",
   });
   
-  // Extract unique courses with their order
+  // Extract unique courses with their order, excluding empty placeholder items
   const coursesWithOrder = Array.from(new Set(menuItems.map(item => item.course).filter(Boolean)))
     .map(courseName => {
       const courseItems = menuItems.filter(item => item.course === courseName);
@@ -63,6 +63,12 @@ export default function FoodChoices() {
     .sort((a, b) => a.orderIndex - b.orderIndex);
   
   const courses = coursesWithOrder.map(c => c.name).filter(Boolean);
+  
+  // Get the highest orderIndex to use for new courses
+  const getNextOrderIndex = () => {
+    if (menuItems.length === 0) return 0;
+    return Math.max(...menuItems.map(item => item.orderIndex)) + 100;
+  };
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -190,10 +196,31 @@ export default function FoodChoices() {
       course: newCourseName,
       name: "",
       description: "",
+      orderIndex: getNextOrderIndex(),
     });
     
     setNewCourseName("");
     setIsAddCourseDialogOpen(false);
+  };
+  
+  const handleAddItem = () => {
+    if (!newItem.course.trim()) {
+      toast.error("Please select a course");
+      return;
+    }
+    if (!newItem.name.trim()) {
+      toast.error("Please enter a dish name");
+      return;
+    }
+    
+    if (editingItem) {
+      updateItemMutation.mutate(editingItem);
+    } else {
+      createItemMutation.mutate({
+        eventId,
+        ...newItem,
+      });
+    }
   };
   
   const handleAddDrink = () => {
@@ -550,17 +577,9 @@ export default function FoodChoices() {
               <Button variant="outline" onClick={() => {
                 setIsAddItemDialogOpen(false);
                 setEditingItem(null);
+                setNewItem({ course: "", name: "", description: "" });
               }}>Cancel</Button>
-              <Button onClick={() => {
-                if (editingItem) {
-                  updateItemMutation.mutate(editingItem);
-                } else {
-                  createItemMutation.mutate({
-                    eventId,
-                    ...newItem,
-                  });
-                }
-              }}>
+              <Button onClick={handleAddItem}>
                 {editingItem ? "Update" : "Add"} Item
               </Button>
             </DialogFooter>

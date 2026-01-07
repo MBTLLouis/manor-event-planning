@@ -179,8 +179,16 @@ export default function CoupleMenu() {
     }
   };
 
-  // Get default courses from menu items (these are created when event is initialized)
-  const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
+  // Get courses with their order, excluding empty placeholder items
+  const coursesWithOrder = Array.from(new Set(menuItems.map(item => item.course).filter(Boolean)))
+    .map(courseName => {
+      const courseItems = menuItems.filter(item => item.course === courseName);
+      const minOrder = Math.min(...courseItems.map(item => item.orderIndex || 0));
+      return { name: courseName, orderIndex: minOrder };
+    })
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  
+  const courses = coursesWithOrder.map(c => c.name);
   
   // If no courses exist, show default course names
   const availableCourses = courses.length > 0 ? courses : ['Starter', 'Main', 'Dessert'];
@@ -289,7 +297,8 @@ export default function CoupleMenu() {
             ) : (
               <div className="space-y-6">
                 {courses.map((course) => {
-                  const courseItems = menuItems.filter(item => item.course === course);
+                  const courseItems = menuItems.filter(item => item.course === course && item.name.trim() !== "");
+                  if (courseItems.length === 0) return null;
                   return (
                     <Card key={course}>
                       <CardHeader>

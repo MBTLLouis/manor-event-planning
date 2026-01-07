@@ -20,7 +20,7 @@ export default function CoupleLayout({ children }: CoupleLayoutProps) {
   const navigation = [
     { name: "Dashboard", href: "/couple/dashboard", icon: Home },
     { name: "Guest List", href: "/couple/guests", icon: Users },
-    { name: "Seating", href: "/couple/seating", icon: MapPin },
+    { name: "Seating", href: "/couple/table-planning", icon: MapPin },
     { name: "Timeline", href: "/couple/timeline", icon: Calendar },
     { name: "Menu", href: "/couple/menu", icon: Utensils },
     { name: "Notes", href: "/couple/notes", icon: FileText },

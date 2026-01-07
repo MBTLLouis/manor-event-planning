@@ -5,7 +5,7 @@ import EmployeeLayout from '@/components/EmployeeLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Plus, Trash2, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Guest {
@@ -35,8 +35,8 @@ export default function SeatingPlanV2() {
   const eventId = Number(params.id);
   const [, setLocation] = useLocation();
 
-  const { data: event } = trpc.events.getById.useQuery({ id: eventId });
-  const { data: eventGuests = [] } = trpc.guests.list.useQuery({ eventId });
+  const { data: event, isLoading: eventLoading } = trpc.events.getById.useQuery({ id: eventId });
+  const { data: eventGuests = [], isLoading: guestsLoading } = trpc.guests.list.useQuery({ eventId }, { enabled: !!eventId });
 
   const [tables, setTables] = useState<Table[]>([]);
   const [newTableName, setNewTableName] = useState('');
@@ -57,11 +57,11 @@ export default function SeatingPlanV2() {
   const [floorPlanId, setFloorPlanId] = useState<number | null>(null);
 
   // Get or create floor plan
-  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
+  const { data: floorPlans = [], isLoading: floorPlansLoading } = trpc.floorPlans.list.useQuery({ eventId }, { enabled: !!eventId });
   const createFloorPlanMutation = trpc.floorPlans.create.useMutation();
   
   // Load saved tables from database
-  const { data: savedTables = [] } = trpc.tables.list.useQuery(
+  const { data: savedTables = [], isLoading: tablesLoading } = trpc.tables.list.useQuery(
     { floorPlanId: floorPlanId || 0 },
     { enabled: !!floorPlanId }
   );
@@ -72,6 +72,9 @@ export default function SeatingPlanV2() {
   const updateTableMutation = trpc.tables.update.useMutation();
   const updateGuestMutation = trpc.guests.update.useMutation();
   const utils = trpc.useUtils();
+  
+  // Check if all data is loaded
+  const isDataLoading = eventLoading || guestsLoading || floorPlansLoading || tablesLoading || !floorPlanId;
 
   // Initialize floor plan and load tables on mount
   useEffect(() => {
@@ -242,13 +245,22 @@ export default function SeatingPlanV2() {
     <EmployeeLayout>
       <div className="container mx-auto py-8 max-w-7xl">
         <div className="mb-6">
-          <Button variant="ghost" onClick={() => setLocation(`/events/${eventId}`)}>
+          <Button variant="ghost" onClick={() => setLocation(`/events/${eventId}`)} disabled={isDataLoading}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Event
           </Button>
           <h1 className="text-3xl font-serif font-bold mt-2">Table Planning</h1>
           <p className="text-muted-foreground">{event?.title}</p>
         </div>
+        
+        {isDataLoading && (
+          <Card className="mb-6 bg-blue-50 border-blue-200">
+            <CardContent className="py-8 flex items-center justify-center gap-3">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+              <p className="text-blue-700 font-medium">Loading table planning data...</p>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Content */}
@@ -265,6 +277,7 @@ export default function SeatingPlanV2() {
                     value={newTableName}
                     onChange={(e) => setNewTableName(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleAddTable()}
+                    disabled={isDataLoading}
                   />
                   <Input
                     type="number"
@@ -274,10 +287,12 @@ export default function SeatingPlanV2() {
                     className="w-24"
                     min="1"
                     max="20"
+                    disabled={isDataLoading}
                   />
                   <Button
                     onClick={handleAddTable}
                     className="bg-teal-600 hover:bg-teal-700"
+                    disabled={isDataLoading}
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Add

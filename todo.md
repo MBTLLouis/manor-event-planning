@@ -704,3 +704,9 @@
 - [x] Fix invalid hook call in removeAllocation mutation onSuccess callback
 - [x] Move hook calls outside of mutation callbacks
 - [x] Test hotel allocation removal works without errors
+
+## Table Planning Loading Performance
+- [x] Add loading skeleton to seating plan while data fetches
+- [x] Disable all buttons and inputs until tables and guests data loaded
+- [x] Show loading spinner during initial data fetch
+- [x] Optimize queries to reduce loading time

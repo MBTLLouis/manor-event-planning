@@ -732,3 +732,10 @@
 - [x] Check if Food column is displaying meal selections
 - [x] Verify food choices are being saved and loaded correctly
 - [x] Test food choices display after guest update
+
+## Feature - Display Table and Seat Allocations in Guest Lists
+- [x] Update employee GuestList.tsx to display table name and seat number
+- [x] Update couple CoupleGuests.tsx to display table name and seat number
+- [x] Add Table and Seat columns to both guest list tables
+- [x] Test real-time updates when guests are assigned to tables
+- [x] Verify synchronization between couple and employee interfaces

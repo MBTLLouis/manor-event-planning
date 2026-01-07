@@ -267,6 +267,12 @@ export default function GuestListEnhanced() {
   const { data: guests } = trpc.guests.list.useQuery({ eventId });
   const { data: stats } = trpc.guests.stats.useQuery({ eventId });
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
+  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery({ eventId });
+  const floorPlanId = floorPlans.length > 0 ? floorPlans[0].id : null;
+  const { data: tables = [] } = trpc.tables.list.useQuery(
+    { floorPlanId: floorPlanId || 0 },
+    { enabled: !!floorPlanId }
+  );
 
   const utils = trpc.useUtils();
   const createGuestMutation = trpc.guests.create.useMutation({
@@ -404,7 +410,7 @@ export default function GuestListEnhanced() {
       <TableBody>
         {guestList.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+            <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
               No guests found
             </TableCell>
           </TableRow>
@@ -454,11 +460,15 @@ export default function GuestListEnhanced() {
                 )}
               </TableCell>
               <TableCell>
-                {guest.tableAssigned ? (
-                  <Badge variant="outline" className="bg-green-50">Assigned</Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-gray-50">-</Badge>
-                )}
+                {(() => {
+                  if (!guest.tableId) return "-";
+                  const table = tables.find(t => t.id === guest.tableId);
+                  const seatInfo = guest.seatNumber ? `Seat ${guest.seatNumber}` : "";
+                  if (table && seatInfo) {
+                    return <span className="text-sm font-medium">{table.name} - {seatInfo}</span>;
+                  }
+                  return table ? table.name : "-";
+                })()}
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">

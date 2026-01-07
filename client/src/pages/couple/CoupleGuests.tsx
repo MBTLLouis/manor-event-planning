@@ -197,6 +197,16 @@ export default function CoupleGuests() {
     { enabled: !!coupleEvent }
   );
 
+  const { data: floorPlans = [] } = trpc.floorPlans.list.useQuery(
+    { eventId: coupleEvent?.id || 0 },
+    { enabled: !!coupleEvent }
+  );
+  const floorPlanId = floorPlans.length > 0 ? floorPlans[0].id : null;
+  const { data: tables = [] } = trpc.tables.list.useQuery(
+    { floorPlanId: floorPlanId || 0 },
+    { enabled: !!floorPlanId }
+  );
+
   const utils = trpc.useUtils();
 
   const createGuestMutation = trpc.guests.create.useMutation({
@@ -431,13 +441,14 @@ export default function CoupleGuests() {
                   <TableHead>RSVP Status</TableHead>
                   <TableHead>Meal Selection</TableHead>
                   <TableHead>Dietary</TableHead>
+                  <TableHead>Table & Seat</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredGuests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       No guests found
                     </TableCell>
                   </TableRow>
@@ -472,6 +483,17 @@ export default function CoupleGuests() {
                           <span className="text-xs text-yellow-600">Mild</span>
                         )}
                         {!guest.allergySeverity && "-"}
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          if (!guest.tableId) return "-";
+                          const table = tables.find(t => t.id === guest.tableId);
+                          const seatInfo = (guest as any).seatNumber ? `Seat ${(guest as any).seatNumber}` : "";
+                          if (table && seatInfo) {
+                            return <span className="text-sm font-medium">{table.name} - {seatInfo}</span>;
+                          }
+                          return table ? table.name : "-";
+                        })()}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

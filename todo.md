@@ -721,3 +721,8 @@
 - [x] Fix meal selection display in guest list table
 - [x] Verify food choices save and load correctly
 - [x] Test meal selections display after page refresh
+
+## Bug Fix - Select.Item Empty Value Error on Employee Guests
+- [x] Fix Select.Item components with empty string values in employee guests page
+- [x] Ensure all Select.Item values are non-empty strings
+- [x] Test employee guests page loads without errors

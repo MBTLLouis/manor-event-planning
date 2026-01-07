@@ -25,8 +25,8 @@ type GuestType = "day" | "evening" | "both";
 const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (g: any) => void, eventId: number }) => {
   const { data: menuItems = [] } = trpc.menu.list.useQuery({ eventId });
   
-  // Extract unique courses from menu items
-  const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
+  // Extract unique courses from menu items, filtering out empty ones
+  const courses = Array.from(new Set(menuItems.map(item => item.course).filter(c => c && c.trim()))).sort();
   
   return (
   <div className="space-y-4 py-4">
@@ -112,7 +112,7 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {courses.map((courseName) => {
           const courseItems = menuItems.filter(
-            item => item.course === courseName && item.isAvailable
+            item => item.course === courseName && item.isAvailable && item.name && item.name.trim()
           );
           
           if (courseItems.length === 0) return null;

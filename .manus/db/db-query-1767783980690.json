@@ -1,0 +1,328 @@
+{
+  "query": "SELECT id, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleUsername IS NOT NULL ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleUsername IS NOT NULL ORDER BY id;",
+  "rows": [
+    {
+      "id": "420001",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767704626289_0k3iey"
+    },
+    {
+      "id": "420002",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Ren Jones",
+      "coupleUsername": "couple_1767705003898_dt5uug"
+    },
+    {
+      "id": "420003",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449235_1gqjai"
+    },
+    {
+      "id": "420004",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449230_8jgnk7"
+    },
+    {
+      "id": "420005",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767711449225_bmuq08"
+    },
+    {
+      "id": "420007",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767711449451_zp8cud"
+    },
+    {
+      "id": "420008",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449451_p0ccuf"
+    },
+    {
+      "id": "420009",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449488_yrrvr"
+    },
+    {
+      "id": "420010",
+      "coupleName1": "Eve",
+      "coupleName2": "Frank",
+      "coupleUsername": "couple_1767711449520_4lamelj"
+    },
+    {
+      "id": "420011",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449562_wemchd"
+    },
+    {
+      "id": "420012",
+      "coupleName1": "Grace",
+      "coupleName2": "Henry",
+      "coupleUsername": "couple_1767711449592_qxh9i"
+    },
+    {
+      "id": "420013",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449618_a2kv5"
+    },
+    {
+      "id": "420014",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449689_gsvrvm"
+    },
+    {
+      "id": "420015",
+      "coupleName1": "Ivy",
+      "coupleName2": "Jack",
+      "coupleUsername": "couple_1767711449718_3h0ib"
+    },
+    {
+      "id": "420016",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449771_46o1j"
+    },
+    {
+      "id": "420017",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449787_0e94qh"
+    },
+    {
+      "id": "420018",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449867_q2x67g"
+    },
+    {
+      "id": "420020",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767711453336_g5zwrg"
+    },
+    {
+      "id": "420023",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711453355_wmmrbe"
+    },
+    {
+      "id": "420028",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767711453548_b7x6pf"
+    },
+    {
+      "id": "420029",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711453613_bpypes"
+    },
+    {
+      "id": "420030",
+      "coupleName1": "Eve",
+      "coupleName2": "Frank",
+      "coupleUsername": "couple_1767711453657_kuubq"
+    },
+    {
+      "id": "420031",
+      "coupleName1": "Grace",
+      "coupleName2": "Henry",
+      "coupleUsername": "couple_1767711453741_d3jui"
+    },
+    {
+      "id": "420032",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711453743_rceyi"
+    },
+    {
+      "id": "420033",
+      "coupleName1": "Ivy",
+      "coupleName2": "Jack",
+      "coupleUsername": "couple_1767711453888_q1qbmj"
+    },
+    {
+      "id": "420034",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711453937_vo0m0c"
+    },
+    {
+      "id": "420036",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767717256741_qmem2"
+    },
+    {
+      "id": "420037",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717256743_wbgv0q"
+    },
+    {
+      "id": "420044",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767717256927_xqjpz8"
+    },
+    {
+      "id": "420045",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717256968_huamqk"
+    },
+    {
+      "id": "420046",
+      "coupleName1": "Eve",
+      "coupleName2": "Frank",
+      "coupleUsername": "couple_1767717256985_m6ltcw"
+    },
+    {
+      "id": "420047",
+      "coupleName1": "Grace",
+      "coupleName2": "Henry",
+      "coupleUsername": "couple_1767717257040_4wdmif"
+    },
+    {
+      "id": "420048",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717257067_hgtt6f"
+    },
+    {
+      "id": "420049",
+      "coupleName1": "Ivy",
+      "coupleName2": "Jack",
+      "coupleUsername": "couple_1767717257122_d29rxj"
+    },
+    {
+      "id": "420050",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717257181_gl279f"
+    },
+    {
+      "id": "420051",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717264240_71zblp"
+    },
+    {
+      "id": "420052",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767717264264_twk99e"
+    },
+    {
+      "id": "420058",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767717264561_uetjjd"
+    },
+    {
+      "id": "420061",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717264612_hnbyaq"
+    },
+    {
+      "id": "420062",
+      "coupleName1": "Eve",
+      "coupleName2": "Frank",
+      "coupleUsername": "couple_1767717264637_4r4jbf"
+    },
+    {
+      "id": "420063",
+      "coupleName1": "Grace",
+      "coupleName2": "Henry",
+      "coupleUsername": "couple_1767717264732_p0jsxa"
+    },
+    {
+      "id": "420064",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717264747_bwtq9"
+    },
+    {
+      "id": "420065",
+      "coupleName1": "Ivy",
+      "coupleName2": "Jack",
+      "coupleUsername": "couple_1767717264850_0fxg3d"
+    },
+    {
+      "id": "420066",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717264894_4hdiz"
+    },
+    {
+      "id": "420067",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717301392_lul74ib"
+    },
+    {
+      "id": "420068",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717302122_8bwpdb"
+    },
+    {
+      "id": "420069",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717302318_3scabk"
+    },
+    {
+      "id": "420070",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767717302454_yj6si83o"
+    },
+    {
+      "id": "450001",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767719632953_k8uqw"
+    },
+    {
+      "id": "450002",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767719633204_5tkehe"
+    },
+    {
+      "id": "450003",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767719633330_4p552d"
+    },
+    {
+      "id": "450004",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767719633447_tzg3x8"
+    },
+    {
+      "id": "480001",
+      "coupleName1": "Sarah Milligan",
+      "coupleName2": "Robert Notch",
+      "coupleUsername": "couple_1767777768413_0byc34"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcoupleName1\tcoupleName2\tcoupleUsername\n420001\tJohn\tJane\tcouple_1767704626289_0k3iey\n420002\tLouis Givens\tRen Jones\tcouple_1767705003898_dt5uug\n420003\tJohn\tJane\tcouple_1767711449235_1gqjai\n420004\tTest\tCouple\tcouple_1767711449230_8jgnk7\n420005\tAlice\tBob\tcouple_1767711449225_bmuq08\n420007\tCharlie\tDiana\tcouple_1767711449451_zp8cud\n420008\tTest\tCouple\tcouple_1767711449451_p0ccuf\n420009\tJohn\tJane\tcouple_1767711449488_yrrvr\n420010\tEve\tFrank\tcouple_1767711449520_4lamelj\n420011\tTest\tCouple\tcouple_1767711449562_wemchd\n420012\tGrace\tHenry\tcouple_1767711449592_qxh9i\n420013\tJohn\tJane\tcouple_1767711449618_a2kv5\n420014\tTest\tCouple\tcouple_1767711449689_gsvrvm\n420015\tIvy\tJack\tcouple_1767711449718_3h0ib\n420016\tJohn\tJane\tcouple_1767711449771_46o1j\n420017\tTest\tCouple\tcouple_1767711449787_0e94qh\n420018\tTest\tCouple\tcouple_1767711449867_q2x67g\n420020\tAlice\tBob\tcouple_1767711453336_g5zwrg\n420023\tJohn\tJane\tcouple_1767711453355_wmmrbe\n420028\tCharlie\tDiana\tcouple_1767711453548_b7x6pf\n420029\tJohn\tJane\tcouple_1767711453613_bpypes\n420030\tEve\tFrank\tcouple_1767711453657_kuubq\n420031\tGrace\tHenry\tcouple_1767711453741_d3jui\n420032\tJohn\tJane\tcouple_1767711453743_rceyi\n420033\tIvy\tJack\tcouple_1767711453888_q1qbmj\n420034\tJohn\tJane\tcouple_1767711453937_vo0m0c\n420036\tAlice\tBob\tcouple_1767717256741_qmem2\n420037\tJohn\tJane\tcouple_1767717256743_wbgv0q\n420044\tCharlie\tDiana\tcouple_1767717256927_xqjpz8\n420045\tJohn\tJane\tcouple_1767717256968_huamqk\n420046\tEve\tFrank\tcouple_1767717256985_m6ltcw\n420047\tGrace\tHenry\tcouple_1767717257040_4wdmif\n420048\tJohn\tJane\tcouple_1767717257067_hgtt6f\n420049\tIvy\tJack\tcouple_1767717257122_d29rxj\n420050\tJohn\tJane\tcouple_1767717257181_gl279f\n420051\tJohn\tJane\tcouple_1767717264240_71zblp\n420052\tAlice\tBob\tcouple_1767717264264_twk99e\n420058\tCharlie\tDiana\tcouple_1767717264561_uetjjd\n420061\tJohn\tJane\tcouple_1767717264612_hnbyaq\n420062\tEve\tFrank\tcouple_1767717264637_4r4jbf\n420063\tGrace\tHenry\tcouple_1767717264732_p0jsxa\n420064\tJohn\tJane\tcouple_1767717264747_bwtq9\n420065\tIvy\tJack\tcouple_1767717264850_0fxg3d\n420066\tJohn\tJane\tcouple_1767717264894_4hdiz\n420067\tJohn\tJane\tcouple_1767717301392_lul74ib\n420068\tJohn\tJane\tcouple_1767717302122_8bwpdb\n420069\tJohn\tJane\tcouple_1767717302318_3scabk\n420070\tJohn\tJane\tcouple_1767717302454_yj6si83o\n450001\tJohn\tJane\tcouple_1767719632953_k8uqw\n450002\tJohn\tJane\tcouple_1767719633204_5tkehe\n450003\tJohn\tJane\tcouple_1767719633330_4p552d\n450004\tJohn\tJane\tcouple_1767719633447_tzg3x8\n480001\tSarah Milligan\tRobert Notch\tcouple_1767777768413_0byc34\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}

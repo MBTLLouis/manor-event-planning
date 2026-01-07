@@ -1,0 +1,80 @@
+{
+  "query": "SELECT id, coupleName1, coupleName2, coupleUsername, couplePassword FROM events ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, coupleName1, coupleName2, coupleUsername, couplePassword FROM events ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "id": "420001",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767704626289_0k3iey",
+      "couplePassword": "hwty957kq1vlcnhclr0pj"
+    },
+    {
+      "id": "420002",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Ren Jones",
+      "coupleUsername": "couple_1767705003898_dt5uug",
+      "couplePassword": "vs2g2t45uvfmeaabptih"
+    },
+    {
+      "id": "420003",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449235_1gqjai",
+      "couplePassword": "1oqu55olrzliyympjj7b"
+    },
+    {
+      "id": "420004",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449230_8jgnk7",
+      "couplePassword": "aueuf14ilp97tk16lpkt85"
+    },
+    {
+      "id": "420005",
+      "coupleName1": "Alice",
+      "coupleName2": "Bob",
+      "coupleUsername": "couple_1767711449225_bmuq08",
+      "couplePassword": "bui325u2e8hvxastt3irb"
+    },
+    {
+      "id": "420007",
+      "coupleName1": "Charlie",
+      "coupleName2": "Diana",
+      "coupleUsername": "couple_1767711449451_zp8cud",
+      "couplePassword": "pj8spzjs5xopuz7a2mmv"
+    },
+    {
+      "id": "420008",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449451_p0ccuf",
+      "couplePassword": "w08vlaoyjvqf3d16urwi2v"
+    },
+    {
+      "id": "420009",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "coupleUsername": "couple_1767711449488_yrrvr",
+      "couplePassword": "4g3i6f7lmq99dqxl2oi1oe"
+    },
+    {
+      "id": "420010",
+      "coupleName1": "Eve",
+      "coupleName2": "Frank",
+      "coupleUsername": "couple_1767711449520_4lamelj",
+      "couplePassword": "0dqkw1cs9wkkusegjws8gd"
+    },
+    {
+      "id": "420011",
+      "coupleName1": "Test",
+      "coupleName2": "Couple",
+      "coupleUsername": "couple_1767711449562_wemchd",
+      "couplePassword": "a0og9ytysmq40z2en2a0sj"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcoupleName1\tcoupleName2\tcoupleUsername\tcouplePassword\n420001\tJohn\tJane\tcouple_1767704626289_0k3iey\thwty957kq1vlcnhclr0pj\n420002\tLouis Givens\tRen Jones\tcouple_1767705003898_dt5uug\tvs2g2t45uvfmeaabptih\n420003\tJohn\tJane\tcouple_1767711449235_1gqjai\t1oqu55olrzliyympjj7b\n420004\tTest\tCouple\tcouple_1767711449230_8jgnk7\taueuf14ilp97tk16lpkt85\n420005\tAlice\tBob\tcouple_1767711449225_bmuq08\tbui325u2e8hvxastt3irb\n420007\tCharlie\tDiana\tcouple_1767711449451_zp8cud\tpj8spzjs5xopuz7a2mmv\n420008\tTest\tCouple\tcouple_1767711449451_p0ccuf\tw08vlaoyjvqf3d16urwi2v\n420009\tJohn\tJane\tcouple_1767711449488_yrrvr\t4g3i6f7lmq99dqxl2oi1oe\n420010\tEve\tFrank\tcouple_1767711449520_4lamelj\t0dqkw1cs9wkkusegjws8gd\n420011\tTest\tCouple\tcouple_1767711449562_wemchd\ta0og9ytysmq40z2en2a0sj\n",
+  "stderr": "",
+  "execution_time_ms": 85
+}

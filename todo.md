@@ -739,3 +739,13 @@
 - [x] Add Table and Seat columns to both guest list tables
 - [x] Test real-time updates when guests are assigned to tables
 - [x] Verify synchronization between couple and employee interfaces
+
+
+## Bug - Seating Chart Discrepancy
+- [x] Investigate why couple seating chart doesn't match employee seating chart
+- [x] Check if couple and employee are viewing different floor plans
+- [x] Couple portal showing Sarah & Robert event instead of Louis & Ren event
+- [x] Fix couple login to return correct event ID (Louis & Ren = ID 420002)
+- [x] Verify couple can see matching seating chart after fix
+- [x] Add role-based access control to couple routes (CoupleProtectedRoute)
+- [x] Verify both interfaces show identical seating arrangements and guest lists

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleName1 LIKE '%Louis%' OR coupleName1 LIKE '%Sarah%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, coupleName1, coupleName2, coupleUsername FROM events WHERE coupleName1 LIKE '%Louis%' OR coupleName1 LIKE '%Sarah%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "420002",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Ren Jones",
+      "coupleUsername": "couple_1767705003898_dt5uug"
+    },
+    {
+      "id": "480001",
+      "coupleName1": "Sarah Milligan",
+      "coupleName2": "Robert Notch",
+      "coupleUsername": "couple_1767777768413_0byc34"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tcoupleName1\tcoupleName2\tcoupleUsername\n420002\tLouis Givens\tRen Jones\tcouple_1767705003898_dt5uug\n480001\tSarah Milligan\tRobert Notch\tcouple_1767777768413_0byc34\n",
+  "stderr": "",
+  "execution_time_ms": 570
+}

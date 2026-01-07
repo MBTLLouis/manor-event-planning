@@ -313,6 +313,38 @@ export const appRouter = router({
         permStore.setPermissions(input.id, input.permissions);
         return { success: true };
       }),
+
+    exportData: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        if (ctx.user?.role === 'couple' && ctx.user.id !== input.id) {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
+        }
+        
+        const event = await db.getEventById(input.id);
+        if (!event) throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
+        
+        const guests = await db.getGuestsByEventId(input.id);
+        const menuItems = await db.getMenuItemsByEventId(input.id);
+        const drinks = await db.getDrinksByEventId(input.id);
+        const floorPlans = await db.getFloorPlansByEventId(input.id);
+        const timeline = await db.getTimelineDaysByEventId(input.id);
+        
+        // Get tables from first floor plan if available
+        let tables: any[] = [];
+        if (floorPlans.length > 0) {
+          tables = await db.getTablesByFloorPlanId(floorPlans[0].id);
+        }
+        
+        return {
+          event,
+          guests,
+          menuItems,
+          drinks,
+          tables,
+          timeline,
+        };
+      }),
   }),
 
   guests: router({

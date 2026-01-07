@@ -1,10 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, DollarSign, Package, Calendar, CheckSquare, MapPin, Utensils, Globe, FileText, MessageSquare, Home, Armchair } from "lucide-react";
+import { ArrowLeft, Users, DollarSign, Package, Calendar, CheckSquare, MapPin, Utensils, Globe, FileText, MessageSquare, Home, Armchair, Download } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
 import EmployeeLayout from "@/components/EmployeeLayout";
 import { format } from "date-fns";
+import { generateEventPDF } from "@/components/EventExportPDF";
 
 export default function EventDetail() {
   const [, params] = useRoute("/events/:id");
@@ -25,6 +26,13 @@ export default function EventDetail() {
 
   const { data: event } = trpc.events.getById.useQuery({ id: eventId });
   const { data: stats } = trpc.events.stats.useQuery({ id: eventId });
+  const { data: exportData } = trpc.events.exportData.useQuery({ id: eventId });
+
+  const handleExportPDF = () => {
+    if (exportData) {
+      generateEventPDF(exportData);
+    }
+  };
 
   const planningModules = [
     {
@@ -137,11 +145,17 @@ export default function EventDetail() {
           Back to Events
         </Button>
 
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
-          <p className="text-lg text-muted-foreground">
-            {format(new Date(event.eventDate), "EEEE, MMMM d, yyyy")}
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
+            <p className="text-lg text-muted-foreground">
+              {format(new Date(event.eventDate), "EEEE, MMMM d, yyyy")}
+            </p>
+          </div>
+          <Button onClick={handleExportPDF} disabled={!exportData} className="gap-2">
+            <Download className="w-4 h-4" />
+            Export PDF
+          </Button>
         </div>
 
         {/* Summary Stats */}

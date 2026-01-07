@@ -764,3 +764,9 @@
 - [x] Add "Table" and "Seat Number" columns to guest lists
 - [ ] Test real-time synchronization across both portals
 - [ ] Verify data consistency and capacity limits
+
+## Event Export Feature
+- [x] Create backend procedure to fetch complete event data for export
+- [x] Build PDF generation logic with event details (guests, menu, timeline, seating)
+- [x] Add export button to event detail page
+- [x] Test PDF export with various event configurations

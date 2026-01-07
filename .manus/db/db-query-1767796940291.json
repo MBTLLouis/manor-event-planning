@@ -1,0 +1,16 @@
+{
+  "query": "SELECT id, title, coupleName1, coupleName2 FROM events WHERE coupleName1 LIKE '%Louis%' OR coupleName2 LIKE '%Ren%' OR title LIKE '%Louis%' OR title LIKE '%Ren%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT id, title, coupleName1, coupleName2 FROM events WHERE coupleName1 LIKE '%Louis%' OR coupleName2 LIKE '%Ren%' OR title LIKE '%Louis%' OR title LIKE '%Ren%';",
+  "rows": [
+    {
+      "id": "420002",
+      "title": "Louis & Ren",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Ren Jones"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcoupleName1\tcoupleName2\n420002\tLouis & Ren\tLouis Givens\tRen Jones\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

@@ -1,0 +1,70 @@
+{
+  "query": "SELECT g.id, g.name, g.eventId, e.title FROM guests g LEFT JOIN events e ON g.eventId = e.id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT g.id, g.name, g.eventId, e.title FROM guests g LEFT JOIN events e ON g.eventId = e.id LIMIT 10;",
+  "rows": [
+    {
+      "id": "360001",
+      "name": "Louis Givens",
+      "eventId": "420002",
+      "title": "Louis & Ren"
+    },
+    {
+      "id": "360002",
+      "name": "John Doe",
+      "eventId": "420003",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360003",
+      "name": "Jane Smith",
+      "eventId": "420009",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360005",
+      "name": "Guest Two",
+      "eventId": "420013",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360004",
+      "name": "Guest One",
+      "eventId": "420013",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360008",
+      "name": "Guest Three",
+      "eventId": "420016",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360007",
+      "name": "Guest Two",
+      "eventId": "420016",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360006",
+      "name": "Guest One",
+      "eventId": "420016",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360009",
+      "name": "John Doe",
+      "eventId": "420023",
+      "title": "Test Wedding"
+    },
+    {
+      "id": "360010",
+      "name": "Jane Smith",
+      "eventId": "420029",
+      "title": "Test Wedding"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\teventId\ttitle\n360001\tLouis Givens\t420002\tLouis & Ren\n360002\tJohn Doe\t420003\tTest Wedding\n360003\tJane Smith\t420009\tTest Wedding\n360005\tGuest Two\t420013\tTest Wedding\n360004\tGuest One\t420013\tTest Wedding\n360008\tGuest Three\t420016\tTest Wedding\n360007\tGuest Two\t420016\tTest Wedding\n360006\tGuest One\t420016\tTest Wedding\n360009\tJohn Doe\t420023\tTest Wedding\n360010\tJane Smith\t420029\tTest Wedding\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

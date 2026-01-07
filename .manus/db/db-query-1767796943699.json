@@ -1,0 +1,45 @@
+{
+  "query": "SELECT e.id, e.title, e.coupleName1, e.coupleName2, COUNT(g.id) as guest_count FROM events e LEFT JOIN guests g ON e.id = g.eventId GROUP BY e.id ORDER BY guest_count DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute SELECT e.id, e.title, e.coupleName1, e.coupleName2, COUNT(g.id) as guest_count FROM events e LEFT JOIN guests g ON e.id = g.eventId GROUP BY e.id ORDER BY guest_count DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "420002",
+      "title": "Louis & Ren",
+      "coupleName1": "Louis Givens",
+      "coupleName2": "Ren Jones",
+      "guest_count": "122"
+    },
+    {
+      "id": "450004",
+      "title": "Test Wedding",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "guest_count": "3"
+    },
+    {
+      "id": "420070",
+      "title": "Test Wedding",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "guest_count": "3"
+    },
+    {
+      "id": "420016",
+      "title": "Test Wedding",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "guest_count": "3"
+    },
+    {
+      "id": "420066",
+      "title": "Test Wedding",
+      "coupleName1": "John",
+      "coupleName2": "Jane",
+      "guest_count": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tcoupleName1\tcoupleName2\tguest_count\n420002\tLouis & Ren\tLouis Givens\tRen Jones\t122\n450004\tTest Wedding\tJohn\tJane\t3\n420070\tTest Wedding\tJohn\tJane\t3\n420016\tTest Wedding\tJohn\tJane\t3\n420066\tTest Wedding\tJohn\tJane\t3\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

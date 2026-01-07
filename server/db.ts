@@ -1142,7 +1142,7 @@ export async function deleteTimelineItem(id: number) {
 // Website RSVP Functions
 export async function searchGuestByName(eventId: number, name: string) {
   const db = await getDb();
-  if (!db) return null;
+  if (!db) return [];
   
   // Search for guest by full name or partial name match (case-insensitive)
   const nameLower = name.toLowerCase().trim();
@@ -1158,9 +1158,9 @@ export async function searchGuestByName(eventId: number, name: string) {
         )
       )
     )
-    .limit(1);
+    ;
   
-  return result[0] || null;
+  return result || [];
 }
 
 export async function updateGuestWebsiteRSVP(input: {

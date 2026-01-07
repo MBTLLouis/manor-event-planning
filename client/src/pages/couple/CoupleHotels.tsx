@@ -9,7 +9,6 @@ import { ArrowLeft, Home, Plus, Trash2, Search } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect as useEffectDebug } from "react";
 import { toast } from "sonner";
 
 interface Room {
@@ -56,6 +55,9 @@ export default function CoupleHotels() {
   });
   const coupleEvent = user?.role === 'couple' && user?.id ? events.find(e => e.id === user.id) : events[0];
   
+  // Get utils for invalidation
+  const utils = trpc.useUtils();
+  
   // Debug logging
   useEffect(() => {
     console.log('CoupleHotels Debug:', {
@@ -90,7 +92,7 @@ export default function CoupleHotels() {
       setSelectedGuestId("");
       setSelectedRoom(null);
       // Refetch allocations
-      trpc.useUtils().accommodations.getAllocations.invalidate();
+      utils.accommodations.getAllocations.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "Failed to allocate guest");
@@ -101,7 +103,7 @@ export default function CoupleHotels() {
     onSuccess: () => {
       toast.success("Guest removed from room");
       // Refetch allocations
-      trpc.useUtils().accommodations.getAllocations.invalidate();
+      utils.accommodations.getAllocations.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "Failed to remove guest");

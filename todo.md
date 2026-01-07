@@ -699,3 +699,8 @@
 - [x] Fix Select.Item components with empty string values causing React error
 - [x] Ensure all Select.Item values are non-empty strings
 - [x] Test Food Choices page loads without errors
+
+## Bug Fix - Invalid Hook Call in CoupleHotels
+- [x] Fix invalid hook call in removeAllocation mutation onSuccess callback
+- [x] Move hook calls outside of mutation callbacks
+- [x] Test hotel allocation removal works without errors

@@ -273,10 +273,6 @@ export default function GuestListEnhanced() {
     { floorPlanId: floorPlanId || 0 },
     { enabled: !!floorPlanId }
   );
-  const { data: seats = [] } = trpc.seats.list.useQuery(
-    { floorPlanId: floorPlanId || 0 },
-    { enabled: !!floorPlanId }
-  );
 
   const utils = trpc.useUtils();
   const createGuestMutation = trpc.guests.create.useMutation({
@@ -467,17 +463,11 @@ export default function GuestListEnhanced() {
                 {(() => {
                   if (!guest.tableId) return "-";
                   const table = tables.find(t => t.id === guest.tableId);
-                  if (!table) return "-";
-                  
-                  // Get seat information if seatId exists
-                  if (guest.seatId) {
-                    const seat = seats.find(s => s.id === guest.seatId);
-                    if (seat) {
-                      return <span className="text-sm font-medium">{table.name} - Seat {seat.seatNumber}</span>;
-                    }
+                  const seatInfo = guest.seatNumber ? `Seat ${guest.seatNumber}` : "";
+                  if (table && seatInfo) {
+                    return <span className="text-sm font-medium">{table.name} - {seatInfo}</span>;
                   }
-                  
-                  return table.name;
+                  return table ? table.name : "-";
                 })()}
               </TableCell>
               <TableCell>

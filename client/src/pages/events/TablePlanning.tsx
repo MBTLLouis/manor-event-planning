@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Plus, Search, X } from "lucide-react";
+import { Loader2, Plus, Search, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import EmployeeLayout from "@/components/EmployeeLayout";
 
-export default function TablePlanning() {
+function TablePlanningContent() {
   const { id: eventId } = useParams();
   const eventIdNum = parseInt(eventId || "0");
+  const [, setLocation] = useLocation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
@@ -141,7 +143,15 @@ export default function TablePlanning() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 max-w-7xl">
+      <Button
+        variant="ghost"
+        className="mb-4"
+        onClick={() => setLocation(`/events/${eventIdNum}`)}
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Event
+      </Button>
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Table Planning</h1>
         <Dialog open={isAddingTable} onOpenChange={setIsAddingTable}>
@@ -319,5 +329,13 @@ export default function TablePlanning() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TablePlanning() {
+  return (
+    <EmployeeLayout>
+      <TablePlanningContent />
+    </EmployeeLayout>
   );
 }

@@ -1074,6 +1074,22 @@ export const appRouter = router({
         return await db.getTimelineItemsByWebsiteId(website.id);
       }),
 
+    getRegistryLinksBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) return [];
+        return await db.getRegistryLinksByWebsiteId(website.id);
+      }),
+
+    getFaqItemsBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) return [];
+        return await db.getFaqItemsByWebsiteId(website.id);
+      }),
+
     get: protectedProcedure
       .input(z.object({ eventId: z.number() }))
       .query(async ({ input }) => {
@@ -1149,6 +1165,14 @@ export const appRouter = router({
         return await db.getWeddingWebsitePhotos(input.eventId);
       }),
 
+    getPhotosBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) return [];
+        return await db.getWeddingWebsitePhotos(website.eventId);
+      }),
+
     updatePhoto: protectedProcedure
       .input(z.object({
         id: z.number(),
@@ -1169,6 +1193,8 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // Public photo fetching by slug
+    
     // Registry Links
     addRegistryLink: protectedProcedure
       .input(z.object({

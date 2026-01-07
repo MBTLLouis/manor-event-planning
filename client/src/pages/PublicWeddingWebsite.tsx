@@ -27,25 +27,23 @@ export default function PublicWeddingWebsite() {
     { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
   );
 
-  // Parse registry links from JSON with error handling
-  const registryLinks = (() => {
-    try {
-      return weddingWebsite?.registryLinks ? JSON.parse(weddingWebsite.registryLinks) : [];
-    } catch (e) {
-      console.warn('Failed to parse registry links:', e);
-      return [];
-    }
-  })();
+  // Fetch registry links by slug (public procedure)
+  const { data: registryLinks = [] } = trpc.weddingWebsite.getRegistryLinksBySlug.useQuery(
+    { slug: slug || '' },
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+  );
 
-  // Parse FAQ content from JSON with error handling
-  const faqItems = (() => {
-    try {
-      return weddingWebsite?.faqContent ? JSON.parse(weddingWebsite.faqContent) : [];
-    } catch (e) {
-      console.warn('Failed to parse FAQ content:', e);
-      return [];
-    }
-  })();
+  // Fetch FAQ items by slug (public procedure)
+  const { data: faqItems = [] } = trpc.weddingWebsite.getFaqItemsBySlug.useQuery(
+    { slug: slug || '' },
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+  );
+
+  // Fetch photos by slug (public procedure)
+  const { data: photos = [] } = trpc.weddingWebsite.getPhotosBySlug.useQuery(
+    { slug: slug || '' },
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+  );
 
   // Update countdown timer
   useEffect(() => {
@@ -274,15 +272,15 @@ export default function PublicWeddingWebsite() {
       )}
 
       {/* Registry Links */}
-      {registryLinks && registryLinks.length > 0 ? (
+      {registryLinks.length > 0 ? (
         <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gift Registry</h2>
             <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
             <div className="grid md:grid-cols-2 gap-6">
-              {registryLinks.map((link: any, index: number) => (
+              {registryLinks.map((link: any) => (
                 <a
-                  key={index}
+                  key={link.id}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -290,7 +288,7 @@ export default function PublicWeddingWebsite() {
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <Gift className="w-6 h-6 text-[#D4AF37]" />
-                    <h3 className="text-xl font-serif text-[#2C5F5D]">{link.name}</h3>
+                    <h3 className="text-xl font-serif text-[#2C5F5D]">{link.title}</h3>
                   </div>
                   <p className="text-[#5A7A78] font-light text-sm truncate">{link.url}</p>
                 </a>
@@ -311,25 +309,50 @@ export default function PublicWeddingWebsite() {
       )}
 
       {/* Photo Gallery */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gallery</h2>
-          <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
-          <p className="text-[#5A7A78] text-lg text-center font-light">
-            Photo gallery coming soon. We'll share our favorite moments from the wedding here.
-          </p>
-        </div>
-      </section>
+      {photos && photos.length > 0 ? (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gallery</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {photos.map((photo: any) => (
+                <div key={photo.id} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                  <img
+                    src={photo.photoUrl}
+                    alt={photo.caption || 'Wedding photo'}
+                    className="w-full h-64 object-cover"
+                  />
+                  {photo.caption && (
+                    <div className="bg-white p-4">
+                      <p className="text-[#5A7A78] font-light text-sm">{photo.caption}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Gallery</h2>
+            <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
+            <p className="text-[#5A7A78] text-lg text-center font-light">
+              Photo gallery coming soon. We'll share our favorite moments from the wedding here.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* FAQ Section */}
-      {faqItems && faqItems.length > 0 ? (
+      {faqItems.length > 0 ? (
         <section className="py-20 px-4 bg-gradient-to-br from-[#F5F1E8] to-[#E8DCC4]">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-5xl font-serif text-[#2C5F5D] mb-4 text-center">Frequently Asked Questions</h2>
             <div className="w-16 h-1 bg-[#D4AF37] mx-auto mb-12"></div>
             <div className="space-y-6">
-              {faqItems.map((item: any, index: number) => (
-                <div key={index} className="bg-white rounded-lg p-6 shadow-lg">
+              {faqItems.map((item: any) => (
+                <div key={item.id} className="bg-white rounded-lg p-6 shadow-lg">
                   <div className="flex items-start gap-3 mb-3">
                     <HelpCircle className="w-6 h-6 text-[#D4AF37] flex-shrink-0 mt-1" />
                     <h3 className="text-lg font-serif text-[#2C5F5D]">{item.question}</h3>

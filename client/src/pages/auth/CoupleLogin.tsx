@@ -17,8 +17,14 @@ export default function CoupleLogin() {
   const loginMutation = trpc.auth.coupleLogin.useMutation({
     onSuccess: async () => {
       toast.success("Login successful!");
-      // Invalidate the auth.me query to refresh user state
-      await utils.auth.me.invalidate();
+      // Refetch the auth.me query to ensure auth state is updated before redirect
+      try {
+        await utils.auth.me.refetch();
+        // Add a small delay to ensure state is fully updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error("Failed to refetch auth state", error);
+      }
       setLocation("/couple/dashboard");
     },
     onError: (error) => {

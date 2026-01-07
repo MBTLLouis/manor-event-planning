@@ -613,8 +613,8 @@ export const appRouter = router({
 
     create: protectedProcedure
       .input(z.object({
-        floorPlanId: z.number().optional(),
-        eventId: z.number().optional(),
+        floorPlanId: z.number().nullable().optional(),
+        eventId: z.number().nullable().optional(),
         name: z.string(),
         tableType: z.enum(["round", "rectangular"]),
         seatCount: z.number(),

@@ -22,7 +22,7 @@ type AllergySeverity = "none" | "mild" | "severe";
 
 const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (g: any) => void, eventId: number }) => {
   const { data: menuItems = [] } = trpc.menu.list.useQuery({ eventId });
-  const courses = Array.from(new Set(menuItems.map(item => item.course))).sort();
+  const courses = Array.from(new Set(menuItems.map(item => item.course).filter(c => c && c.trim()))).sort();
 
   return (
     <div className="space-y-4 py-4">
@@ -86,7 +86,7 @@ const GuestFormFields = ({ guest, setGuest, eventId }: { guest: any, setGuest: (
         <div className="space-y-3 border-t pt-4">
           <Label className="font-semibold">Food Choices</Label>
           {courses.map((course) => {
-            const courseItems = menuItems.filter(item => item.course === course);
+            const courseItems = menuItems.filter(item => item.course === course && item.name && item.name.trim());
             return (
               <div key={course} className="space-y-2">
                 <Label htmlFor={`course-${course}`} className="text-sm">{course}</Label>

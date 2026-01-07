@@ -710,3 +710,8 @@
 - [x] Disable all buttons and inputs until tables and guests data loaded
 - [x] Show loading spinner during initial data fetch
 - [x] Optimize queries to reduce loading time
+
+## Bug Fix - Select.Item Empty Value Error on Couple Guests
+- [x] Fix Select.Item components with empty string values in CoupleGuests
+- [x] Ensure all Select.Item values are non-empty strings
+- [x] Test couple guests page loads without errors

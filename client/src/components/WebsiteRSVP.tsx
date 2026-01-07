@@ -72,8 +72,8 @@ export default function WebsiteRSVP({
     }
   };
 
-  // Get food options for the event
-  const { data: foodOptions = [] } = trpc.foodOptions.list.useQuery(
+  // Get menu items for the event
+  const { data: menuItems = [] } = trpc.menuItems.listByEvent.useQuery(
     { eventId },
     { enabled: !!eventId && step === "confirm" }
   );
@@ -89,9 +89,9 @@ export default function WebsiteRSVP({
     },
   });
 
-  const starters = foodOptions.filter((f: any) => f.category === "starter");
-  const mains = foodOptions.filter((f: any) => f.category === "main");
-  const desserts = foodOptions.filter((f: any) => f.category === "dessert");
+  const starters = menuItems.filter((m: any) => m.course === "Starter" && m.name && m.name.trim());
+  const mains = menuItems.filter((m: any) => m.course === "Main" && m.name && m.name.trim());
+  const desserts = menuItems.filter((m: any) => m.course === "Dessert" && m.name && m.name.trim());
 
 
 

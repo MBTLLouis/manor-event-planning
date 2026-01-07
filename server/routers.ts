@@ -751,6 +751,12 @@ export const appRouter = router({
         return await db.getFoodOptionsByEventId(input.eventId);
       }),
 
+    listPublic: publicProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getFoodOptionsByEventId(input.eventId);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         eventId: z.number(),
@@ -768,6 +774,14 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteFoodOption(input.id);
         return { success: true };
+      }),
+  }),
+
+  menuItems: router({
+    listByEvent: publicProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getMenuItemsByEventId(input.eventId);
       }),
   }),
 

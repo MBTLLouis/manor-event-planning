@@ -12,19 +12,19 @@ export default function PublicWeddingWebsite() {
   // Fetch wedding website by slug (public procedure)
   const { data: weddingWebsite, isLoading: websiteLoading } = trpc.weddingWebsite.getBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug }
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
   );
 
   // Fetch event by slug (public procedure)
   const { data: event, isLoading: eventLoading } = trpc.weddingWebsite.getEventBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug }
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
   );
 
   // Fetch timeline items by slug (public procedure)
   const { data: timelineItems = [] } = trpc.weddingWebsite.getTimelineItemsBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug }
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
   );
 
   // Update countdown timer

@@ -256,7 +256,7 @@ export const appRouter = router({
           throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
         }
         const event = await db.getEventById(input.id);
-        if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
         return {
           username: event.coupleUsername,
           password: event.couplePassword,
@@ -322,7 +322,7 @@ export const appRouter = router({
         }
         
         const event = await db.getEventById(input.id);
-        if (!event) throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
+        if (!website) throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
         
         const guests = await db.getGuestsByEventId(input.id);
         const menuItems = await db.getMenuItemsByEventId(input.id);
@@ -485,6 +485,32 @@ export const appRouter = router({
       }))
       .query(async ({ input }) => {
         return await db.searchGuestByName(input.eventId, input.name);
+      }),
+
+    searchByNameAndSlug: publicProcedure
+      .input(z.object({
+        slug: z.string(),
+        name: z.string(),
+      }))
+      .query(async ({ input }) => {
+        const website = await db.getWeddingWebsiteBySlug(input.slug);
+        if (!website) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        }
+        return await db.searchGuestByName(website.eventId, input.name);
+      }),
+
+    submitWebsiteRSVP: publicProcedure
+      .input(z.object({
+        guestId: z.number(),
+        mealPreference: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.updateGuest(input.guestId, {
+          rsvpStatus: "confirmed",
+          mealSelection: input.mealPreference,
+        });
+        return { success: true };
       }),
 
     updateWebsiteRSVP: publicProcedure

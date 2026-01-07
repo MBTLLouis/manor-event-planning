@@ -17,37 +17,37 @@ export default function PublicWeddingWebsite() {
   // Fetch wedding website by slug (public procedure)
   const { data: weddingWebsite } = trpc.weddingWebsite.getBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Fetch timeline items by slug (public procedure)
   const { data: timelineItems = [] } = trpc.weddingWebsite.getTimelineItemsBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Fetch registry links by slug (public procedure)
   const { data: registryLinks = [] } = trpc.weddingWebsite.getRegistryLinksBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Fetch FAQ items by slug (public procedure)
   const { data: faqItems = [] } = trpc.weddingWebsite.getFaqItemsBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Fetch photos by slug (public procedure)
   const { data: photos = [] } = trpc.weddingWebsite.getPhotosBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Fetch event details
   const { data: event } = trpc.weddingWebsite.getEventBySlug.useQuery(
     { slug: slug || '' },
-    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds
+    { enabled: !!slug, refetchInterval: 30000 }
   );
 
   // Update countdown timer
@@ -77,18 +77,57 @@ export default function PublicWeddingWebsite() {
   const [guestName, setGuestName] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search for guest by name and slug
+  const searchGuestQuery = trpc.guests.searchByNameAndSlug.useQuery(
+    { slug: slug || '', name: guestName },
+    { enabled: false }
+  );
+
+  const handleSearchGuest = () => {
+    if (guestName.trim() && slug) {
+      setIsSearching(true);
+      searchGuestQuery.refetch().then((result) => {
+        if (Array.isArray(result.data)) {
+          setSearchResults(result.data);
+        } else {
+          setSearchResults([]);
+        }
+        setIsSearching(false);
+      }).catch(() => {
+        setSearchResults([]);
+        setIsSearching(false);
+      });
+    }
+  };
+
+  // Submit RSVP
+  const submitRsvpMutation = trpc.guests.submitWebsiteRSVP.useMutation({
+    onSuccess: () => {
+      alert('RSVP submitted successfully!');
+      setSelectedGuest(null);
+      setGuestName('');
+      setSearchResults([]);
+    },
+    onError: (error) => {
+      alert('Error submitting RSVP: ' + (error.message || 'Please try again.'));
+    },
+  });
 
   // Handle guest search
   const handleSearch = () => {
-    // Placeholder - search functionality would be implemented here
+    handleSearchGuest();
   };
 
   // Handle RSVP submission
   const handleRsvpSubmit = () => {
-    alert('RSVP submitted successfully!');
-    setSelectedGuest(null);
-    setGuestName('');
-    setSearchResults([]);
+    if (selectedGuest) {
+      submitRsvpMutation.mutate({
+        guestId: selectedGuest.id,
+        mealPreference: selectedGuest.mealPreference || '',
+      });
+    }
   };
 
   if (!route || !weddingWebsite || !event) {
@@ -178,9 +217,10 @@ export default function PublicWeddingWebsite() {
                     />
                     <button
                       onClick={handleSearch}
-                      className="px-6 py-2 bg-[#2C5F5D] text-white rounded-lg hover:bg-[#1a3a38] transition-colors"
+                      disabled={isSearching}
+                      className="px-6 py-2 bg-[#2C5F5D] text-white rounded-lg hover:bg-[#1a3a38] transition-colors disabled:opacity-50"
                     >
-                      Search
+                      {isSearching ? 'Searching...' : 'Search'}
                     </button>
                   </div>
                 </div>
@@ -203,6 +243,12 @@ export default function PublicWeddingWebsite() {
                     </div>
                   </div>
                 )}
+
+                {guestName && searchResults.length === 0 && !isSearching && (
+                  <div className="mt-6 p-4 bg-[#F5F1E8] rounded-lg text-center text-[#5A7A78]">
+                    No guests found with that name. Please check the spelling and try again.
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -210,7 +256,7 @@ export default function PublicWeddingWebsite() {
                   <p className="text-[#2C5F5D] font-medium mb-4">Guest: {selectedGuest.name}</p>
                   <label className="block text-sm font-medium text-[#2C5F5D] mb-2">Meal Preference</label>
                   <select
-                    defaultValue={selectedGuest.mealPreference || ''}
+                    value={selectedGuest.mealPreference || ''}
                     onChange={(e) => setSelectedGuest({ ...selectedGuest, mealPreference: e.target.value })}
                     className="w-full px-4 py-2 border border-[#D4AF37] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C5F5D]"
                   >

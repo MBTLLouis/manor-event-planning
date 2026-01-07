@@ -423,11 +423,22 @@ export default function GuestListEnhanced() {
                 <Badge variant="outline">{guest.guestType || "both"}</Badge>
               </TableCell>
               <TableCell>
-                {guest.starterSelection && guest.mainSelection && guest.dessertSelection ? (
-                  <Badge variant="outline" className="bg-green-50">✓</Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-gray-50">-</Badge>
-                )}
+                {(() => {
+                  const foodSelections = guest.foodSelections as Record<string, string> || {};
+                  const selections = Object.entries(foodSelections);
+                  if (selections.length === 0) {
+                    return <Badge variant="outline" className="bg-gray-50">-</Badge>;
+                  }
+                  return (
+                    <div className="flex flex-col gap-1">
+                      {selections.map(([course, item]) => (
+                        <div key={course} className="text-xs">
+                          <span className="font-medium capitalize">{course}:</span> {item}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </TableCell>
               <TableCell>
                 {guest.hasDietaryRequirements ? (

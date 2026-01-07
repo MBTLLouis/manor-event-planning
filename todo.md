@@ -726,3 +726,9 @@
 - [x] Fix Select.Item components with empty string values in employee guests page
 - [x] Ensure all Select.Item values are non-empty strings
 - [x] Test employee guests page loads without errors
+
+## Bug Fix - Food Choices Not Displaying on Employee Guests
+- [x] Investigate why food choices aren't showing in employee guest list
+- [x] Check if Food column is displaying meal selections
+- [x] Verify food choices are being saved and loaded correctly
+- [x] Test food choices display after guest update

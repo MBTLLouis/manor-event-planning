@@ -256,7 +256,7 @@ export const appRouter = router({
           throw new TRPCError({ code: 'FORBIDDEN', message: 'Access denied' });
         }
         const event = await db.getEventById(input.id);
-        if (!website) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
+        if (!event) throw new TRPCError({ code: "NOT_FOUND", message: "Event not found" });
         return {
           username: event.coupleUsername,
           password: event.couplePassword,
@@ -322,7 +322,7 @@ export const appRouter = router({
         }
         
         const event = await db.getEventById(input.id);
-        if (!website) throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
+        if (!event) throw new TRPCError({ code: 'NOT_FOUND', message: 'Event not found' });
         
         const guests = await db.getGuestsByEventId(input.id);
         const menuItems = await db.getMenuItemsByEventId(input.id);

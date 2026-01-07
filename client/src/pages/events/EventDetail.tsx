@@ -78,9 +78,9 @@ export default function EventDetail() {
     },
     {
       icon: Armchair,
-      title: "Seating Plan",
-      description: "Easily assign guests to tables with drag-and-drop",
-      path: `/events/${eventId}/seating-plan`,
+      title: "Table Planning",
+      description: "Organize guests by assigning them to tables",
+      path: `/events/${eventId}/table-planning`,
       color: "text-rose-600",
       bgColor: "bg-rose-100",
     },

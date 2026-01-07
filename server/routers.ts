@@ -1544,6 +1544,44 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+
+  tablePlanning: router({
+    getEventTablesWithGuests: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getEventTablesWithGuests(input.eventId);
+      }),
+
+    getUnassignedGuests: protectedProcedure
+      .input(z.object({ eventId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getUnassignedGuestsByEventId(input.eventId);
+      }),
+
+    searchGuests: protectedProcedure
+      .input(z.object({
+        eventId: z.number(),
+        query: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return await db.searchGuestsByEventId(input.eventId, input.query);
+      }),
+
+    assignGuestToTable: protectedProcedure
+      .input(z.object({
+        guestId: z.number(),
+        tableId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.assignGuestToTable(input.guestId, input.tableId);
+      }),
+
+    unassignGuestFromTable: protectedProcedure
+      .input(z.object({ guestId: z.number() }))
+      .mutation(async ({ input }) => {
+        return await db.unassignGuestFromTable(input.guestId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -749,3 +749,18 @@
 - [x] Verify couple can see matching seating chart after fix
 - [x] Add role-based access control to couple routes (CoupleProtectedRoute)
 - [x] Verify both interfaces show identical seating arrangements and guest lists
+
+
+## Table Planning Module - Complete Rework
+- [x] Remove existing seating plan components (CoupleSeating, CoupleSeatingV2, SeatingPlan)
+- [x] Clean up database schema (remove unused seating-related fields)
+- [x] Design new table planning data model
+- [x] Create tRPC procedures for table CRUD and guest assignment
+- [x] Build employee table planning interface with table management
+- [x] Build couple table planning interface with synchronized updates
+- [x] Implement live guest search (200+ guests) with no dropdowns
+- [x] Add click-to-assign guest functionality
+- [x] Implement bidirectional sync between seating plan and guest list
+- [x] Add "Table" and "Seat Number" columns to guest lists
+- [ ] Test real-time synchronization across both portals
+- [ ] Verify data consistency and capacity limits

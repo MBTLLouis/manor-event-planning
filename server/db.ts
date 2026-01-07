@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, or, like, count, sql } from "drizzle-orm";
+import { eq, and, desc, asc, or, like, count, sql, isNull } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
@@ -1208,4 +1208,155 @@ export async function updateGuestWebsiteRSVP(input: {
   }
   
   await db.update(guests).set(updateData).where(eq(guests.id, input.guestId));
+}
+
+
+// ============================================
+// TABLE PLANNING MODULE - New Functions
+// ============================================
+
+/**
+ * Get all tables for an event with guest assignments
+ */
+export async function getEventTablesWithGuests(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  // Get the floor plan for this event (assuming one reception floor plan per event)
+  const floorPlanList = await db
+    .select()
+    .from(floorPlans)
+    .where(eq(floorPlans.eventId, eventId))
+    .limit(1);
+
+  if (floorPlanList.length === 0) return [];
+
+  const floorPlan = floorPlanList[0];
+
+  // Get all tables for this floor plan
+  const tableList = await db
+    .select()
+    .from(tables)
+    .where(eq(tables.floorPlanId, floorPlan.id));
+
+  // Build table data with guest assignments
+  const tablesWithGuests = await Promise.all(
+    tableList.map(async (table: any) => {
+      const assignedGuests = await db
+        .select()
+        .from(guests)
+        .where(eq(guests.tableId, table.id));
+
+      return {
+        ...table,
+        assignedGuests,
+        filledSeats: assignedGuests.length,
+        availableSeats: table.seatCount - assignedGuests.length,
+      };
+    })
+  );
+
+  return tablesWithGuests;
+}
+
+/**
+ * Get unassigned guests for an event (for live search)
+ */
+export async function getUnassignedGuestsByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(guests)
+    .where(and(eq(guests.eventId, eventId), isNull(guests.tableId)))
+    .orderBy(asc(guests.firstName), asc(guests.lastName));
+}
+
+/**
+ * Assign a guest to a table (with capacity validation)
+ */
+export async function assignGuestToTable(guestId: number, tableId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get the table to check capacity
+  const tableList = await db
+    .select()
+    .from(tables)
+    .where(eq(tables.id, tableId))
+    .limit(1);
+
+  const table = tableList[0];
+
+  if (!table) throw new Error("Table not found");
+
+  // Count assigned guests
+  const assignedCount = await db
+    .select({ count: sql`COUNT(*)` })
+    .from(guests)
+    .where(eq(guests.tableId, tableId));
+
+  const currentCount = (assignedCount[0]?.count as number) || 0;
+
+  if (currentCount >= table.seatCount) {
+    throw new Error(`Table ${table.name} is at full capacity (${table.seatCount} seats)`);
+  }
+
+  // Assign guest to table
+  const seatNumber = currentCount + 1;
+  await db
+    .update(guests)
+    .set({
+      tableId,
+      tableAssigned: true,
+      updatedAt: new Date(),
+    })
+    .where(eq(guests.id, guestId));
+
+  return { success: true, seatNumber };
+}
+
+/**
+ * Unassign a guest from a table
+ */
+export async function unassignGuestFromTable(guestId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(guests)
+    .set({
+      tableId: null,
+      tableAssigned: false,
+      updatedAt: new Date(),
+    })
+    .where(eq(guests.id, guestId));
+
+  return { success: true };
+}
+
+/**
+ * Search guests by name or email
+ */
+export async function searchGuestsByEventId(eventId: number, query: string) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const searchTerm = `%${query}%`;
+
+  return await db
+    .select()
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        or(
+          like(guests.firstName, searchTerm),
+          like(guests.lastName, searchTerm),
+          like(guests.email, searchTerm)
+        )
+      )
+    )
+    .limit(50); // Limit to 50 results for performance
 }

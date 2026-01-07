@@ -24,8 +24,7 @@ import FinalGuestDatabase from "./pages/events/FinalGuestDatabase";
 import FloorPlans from "./pages/events/FloorPlans";
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
-import SeatingPlan from "./pages/events/SeatingPlan";
-import SeatingPlanV2 from "./pages/events/SeatingPlanV2";
+import TablePlanning from "./pages/events/TablePlanning";
 
 import Budget from "./pages/events/Budget";
 import VendorsModule from "./pages/events/Vendors";
@@ -40,8 +39,7 @@ import Vendors from "./pages/Vendors";
 // Couple pages
 import CoupleDashboard from "./pages/couple/CoupleDashboard";
 import CoupleGuests from "./pages/couple/CoupleGuests";
-import CoupleSeating from "./pages/couple/CoupleSeating";
-import CoupleSeatingV2 from "./pages/couple/CoupleSeatingV2";
+import CoupleTablePlanning from "./pages/couple/CoupleTablePlanning";
 import CoupleTimeline from "./pages/couple/CoupleTimeline";
 import CoupleMenu from "./pages/couple/CoupleMenu";
 import CoupleNotes from "./pages/couple/CoupleNotes";
@@ -154,8 +152,8 @@ function Router() {
       <Route path="/events/:id/food-choices">
         {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
       </Route>
-      <Route path="/events/:id/seating-plan">
-        {(params) => <ProtectedRoute component={SeatingPlanV2} params={params} />}
+      <Route path="/events/:id/table-planning">
+        {(params) => <ProtectedRoute component={TablePlanning} params={params} />}
       </Route>
 
       <Route path="/events/:id/budget">
@@ -193,8 +191,8 @@ function Router() {
       <Route path="/couple/guests">
         {() => <CoupleProtectedRoute component={CoupleGuests} />}
       </Route>
-      <Route path="/couple/seating">
-        {() => <CoupleProtectedRoute component={CoupleSeatingV2} />}
+      <Route path="/couple/table-planning">
+        {() => <CoupleProtectedRoute component={CoupleTablePlanning} />}
       </Route>
       <Route path="/couple/timeline">
         {() => <CoupleProtectedRoute component={CoupleTimeline} />}

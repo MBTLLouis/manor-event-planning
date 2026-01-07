@@ -1361,3 +1361,10 @@ export async function searchGuestsByEventId(eventId: number, query: string) {
     )
     .limit(50); // Limit to 50 results for performance
 }
+
+export async function getTablesByEventId(eventId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db.select().from(tables).where(eq(tables.eventId, eventId));
+}

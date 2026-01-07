@@ -112,12 +112,13 @@ export type InsertFloorPlan = typeof floorPlans.$inferInsert;
  */
 export const tables = mysqlTable("tables", {
   id: int("id").autoincrement().primaryKey(),
-  floorPlanId: int("floorPlanId").notNull(),
+  floorPlanId: int("floorPlanId"),
   name: varchar("name", { length: 255 }).notNull(),
+  eventId: int("eventId"),
   tableType: mysqlEnum("tableType", ["round", "rectangular"]).notNull(),
   seatCount: int("seatCount").notNull(),
-  positionX: int("positionX").notNull(),
-  positionY: int("positionY").notNull(),
+  positionX: int("positionX").default(0).notNull(),
+  positionY: int("positionY").default(0).notNull(),
   rotation: int("rotation").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

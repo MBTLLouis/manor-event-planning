@@ -92,31 +92,19 @@ function TablePlanningContent() {
     return unassignedGuests || [];
   }, [searchQuery, searchResults, unassignedGuests]);
 
-  const { data: floorPlans } = trpc.floorPlans.list.useQuery(
-    { eventId: eventIdNum },
-    { enabled: eventIdNum > 0 }
-  );
-
   const handleCreateTable = async () => {
     if (!newTableName.trim()) {
       toast.error("Table name is required");
       return;
     }
 
-    if (!floorPlans || floorPlans.length === 0) {
-      toast.error("No floor plan found for this event");
-      return;
-    }
-
-    const floorPlanId = floorPlans[0].id;
-
     createTableMutation.mutate({
-      floorPlanId,
+      eventId: eventIdNum,
       name: newTableName,
       tableType: "round",
       seatCount: newTableCapacity,
-      positionX: Math.random() * 500,
-      positionY: Math.random() * 500,
+      positionX: 0,
+      positionY: 0,
     });
   };
 

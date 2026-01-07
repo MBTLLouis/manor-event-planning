@@ -600,19 +600,26 @@ export const appRouter = router({
 
   tables: router({
     list: protectedProcedure
-      .input(z.object({ floorPlanId: z.number() }))
+      .input(z.object({ floorPlanId: z.number().optional(), eventId: z.number().optional() }))
       .query(async ({ input }) => {
-        return await db.getTablesByFloorPlanId(input.floorPlanId);
+        if (input.eventId) {
+          return await db.getTablesByEventId(input.eventId);
+        }
+        if (input.floorPlanId) {
+          return await db.getTablesByFloorPlanId(input.floorPlanId);
+        }
+        return [];
       }),
 
     create: protectedProcedure
       .input(z.object({
-        floorPlanId: z.number(),
+        floorPlanId: z.number().optional(),
+        eventId: z.number().optional(),
         name: z.string(),
         tableType: z.enum(["round", "rectangular"]),
         seatCount: z.number(),
-        positionX: z.number(),
-        positionY: z.number(),
+        positionX: z.number().default(0),
+        positionY: z.number().default(0),
         rotation: z.number().optional(),
       }))
       .mutation(async ({ input }) => {

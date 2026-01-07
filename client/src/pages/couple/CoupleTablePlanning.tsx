@@ -103,20 +103,13 @@ function CoupleTablePlanningContent() {
       return;
     }
 
-    if (!floorPlans || floorPlans.length === 0) {
-      toast.error("No floor plan found for this event");
-      return;
-    }
-
-    const floorPlanId = floorPlans[0].id;
-
     createTableMutation.mutate({
-      floorPlanId,
+      eventId,
       name: newTableName,
       tableType: "round",
       seatCount: newTableCapacity,
-      positionX: Math.random() * 500,
-      positionY: Math.random() * 500,
+      positionX: 0,
+      positionY: 0,
     });
   };
 

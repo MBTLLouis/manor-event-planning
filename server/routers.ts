@@ -585,6 +585,12 @@ export const appRouter = router({
   }),
 
   seats: router({
+    list: protectedProcedure
+      .input(z.object({ floorPlanId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getSeatsByFloorPlanId(input.floorPlanId);
+      }),
+
     create: protectedProcedure
       .input(z.object({
         floorPlanId: z.number(),

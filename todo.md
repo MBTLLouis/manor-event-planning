@@ -715,3 +715,9 @@
 - [x] Fix Select.Item components with empty string values in CoupleGuests
 - [x] Ensure all Select.Item values are non-empty strings
 - [x] Test couple guests page loads without errors
+
+## Bug Fix - Meal Selections Not Displaying on Guest List
+- [x] Investigate why meal selections aren't persisting to database
+- [x] Fix meal selection display in guest list table
+- [x] Verify food choices save and load correctly
+- [x] Test meal selections display after page refresh

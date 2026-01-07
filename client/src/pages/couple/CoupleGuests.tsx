@@ -243,11 +243,16 @@ export default function CoupleGuests() {
       return;
     }
     const fullName = `${newGuest.firstName} ${newGuest.lastName}`;
-    createGuestMutation.mutate({
+    const guestData = {
       eventId: coupleEvent?.id || 0,
       ...newGuest,
       name: fullName,
-    });
+      // Map foodChoices to foodSelections for database
+      foodSelections: newGuest.foodChoices || undefined,
+    };
+    // Remove foodChoices from the mutation data
+    delete guestData.foodChoices;
+    createGuestMutation.mutate(guestData);
   };
 
   const handleEditGuest = (e: React.FormEvent) => {
@@ -257,11 +262,16 @@ export default function CoupleGuests() {
       return;
     }
     const fullName = `${selectedGuest.firstName} ${selectedGuest.lastName}`;
-    updateGuestMutation.mutate({
+    const guestData = {
       id: selectedGuest.id,
       ...selectedGuest,
       name: fullName,
-    });
+      // Map foodChoices to foodSelections for database
+      foodSelections: selectedGuest.foodChoices || undefined,
+    };
+    // Remove foodChoices from the mutation data
+    delete guestData.foodChoices;
+    updateGuestMutation.mutate(guestData);
   };
 
   const handleDeleteGuest = (id: number) => {
@@ -438,7 +448,19 @@ export default function CoupleGuests() {
                       <TableCell>{guest.email || "-"}</TableCell>
                       <TableCell>{guest.groupName || "-"}</TableCell>
                       <TableCell>{getRsvpBadge(guest.rsvpStatus)}</TableCell>
-                      <TableCell className="text-sm">{guest.mealSelection || "-"}</TableCell>
+                      <TableCell className="text-sm">
+                        {guest.foodSelections ? (
+                          <div className="text-xs space-y-1">
+                            {Object.entries(guest.foodSelections).map(([course, selection]) => (
+                              <div key={course}>
+                                <span className="font-semibold">{course}:</span> {selection}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
                       <TableCell>
                         {guest.allergySeverity === "severe" && (
                           <div className="flex items-center gap-1 text-red-600">

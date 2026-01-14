@@ -112,8 +112,7 @@ export type InsertFloorPlan = typeof floorPlans.$inferInsert;
  * Tables table - stores table configurations in floor plans
  */
 export const tables = mysqlTable("tables", {
-  id: int("id").autoincrement().primaryKey(),
-  floorPlanId: int("floorPlanId").default(sql`NULL`),
+  id: int("id").primaryKey().autoincrement(),
   name: varchar("name", { length: 255 }).notNull(),
   eventId: int("eventId"),
   tableType: mysqlEnum("tableType", ["round", "rectangular"]).notNull(),

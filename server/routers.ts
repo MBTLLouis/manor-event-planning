@@ -549,7 +549,6 @@ export const appRouter = router({
 
     create: protectedProcedure
       .input(z.object({
-        floorPlanId: z.number().optional().nullable(),
         eventId: z.number().optional().nullable(),
         name: z.string(),
         tableType: z.enum(["round", "rectangular"]),

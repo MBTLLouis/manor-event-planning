@@ -433,10 +433,10 @@ export async function updateFloorPlan(id: number, data: Partial<InsertFloorPlan>
 }
 
 export async function deleteFloorPlan(id: number) {
+  // This function is deprecated - floor plans no longer exist
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-
-  await db.delete(floorPlans).where(eq(floorPlans.id, id));
+  // No-op
 }
 
 // Tables
@@ -444,10 +444,9 @@ export async function createTable(table: InsertTable) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  // Ensure floorPlanId is explicitly set to null if not provided
+  // Create table without floorPlanId
   const tableData = {
     ...table,
-    floorPlanId: table.floorPlanId ?? null,
   };
 
   const result = await db.insert(tables).values(tableData);
@@ -455,10 +454,10 @@ export async function createTable(table: InsertTable) {
 }
 
 export async function getTablesByFloorPlanId(floorPlanId: number) {
+  // This function is deprecated - floor plans no longer exist
   const db = await getDb();
   if (!db) return [];
-
-  return await db.select().from(tables).where(eq(tables.floorPlanId, floorPlanId));
+  return [];
 }
 
 export async function updateTable(id: number, data: Partial<InsertTable>) {
@@ -1243,7 +1242,7 @@ export async function getEventTablesWithGuests(eventId: number) {
   const tableList = await db
     .select()
     .from(tables)
-    .where(eq(tables.floorPlanId, floorPlan.id));
+    .where(eq(tables.eventId, eventId));
 
   // Build table data with guest assignments
   const tablesWithGuests = await Promise.all(

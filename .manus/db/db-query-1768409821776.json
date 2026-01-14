@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `tables` MODIFY COLUMN `floorPlanId` INT NULL DEFAULT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2PMnkMFrZnXtRMs.8c3e75715602 --database CmoCN8ea9H2wev4kGq2LWy --execute ALTER TABLE `tables` MODIFY COLUMN `floorPlanId` INT NULL DEFAULT NULL;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 200
+}

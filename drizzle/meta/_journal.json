@@ -134,6 +134,13 @@
       "when": 1768408261756,
       "tag": "0018_polite_thing",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1768408983458,
+      "tag": "0019_skinny_genesis",
+      "breakpoints": true
     }
   ]
 }

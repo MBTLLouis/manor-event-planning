@@ -112,7 +112,7 @@ export type InsertFloorPlan = typeof floorPlans.$inferInsert;
  */
 export const tables = mysqlTable("tables", {
   id: int("id").autoincrement().primaryKey(),
-  floorPlanId: int("floorPlanId"),
+  floorPlanId: int("floorPlanId").default(null),
   name: varchar("name", { length: 255 }).notNull(),
   eventId: int("eventId"),
   tableType: mysqlEnum("tableType", ["round", "rectangular"]).notNull(),

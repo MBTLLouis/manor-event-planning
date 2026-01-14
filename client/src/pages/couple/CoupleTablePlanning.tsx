@@ -127,6 +127,7 @@ function CoupleTablePlanningContent() {
       seatCount: newTableCapacity,
       positionX: 0,
       positionY: 0,
+      floorPlanId: null,
     });
   };
 

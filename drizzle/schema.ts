@@ -1,4 +1,5 @@
 import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, datetime, json } from "drizzle-orm/mysql-core";
+import { sql } from "drizzle-orm";
 
 /**
  * Core user table backing auth flow.
@@ -112,7 +113,7 @@ export type InsertFloorPlan = typeof floorPlans.$inferInsert;
  */
 export const tables = mysqlTable("tables", {
   id: int("id").autoincrement().primaryKey(),
-  floorPlanId: int("floorPlanId").default(null),
+  floorPlanId: int("floorPlanId").default(sql`NULL`),
   name: varchar("name", { length: 255 }).notNull(),
   eventId: int("eventId"),
   tableType: mysqlEnum("tableType", ["round", "rectangular"]).notNull(),

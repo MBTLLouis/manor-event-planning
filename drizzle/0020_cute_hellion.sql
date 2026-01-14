@@ -1,0 +1,1 @@
+ALTER TABLE `tables` MODIFY COLUMN `floorPlanId` int DEFAULT NULL;

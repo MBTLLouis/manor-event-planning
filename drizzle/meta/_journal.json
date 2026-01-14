@@ -141,6 +141,13 @@
       "when": 1768408983458,
       "tag": "0019_skinny_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1768409046810,
+      "tag": "0020_cute_hellion",
+      "breakpoints": true
     }
   ]
 }

@@ -444,12 +444,13 @@ export async function createTable(table: InsertTable) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  // Filter out null/undefined values to avoid database errors
-  const cleanedTable = Object.fromEntries(
-    Object.entries(table).filter(([, v]) => v !== null && v !== undefined)
-  ) as InsertTable;
+  // Ensure floorPlanId is explicitly set to null if not provided
+  const tableData = {
+    ...table,
+    floorPlanId: table.floorPlanId ?? null,
+  };
 
-  const result = await db.insert(tables).values(cleanedTable);
+  const result = await db.insert(tables).values(tableData);
   return Number(result[0].insertId);
 }
 

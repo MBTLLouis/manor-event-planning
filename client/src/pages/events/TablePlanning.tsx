@@ -1,22 +1,17 @@
 import { useState, useMemo } from "react";
-import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2, Search, X, Plus, Users, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Plus, Search, X, ArrowLeft, Users, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
-import EmployeeLayout from "@/components/EmployeeLayout";
 
-function TablePlanningContent() {
-  const { id: eventId } = useParams();
-  const eventIdNum = parseInt(eventId || "0");
-  const [, setLocation] = useLocation();
-
+function CoupleTablePlanningContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [isAddingTable, setIsAddingTable] = useState(false);
@@ -24,22 +19,28 @@ function TablePlanningContent() {
   const [newTableCapacity, setNewTableCapacity] = useState(8);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
+  // Get event from route params
+  const eventIdParam = window.location.pathname.split('/')[2];
+  const eventId = parseInt(eventIdParam) || 0;
+  const { data: event, isLoading: eventLoading } = trpc.events.getById.useQuery(
+    { id: eventId },
+    { enabled: eventId > 0 }
+  );
+
   // Queries
-  const { data: event } = trpc.events.getById.useQuery({ id: eventIdNum });
-  
   const { data: tablesData, isLoading: tablesLoading, refetch: refetchTables } = trpc.tablePlanning.getEventTablesWithGuests.useQuery(
-    { eventId: eventIdNum },
-    { enabled: eventIdNum > 0 }
+    { eventId },
+    { enabled: eventId > 0 }
   );
 
   const { data: unassignedGuests, isLoading: unassignedLoading } = trpc.tablePlanning.getUnassignedGuests.useQuery(
-    { eventId: eventIdNum },
-    { enabled: eventIdNum > 0 }
+    { eventId },
+    { enabled: eventId > 0 }
   );
 
   const { data: searchResults, isLoading: searchLoading } = trpc.tablePlanning.searchGuests.useQuery(
-    { eventId: eventIdNum, query: searchQuery },
-    { enabled: eventIdNum > 0 && searchQuery.length > 0 }
+    { eventId, query: searchQuery },
+    { enabled: eventId > 0 && searchQuery.length > 0 }
   );
 
   // Mutations
@@ -123,7 +124,7 @@ function TablePlanningContent() {
     }
 
     createTableMutation.mutate({
-      eventId: eventIdNum,
+      eventId,
       name: newTableName,
       tableType: "round",
       seatCount: newTableCapacity,
@@ -147,39 +148,36 @@ function TablePlanningContent() {
 
   const selectedTable = tablesData?.find((t: any) => t.id === selectedTableId);
 
-  if (tablesLoading) {
+  if (eventLoading || tablesLoading) {
     return (
-      <EmployeeLayout>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
-        </div>
-      </EmployeeLayout>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">No event found. Please create an event first.</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <EmployeeLayout>
+    <DashboardLayout>
       <div className="space-y-6 p-6 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLocation(`/events/${eventIdNum}`)}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        </div>
-
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-bold text-gray-900">Seating Arrangements</h1>
             <p className="text-gray-600 mt-2">
-              {event?.coupleName1 && event?.coupleName2
-                ? `${event.coupleName1} & ${event.coupleName2}`
-                : "Event"} - Organize {stats.totalGuests} guests by assigning them to tables
+              Organize your {stats.totalGuests} guests by assigning them to tables
             </p>
           </div>
           <Dialog open={isAddingTable} onOpenChange={setIsAddingTable}>
@@ -285,8 +283,8 @@ function TablePlanningContent() {
                     key={table.id}
                     className={`cursor-pointer transition-all hover:shadow-lg ${
                       selectedTableId === table.id
-                        ? "ring-2 ring-teal-600 shadow-lg"
-                        : "hover:border-teal-200"
+                        ? "ring-2 ring-rose-600 shadow-lg"
+                        : "hover:border-rose-200"
                     }`}
                     onClick={() => setSelectedTableId(table.id)}
                   >
@@ -301,15 +299,17 @@ function TablePlanningContent() {
                             </p>
                           </div>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteConfirmId(table.id);
-                          }}
-                          className="text-gray-400 hover:text-red-600 transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
+                        <AlertDialog>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirmId(table.id);
+                            }}
+                            className="text-gray-400 hover:text-red-600 transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </AlertDialog>
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -323,7 +323,7 @@ function TablePlanningContent() {
                                   ? "bg-red-500"
                                   : table.filledSeats > table.seatCount * 0.75
                                   ? "bg-amber-500"
-                                  : "bg-teal-500"
+                                  : "bg-rose-500"
                               }`}
                               style={{
                                 width: `${Math.min((table.filledSeats / table.seatCount) * 100, 100)}%`,
@@ -338,7 +338,7 @@ function TablePlanningContent() {
                             {table.assignedGuests.map((guest: any) => (
                               <Badge
                                 key={guest.id}
-                                className="bg-teal-100 text-teal-900 hover:bg-teal-200 cursor-pointer transition-colors"
+                                className="bg-rose-100 text-rose-900 hover:bg-rose-200 cursor-pointer transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleUnassignGuest(guest.id);
@@ -373,7 +373,7 @@ function TablePlanningContent() {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">Assign Guests</h2>
               {selectedTable && (
-                <span className="text-sm bg-teal-100 text-teal-900 px-2 py-1 rounded">
+                <span className="text-sm bg-rose-100 text-rose-900 px-2 py-1 rounded">
                   {selectedTable.name}
                 </span>
               )}
@@ -394,7 +394,7 @@ function TablePlanningContent() {
                 <ScrollArea className="h-[500px] border rounded-lg p-4 bg-white">
                   {searchLoading ? (
                     <div className="flex justify-center py-8">
-                      <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
+                      <Loader2 className="w-5 h-5 animate-spin text-rose-600" />
                     </div>
                   ) : guestsToDisplay.length > 0 ? (
                     <div className="space-y-2">
@@ -402,7 +402,7 @@ function TablePlanningContent() {
                         <Button
                           key={guest.id}
                           variant="outline"
-                          className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-teal-50 hover:border-teal-300"
+                          className="w-full justify-start text-left h-auto py-3 px-3 hover:bg-rose-50 hover:border-rose-300"
                           onClick={() => handleAssignGuest(guest.id, selectedTableId)}
                           disabled={assignGuestMutation.isPending}
                         >
@@ -463,10 +463,10 @@ function TablePlanningContent() {
           </div>
         </AlertDialogContent>
       </AlertDialog>
-    </EmployeeLayout>
+    </DashboardLayout>
   );
 }
 
 export default function TablePlanning() {
-  return <TablePlanningContent />;
+  return <CoupleTablePlanningContent />;
 }

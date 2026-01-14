@@ -84,14 +84,7 @@ export default function EventDetail() {
       color: "text-yellow-600",
       bgColor: "bg-yellow-100",
     },
-    {
-      icon: Armchair,
-      title: "Table Planning",
-      description: "Organize guests by assigning them to tables",
-      path: `/events/${eventId}/table-planning`,
-      color: "text-rose-600",
-      bgColor: "bg-rose-100",
-    },
+
     {
       icon: Globe,
       title: "Wedding Website",

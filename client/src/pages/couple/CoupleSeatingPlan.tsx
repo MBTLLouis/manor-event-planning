@@ -8,9 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, Plus, Trash2, Users, AlertTriangle } from "lucide-react";
+import { Search, Plus, Trash2, Users, AlertTriangle, Edit2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export default function CoupleSeatingPlan() {
@@ -19,7 +18,10 @@ export default function CoupleSeatingPlan() {
   const [newTableCapacity, setNewTableCapacity] = useState(8);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "table" | "guest"; id: number } | null>(null);
+  const [editingTableId, setEditingTableId] = useState<number | null>(null);
+  const [editTableName, setEditTableName] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Get couple's event
   const { data: events = [] } = trpc.events.list.useQuery();
@@ -50,6 +52,7 @@ export default function CoupleSeatingPlan() {
     onSuccess: () => {
       setNewTableName("");
       setNewTableCapacity(8);
+      setDialogOpen(false);
       toast.success("Table created successfully");
       utils.tablePlanning.getEventTablesWithGuests.invalidate();
     },
@@ -58,9 +61,24 @@ export default function CoupleSeatingPlan() {
     },
   });
 
+  const updateTableMutation = trpc.tables.update.useMutation({
+    onSuccess: () => {
+      setEditingTableId(null);
+      setEditTableName("");
+      toast.success("Table updated successfully");
+      utils.tablePlanning.getEventTablesWithGuests.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Failed to update table: ${error.message}`);
+    },
+  });
+
   const deleteTableMutation = trpc.tables.delete.useMutation({
     onSuccess: () => {
       setDeleteConfirm(null);
+      if (selectedTableId === deleteConfirm) {
+        setSelectedTableId(null);
+      }
       toast.success("Table deleted successfully");
       utils.tablePlanning.getEventTablesWithGuests.invalidate();
     },
@@ -83,7 +101,6 @@ export default function CoupleSeatingPlan() {
 
   const unassignGuestMutation = trpc.tablePlanning.unassignGuestFromTable.useMutation({
     onSuccess: () => {
-      setDeleteConfirm(null);
       toast.success("Guest unassigned from table");
       utils.tablePlanning.getEventTablesWithGuests.invalidate();
       utils.tablePlanning.getUnassignedGuests.invalidate();
@@ -110,6 +127,17 @@ export default function CoupleSeatingPlan() {
       seatCount: newTableCapacity,
       positionX: 0,
       positionY: 0,
+    });
+  };
+
+  const handleUpdateTableName = (tableId: number) => {
+    if (!editTableName.trim()) {
+      toast.error("Please enter a table name");
+      return;
+    }
+    updateTableMutation.mutate({
+      id: tableId,
+      name: editTableName,
     });
   };
 
@@ -217,158 +245,203 @@ export default function CoupleSeatingPlan() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Tables */}
           <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Tables ({tablesWithGuests.length})</span>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Table
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Create New Table</DialogTitle>
-                        <DialogDescription>Add a new table to your seating plan</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="tableName">Table Name</Label>
-                          <Input
-                            id="tableName"
-                            placeholder="e.g., Table 1, Family Table"
-                            value={newTableName}
-                            onChange={(e) => setNewTableName(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="capacity">Seat Capacity</Label>
-                          <Input
-                            id="capacity"
-                            type="number"
-                            min="1"
-                            value={newTableCapacity}
-                            onChange={(e) => setNewTableCapacity(Math.max(1, parseInt(e.target.value) || 1))}
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button
-                          onClick={handleCreateTable}
-                          disabled={createTableMutation.isPending}
-                          className="bg-rose-600 hover:bg-rose-700"
-                        >
-                          {createTableMutation.isPending ? "Creating..." : "Create Table"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {tablesWithGuests.length === 0 ? (
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Tables ({tablesWithGuests.length})</h2>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-rose-600 hover:bg-rose-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Table
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Table</DialogTitle>
+                    <DialogDescription>Add a new table to your seating plan</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tableName">Table Name</Label>
+                      <Input
+                        id="tableName"
+                        placeholder="e.g., Table 1, Family Table"
+                        value={newTableName}
+                        onChange={(e) => setNewTableName(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="capacity">Seat Capacity</Label>
+                      <Input
+                        id="capacity"
+                        type="number"
+                        min="1"
+                        value={newTableCapacity}
+                        onChange={(e) => setNewTableCapacity(Math.max(1, parseInt(e.target.value) || 1))}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      onClick={handleCreateTable}
+                      disabled={createTableMutation.isPending}
+                      className="bg-rose-600 hover:bg-rose-700"
+                    >
+                      {createTableMutation.isPending ? "Creating..." : "Create Table"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {tablesWithGuests.length === 0 ? (
+              <Card>
+                <CardContent className="pt-6">
                   <p className="text-center text-gray-500 py-8">No tables yet. Create one to get started!</p>
-                ) : (
-                  <Tabs value={String(selectedTableId || tablesWithGuests[0]?.id)} onValueChange={(val) => setSelectedTableId(Number(val))}>
-                    <TabsList className="w-full justify-start overflow-x-auto">
-                      {tablesWithGuests.map((table) => (
-                        <TabsTrigger key={table.id} value={String(table.id)} className="text-xs">
-                          {table.name}
-                          <Badge variant="secondary" className="ml-2 text-xs">
-                            {table.assignedGuests?.length || 0}/{table.seatCount}
-                          </Badge>
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                    {tablesWithGuests.map((table) => (
-                      <TabsContent key={table.id} value={String(table.id)} className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h3 className="font-semibold">{table.name}</h3>
-                            <p className="text-sm text-gray-600">
-                              {table.assignedGuests?.length || 0} of {table.seatCount} seats filled
-                            </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tablesWithGuests.map((table) => {
+                  const isSelected = selectedTableId === table.id;
+                  const utilization = selectedTableCapacity > 0 ? Math.round(((table.assignedGuests?.length || 0) / table.seatCount) * 100) : 0;
+                  
+                  return (
+                    <Card
+                      key={table.id}
+                      className={`cursor-pointer transition-all ${
+                        isSelected ? "ring-2 ring-rose-600 bg-rose-50" : "hover:shadow-lg"
+                      }`}
+                      onClick={() => setSelectedTableId(table.id)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            {editingTableId === table.id ? (
+                              <div className="flex gap-2">
+                                <Input
+                                  value={editTableName}
+                                  onChange={(e) => setEditTableName(e.target.value)}
+                                  className="h-8"
+                                  autoFocus
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleUpdateTableName(table.id)}
+                                  disabled={updateTableMutation.isPending}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setEditingTableId(null)}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <CardTitle className="text-lg">{table.name}</CardTitle>
+                            )}
                           </div>
-                          <AlertDialog>
-                            <AlertDialogAction asChild>
+                          {editingTableId !== table.id && (
+                            <div className="flex gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setDeleteConfirm({ type: "table", id: table.id })}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTableId(table.id);
+                                  setEditTableName(table.name);
+                                }}
                               >
-                                <Trash2 className="w-4 h-4 text-red-600" />
+                                <Edit2 className="w-4 h-4 text-blue-600" />
                               </Button>
-                            </AlertDialogAction>
-                            {deleteConfirm?.type === "table" && deleteConfirm?.id === table.id && (
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Table</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete this table? All guest assignments will be lost.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteTable(table.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogContent>
-                            )}
-                          </AlertDialog>
-                        </div>
-
-                        {/* Capacity bar */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Capacity</span>
-                            <span className="font-semibold">{selectedTableUtilization}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full transition-all ${
-                                selectedTableUtilization <= 75
-                                  ? "bg-green-500"
-                                  : selectedTableUtilization <= 90
-                                  ? "bg-amber-500"
-                                  : "bg-red-500"
-                              }`}
-                              style={{ width: `${Math.min(selectedTableUtilization, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Assigned guests */}
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm">Assigned Guests ({selectedTableGuests.length})</h4>
-                          <div className="space-y-2 max-h-48 overflow-y-auto">
-                            {selectedTableGuests.length === 0 ? (
-                              <p className="text-sm text-gray-500">No guests assigned yet</p>
-                            ) : (
-                              selectedTableGuests.map((guest: any) => (
-                                <div key={guest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                  <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                              <AlertDialog>
+                                <AlertDialogAction asChild>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleUnassignGuest(guest.id)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setDeleteConfirm(table.id);
+                                    }}
                                   >
-                                    <Trash2 className="w-3 h-3 text-gray-400" />
+                                    <Trash2 className="w-4 h-4 text-red-600" />
+                                  </Button>
+                                </AlertDialogAction>
+                                {deleteConfirm === table.id && (
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Table</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "{table.name}"? All guest assignments will be lost.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteTable(table.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogContent>
+                                )}
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600">
+                            {table.assignedGuests?.length || 0} of {table.seatCount} seats
+                          </span>
+                          <Badge variant="secondary">{utilization}%</Badge>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all ${
+                              utilization <= 75
+                                ? "bg-green-500"
+                                : utilization <= 90
+                                ? "bg-amber-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{ width: `${Math.min(utilization, 100)}%` }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold">Guests ({table.assignedGuests?.length || 0})</p>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {(table.assignedGuests?.length || 0) === 0 ? (
+                              <p className="text-xs text-gray-500">No guests assigned</p>
+                            ) : (
+                              table.assignedGuests?.map((guest: any) => (
+                                <div key={guest.id} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
+                                  <span>{guest.firstName} {guest.lastName}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleUnassignGuest(guest.id);
+                                    }}
+                                  >
+                                    <X className="w-3 h-3 text-gray-400" />
                                   </Button>
                                 </div>
                               ))
                             )}
                           </div>
                         </div>
-                      </TabsContent>
-                    ))}
-                  </Tabs>
-                )}
-              </CardContent>
-            </Card>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Right: Guest Assignment */}
@@ -396,13 +469,14 @@ export default function CoupleSeatingPlan() {
                     {filteredSearchResults.length > 0 ? (
                       <div className="space-y-2 max-h-96 overflow-y-auto">
                         {filteredSearchResults.map((guest) => (
-                          <div key={guest.id} className="flex items-center justify-between bg-rose-50 p-2 rounded">
-                            <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                          <div key={guest.id} className="flex items-center justify-between bg-rose-50 p-2 rounded text-sm">
+                            <span>{guest.firstName} {guest.lastName}</span>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleAssignGuest(guest.id)}
                               disabled={assignGuestMutation.isPending}
+                              className="h-7 text-xs"
                             >
                               Assign
                             </Button>
@@ -414,13 +488,14 @@ export default function CoupleSeatingPlan() {
                     ) : (
                       <div className="space-y-2 max-h-96 overflow-y-auto">
                         {unassignedGuests.map((guest) => (
-                          <div key={guest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                            <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                          <div key={guest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded text-sm">
+                            <span>{guest.firstName} {guest.lastName}</span>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleAssignGuest(guest.id)}
                               disabled={assignGuestMutation.isPending}
+                              className="h-7 text-xs"
                             >
                               Assign
                             </Button>

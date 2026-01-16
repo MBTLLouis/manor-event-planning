@@ -776,3 +776,9 @@
 - [x] Build PDF generation logic with event details (guests, menu, timeline, seating)
 - [x] Add export button to event detail page
 - [x] Test PDF export with various event configurations
+
+## Seating Plan UI Redesign
+- [x] Change table layout from tabs to individual cards displayed at all times
+- [x] Auto-close dialog after creating new table
+- [x] Add edit table name functionality
+- [x] Add delete table functionality with confirmation

@@ -9,14 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, Plus, Trash2, Users, AlertTriangle, Edit2, X } from "lucide-react";
+import { Search, Plus, Trash2, Users, AlertTriangle, Edit2, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 
 export default function SeatingPlan() {
   const { user } = useAuth();
   const params = useParams();
   const eventId = params?.id ? Number(params.id) : 0;
+  const [, setLocation] = useLocation();
 
   const [newTableName, setNewTableName] = useState("");
   const [newTableCapacity, setNewTableCapacity] = useState(8);
@@ -29,6 +30,9 @@ export default function SeatingPlan() {
 
   // Get utils at top level (required for hooks)
   const utils = trpc.useUtils();
+
+  // Get event details
+  const { data: event } = trpc.events.getById.useQuery({ id: eventId }, { enabled: !!eventId });
 
   // Queries
   const { data: tablesWithGuests = [] } = trpc.tablePlanning.getEventTablesWithGuests.useQuery(
@@ -198,6 +202,10 @@ export default function SeatingPlan() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto p-6 space-y-6">
+        <Button variant="ghost" className="mb-4" onClick={() => setLocation(`/events/${eventId}`)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to {event?.coupleName1 || 'Event'}
+        </Button>
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Seating Plan</h1>

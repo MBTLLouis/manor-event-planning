@@ -76,15 +76,7 @@ export default function CoupleDashboard() {
       color: "text-blue-600",
       bgColor: "bg-blue-50",
     },
-    {
-      title: "Table Planning",
-      description: "Organize guests by assigning them to tables",
-      icon: MapPin,
-      href: "/couple/table-planning",
-      stat: "Manage seating",
-      color: "text-teal-600",
-      bgColor: "bg-teal-50",
-    },
+
     {
       title: "Timeline",
       description: "Your day-of schedule",

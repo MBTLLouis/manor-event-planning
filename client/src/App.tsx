@@ -24,7 +24,7 @@ import FinalGuestDatabase from "./pages/events/FinalGuestDatabase";
 
 import Timeline from "./pages/events/Timeline";
 import FoodChoices from "./pages/events/FoodChoices";
-import TablePlanning from "./pages/events/TablePlanning";
+
 
 import Budget from "./pages/events/Budget";
 import VendorsModule from "./pages/events/Vendors";
@@ -39,7 +39,7 @@ import Vendors from "./pages/Vendors";
 // Couple pages
 import CoupleDashboard from "./pages/couple/CoupleDashboard";
 import CoupleGuests from "./pages/couple/CoupleGuests";
-import CoupleTablePlanning from "./pages/couple/CoupleTablePlanning";
+
 import CoupleTimeline from "./pages/couple/CoupleTimeline";
 import CoupleMenu from "./pages/couple/CoupleMenu";
 import CoupleNotes from "./pages/couple/CoupleNotes";
@@ -150,9 +150,7 @@ function Router() {
       <Route path="/events/:id/food-choices">
         {(params) => <ProtectedRoute component={FoodChoices} params={params} />}
       </Route>
-      <Route path="/events/:id/table-planning">
-        {(params) => <ProtectedRoute component={TablePlanning} params={params} />}
-      </Route>
+
 
       <Route path="/events/:id/budget">
         {(params) => <ProtectedRoute component={Budget} params={params} />}
@@ -189,9 +187,7 @@ function Router() {
       <Route path="/couple/guests">
         {() => <CoupleProtectedRoute component={CoupleGuests} />}
       </Route>
-      <Route path="/couple/table-planning">
-        {() => <CoupleProtectedRoute component={CoupleTablePlanning} />}
-      </Route>
+
       <Route path="/couple/timeline">
         {() => <CoupleProtectedRoute component={CoupleTimeline} />}
       </Route>

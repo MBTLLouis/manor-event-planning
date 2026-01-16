@@ -107,6 +107,9 @@
 - [x] Build Accommodations module for guest hotel/lodging management
 - [x] Build Wedding Website module for couple's public event website
 
+## Bug Fixes - Seating Plan
+- [x] Fix seating plan showing guests from other events instead of current event only
+
 ## Couple Portal Implementation
 - [x] Design visual mockup for couple portal matching Manor By The Lake branding (teal/green, elegant serif typography, photography-first)
 - [x] Create couple-specific layout component with elegant navigation

@@ -1227,18 +1227,7 @@ export async function getEventTablesWithGuests(eventId: number) {
   const db = await getDb();
   if (!db) return [];
 
-  // Get the floor plan for this event (assuming one reception floor plan per event)
-  const floorPlanList = await db
-    .select()
-    .from(floorPlans)
-    .where(eq(floorPlans.eventId, eventId))
-    .limit(1);
-
-  if (floorPlanList.length === 0) return [];
-
-  const floorPlan = floorPlanList[0];
-
-  // Get all tables for this floor plan
+  // Get all tables for this event (no floor plan required)
   const tableList = await db
     .select()
     .from(tables)
@@ -1250,7 +1239,7 @@ export async function getEventTablesWithGuests(eventId: number) {
       const assignedGuests = await db
         .select()
         .from(guests)
-        .where(eq(guests.tableId, table.id));
+        .where(and(eq(guests.tableId, table.id), eq(guests.eventId, eventId)));
 
       return {
         ...table,

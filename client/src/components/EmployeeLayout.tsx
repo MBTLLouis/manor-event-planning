@@ -32,7 +32,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-card border-r border-border flex flex-col">
+      <aside className="w-64 bg-white border-r border-border flex flex-col shrink-0">
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -92,7 +92,7 @@ export default function EmployeeLayout({ children }: EmployeeLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-background">
         {children}
       </main>
     </div>

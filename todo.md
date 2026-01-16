@@ -786,3 +786,4 @@
 ## Navigation Fixes
 - [x] Add event breadcrumb/back button to SeatingPlan page
 - [x] Fix employee navigation bar in seating plan
+- [x] Fix employee sidebar navigation not showing when signed in - Changed bg-card to bg-white and added shrink-0

@@ -12,19 +12,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Search, Plus, Trash2, Users, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useParams } from "wouter";
 
 export default function SeatingPlan() {
   const { user } = useAuth();
+  const params = useParams();
+  const eventId = params?.id ? Number(params.id) : 0;
+
   const [newTableName, setNewTableName] = useState("");
   const [newTableCapacity, setNewTableCapacity] = useState(8);
   const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: "table" | "guest"; id: number } | null>(null);
 
-  // Get couple's event
-  const { data: events = [] } = trpc.events.list.useQuery();
-  const coupleEvent = events[0];
-  const eventId = coupleEvent?.id || 0;
+  // Get utils at top level (required for hooks)
+  const utils = trpc.useUtils();
 
   // Queries
   const { data: tablesWithGuests = [] } = trpc.tablePlanning.getEventTablesWithGuests.useQuery(
@@ -48,7 +50,7 @@ export default function SeatingPlan() {
       setNewTableName("");
       setNewTableCapacity(8);
       toast.success("Table created successfully");
-      trpc.useUtils().tablePlanning.getEventTablesWithGuests.invalidate();
+      utils.tablePlanning.getEventTablesWithGuests.invalidate();
     },
     onError: (error) => {
       toast.error(`Failed to create table: ${error.message}`);
@@ -59,7 +61,7 @@ export default function SeatingPlan() {
     onSuccess: () => {
       setDeleteConfirm(null);
       toast.success("Table deleted successfully");
-      trpc.useUtils().tablePlanning.getEventTablesWithGuests.invalidate();
+      utils.tablePlanning.getEventTablesWithGuests.invalidate();
     },
     onError: (error) => {
       toast.error(`Failed to delete table: ${error.message}`);
@@ -70,8 +72,8 @@ export default function SeatingPlan() {
     onSuccess: () => {
       setSearchQuery("");
       toast.success("Guest assigned to table");
-      trpc.useUtils().tablePlanning.getEventTablesWithGuests.invalidate();
-      trpc.useUtils().tablePlanning.getUnassignedGuests.invalidate();
+      utils.tablePlanning.getEventTablesWithGuests.invalidate();
+      utils.tablePlanning.getUnassignedGuests.invalidate();
     },
     onError: (error) => {
       toast.error(`Failed to assign guest: ${error.message}`);
@@ -82,8 +84,8 @@ export default function SeatingPlan() {
     onSuccess: () => {
       setDeleteConfirm(null);
       toast.success("Guest unassigned from table");
-      trpc.useUtils().tablePlanning.getEventTablesWithGuests.invalidate();
-      trpc.useUtils().tablePlanning.getUnassignedGuests.invalidate();
+      utils.tablePlanning.getEventTablesWithGuests.invalidate();
+      utils.tablePlanning.getUnassignedGuests.invalidate();
     },
     onError: (error) => {
       toast.error(`Failed to unassign guest: ${error.message}`);
@@ -128,8 +130,8 @@ export default function SeatingPlan() {
 
   // Calculate statistics
   const stats = useMemo(() => {
-    const totalGuests = (tablesWithGuests.reduce((sum, t) => sum + (t.guests?.length || 0), 0) || 0) + unassignedGuests.length;
-    const assignedGuests = tablesWithGuests.reduce((sum, t) => sum + (t.guests?.length || 0), 0) || 0;
+    const totalGuests = (tablesWithGuests.reduce((sum, t) => sum + (t.assignedGuests?.length || 0), 0) || 0) + unassignedGuests.length;
+    const assignedGuests = tablesWithGuests.reduce((sum, t) => sum + (t.assignedGuests?.length || 0), 0) || 0;
     const totalCapacity = tablesWithGuests.reduce((sum, t) => sum + (t.seatCount || 0), 0) || 0;
     const utilization = totalCapacity > 0 ? Math.round((assignedGuests / totalCapacity) * 100) : 0;
 
@@ -144,7 +146,7 @@ export default function SeatingPlan() {
 
   // Get selected table
   const selectedTable = selectedTableId ? tablesWithGuests.find(t => t.id === selectedTableId) : null;
-  const selectedTableGuests = selectedTable?.guests || [];
+  const selectedTableGuests = selectedTable?.assignedGuests || [];
   const selectedTableCapacity = selectedTable?.seatCount || 0;
   const selectedTableUtilization = selectedTableCapacity > 0 ? Math.round((selectedTableGuests.length / selectedTableCapacity) * 100) : 0;
   const selectedTableAvailableSeats = Math.max(0, selectedTableCapacity - selectedTableGuests.length);
@@ -155,11 +157,11 @@ export default function SeatingPlan() {
     return searchResults.filter((g: any) => !selectedTableGuests.some((sg: any) => sg.id === g.id));
   }, [searchQuery, searchResults, selectedTableGuests]);
 
-  if (!coupleEvent) {
+  if (!eventId) {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Loading your wedding details...</p>
+          <p className="text-muted-foreground">Loading event details...</p>
         </div>
       </DashboardLayout>
     );
@@ -220,7 +222,7 @@ export default function SeatingPlan() {
                   <span>Tables ({tablesWithGuests.length})</span>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button size="sm" className="bg-teal-600 hover:bg-rose-700">
+                      <Button size="sm" className="bg-teal-600 hover:bg-teal-700">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Table
                       </Button>
@@ -255,7 +257,7 @@ export default function SeatingPlan() {
                         <Button
                           onClick={handleCreateTable}
                           disabled={createTableMutation.isPending}
-                          className="bg-teal-600 hover:bg-rose-700"
+                          className="bg-teal-600 hover:bg-teal-700"
                         >
                           {createTableMutation.isPending ? "Creating..." : "Create Table"}
                         </Button>
@@ -266,38 +268,56 @@ export default function SeatingPlan() {
               </CardHeader>
               <CardContent>
                 {tablesWithGuests.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No tables yet. Create one to get started.</p>
+                  <p className="text-center text-gray-500 py-8">No tables yet. Create one to get started!</p>
                 ) : (
-                  <Tabs value={selectedTableId?.toString() || ""} onValueChange={(v) => setSelectedTableId(v ? parseInt(v) : null)}>
-                    <TabsList className="grid w-full grid-cols-auto gap-2 mb-4">
+                  <Tabs value={String(selectedTableId || tablesWithGuests[0]?.id)} onValueChange={(val) => setSelectedTableId(Number(val))}>
+                    <TabsList className="w-full justify-start overflow-x-auto">
                       {tablesWithGuests.map((table) => (
-                        <TabsTrigger key={table.id} value={table.id.toString()} className="text-xs">
-                          <div className="flex items-center gap-2">
-                            <span>{table.name}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {table.guests?.length || 0}/{table.seatCount}
-                            </Badge>
-                          </div>
+                        <TabsTrigger key={table.id} value={String(table.id)} className="text-xs">
+                          {table.name}
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            {table.assignedGuests?.length || 0}/{table.seatCount}
+                          </Badge>
                         </TabsTrigger>
                       ))}
                     </TabsList>
-
                     {tablesWithGuests.map((table) => (
-                      <TabsContent key={table.id} value={table.id.toString()} className="space-y-4">
-                        <div className="flex justify-between items-start">
+                      <TabsContent key={table.id} value={String(table.id)} className="space-y-4">
+                        <div className="flex justify-between items-center">
                           <div>
-                            <h3 className="font-semibold text-lg">{table.name}</h3>
+                            <h3 className="font-semibold">{table.name}</h3>
                             <p className="text-sm text-gray-600">
-                              {table.guests?.length || 0} of {table.seatCount} seats occupied
+                              {table.assignedGuests?.length || 0} of {table.seatCount} seats filled
                             </p>
                           </div>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setDeleteConfirm({ type: "table", id: table.id })}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogAction asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteConfirm({ type: "table", id: table.id })}
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                              </Button>
+                            </AlertDialogAction>
+                            {deleteConfirm?.type === "table" && deleteConfirm?.id === table.id && (
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Table</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this table? All guest assignments will be lost.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogCancel onClick={() => setDeleteConfirm(null)}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTable(table.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogContent>
+                            )}
+                          </AlertDialog>
                         </div>
 
                         {/* Capacity bar */}
@@ -309,50 +329,39 @@ export default function SeatingPlan() {
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-all ${
-                                selectedTableUtilization >= 100 ? "bg-red-500" :
-                                selectedTableUtilization >= 80 ? "bg-amber-500" :
-                                "bg-green-500"
+                                selectedTableUtilization <= 75
+                                  ? "bg-green-500"
+                                  : selectedTableUtilization <= 90
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
                               }`}
                               style={{ width: `${Math.min(selectedTableUtilization, 100)}%` }}
                             />
                           </div>
                         </div>
 
-                        {/* Guests at table */}
+                        {/* Assigned guests */}
                         <div className="space-y-2">
                           <h4 className="font-semibold text-sm">Assigned Guests ({selectedTableGuests.length})</h4>
-                          {selectedTableGuests.length === 0 ? (
-                            <p className="text-sm text-gray-500">No guests assigned yet</p>
-                          ) : (
-                            <div className="space-y-2">
-                              {selectedTableGuests.map((guest: any) => (
-                                <div key={guest.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {selectedTableGuests.length === 0 ? (
+                              <p className="text-sm text-gray-500">No guests assigned yet</p>
+                            ) : (
+                              selectedTableGuests.map((guest: any) => (
+                                <div key={guest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                                   <span className="text-sm">{guest.firstName} {guest.lastName}</span>
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setDeleteConfirm({ type: "guest", id: guest.id })}
+                                    onClick={() => handleUnassignGuest(guest.id)}
                                   >
-                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                    <Trash2 className="w-3 h-3 text-gray-400" />
                                   </Button>
                                 </div>
-                              ))}
-                            </div>
-                          )}
+                              ))
+                            )}
+                          </div>
                         </div>
-
-                        {/* Available seats warning */}
-                        {selectedTableAvailableSeats > 0 && (
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
-                            {selectedTableAvailableSeats} seat{selectedTableAvailableSeats !== 1 ? 's' : ''} available
-                          </div>
-                        )}
-                        {selectedTableAvailableSeats === 0 && (
-                          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800 flex items-center gap-2">
-                            <AlertTriangle className="w-4 h-4" />
-                            Table is at full capacity
-                          </div>
-                        )}
                       </TabsContent>
                     ))}
                   </Tabs>
@@ -365,121 +374,79 @@ export default function SeatingPlan() {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Assign Guests
+                <CardTitle className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-teal-600" />
+                  Unassigned Guests ({unassignedGuests.length})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {selectedTableId ? (
+                {selectedTableId && selectedTableAvailableSeats > 0 ? (
                   <>
-                    <div className="p-3 bg-teal-50 border border-rose-200 rounded text-sm text-rose-800">
-                      Assigning to: <span className="font-semibold">{selectedTable?.name}</span>
+                    <div className="relative">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search guests..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8"
+                      />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="guestSearch">Search Guests</Label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <Input
-                          id="guestSearch"
-                          placeholder="Search by name..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Search results */}
-                    {searchQuery && (
-                      <div className="border rounded-lg max-h-96 overflow-y-auto">
-                        {filteredSearchResults.length === 0 ? (
-                          <p className="text-sm text-gray-500 p-3">No unassigned guests found</p>
-                        ) : (
-                          <div className="space-y-1">
-                            {filteredSearchResults.map((guest: any) => (
-                              <button
-                                key={guest.id}
-                                onClick={() => handleAssignGuest(guest.id)}
-                                disabled={assignGuestMutation.isPending || selectedTableAvailableSeats === 0}
-                                className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <div className="font-medium">{guest.firstName} {guest.lastName}</div>
-                                {guest.email && <div className="text-xs text-gray-500">{guest.email}</div>}
-                              </button>
-                            ))}
+                    {filteredSearchResults.length > 0 ? (
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {filteredSearchResults.map((guest) => (
+                          <div key={guest.id} className="flex items-center justify-between bg-teal-50 p-2 rounded">
+                            <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAssignGuest(guest.id)}
+                              disabled={assignGuestMutation.isPending}
+                            >
+                              Assign
+                            </Button>
                           </div>
-                        )}
+                        ))}
                       </div>
-                    )}
-
-                    {/* Unassigned guests list */}
-                    {!searchQuery && (
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Unassigned Guests ({unassignedGuests.length})</h4>
-                        <div className="border rounded-lg max-h-96 overflow-y-auto">
-                          {unassignedGuests.length === 0 ? (
-                            <p className="text-sm text-gray-500 p-3">All guests are assigned!</p>
-                          ) : (
-                            <div className="space-y-1">
-                              {unassignedGuests.slice(0, 10).map((guest: any) => (
-                                <button
-                                  key={guest.id}
-                                  onClick={() => handleAssignGuest(guest.id)}
-                                  disabled={assignGuestMutation.isPending || selectedTableAvailableSeats === 0}
-                                  className="w-full text-left p-3 hover:bg-gray-50 border-b last:border-b-0 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  <div className="font-medium">{guest.firstName} {guest.lastName}</div>
-                                </button>
-                              ))}
-                              {unassignedGuests.length > 10 && (
-                                <p className="text-xs text-gray-500 p-3">
-                                  +{unassignedGuests.length - 10} more guests (use search to find)
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
+                    ) : searchQuery ? (
+                      <p className="text-sm text-gray-500 text-center py-4">No matching guests found</p>
+                    ) : (
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {unassignedGuests.map((guest) => (
+                          <div key={guest.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                            <span className="text-sm">{guest.firstName} {guest.lastName}</span>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleAssignGuest(guest.id)}
+                              disabled={assignGuestMutation.isPending}
+                            >
+                              Assign
+                            </Button>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </>
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-8">Select a table to assign guests</p>
+                  <div className="text-center py-8">
+                    {!selectedTableId ? (
+                      <>
+                        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">Select a table to assign guests</p>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">Table is full</p>
+                      </>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
           </div>
         </div>
-
-        {/* Delete confirmation dialogs */}
-        <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {deleteConfirm?.type === "table" ? "Delete Table?" : "Unassign Guest?"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {deleteConfirm?.type === "table"
-                  ? "This will delete the table and unassign all guests. This action cannot be undone."
-                  : "This will remove the guest from the table."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (deleteConfirm?.type === "table") {
-                  handleDeleteTable(deleteConfirm.id);
-                } else {
-                  handleUnassignGuest(deleteConfirm!.id);
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {deleteConfirm?.type === "table" ? "Delete Table" : "Unassign Guest"}
-            </AlertDialogAction>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </DashboardLayout>
   );

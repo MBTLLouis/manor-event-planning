@@ -782,8 +782,3 @@
 - [x] Auto-close dialog after creating new table
 - [x] Add edit table name functionality
 - [x] Add delete table functionality with confirmation
-
-## Navigation Fixes
-- [x] Add event breadcrumb/back button to SeatingPlan page
-- [x] Fix employee navigation bar in seating plan
-- [x] Fix DashboardLayout navigation not displaying in SeatingPlan - changed to EmployeeLayout

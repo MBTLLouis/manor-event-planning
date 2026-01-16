@@ -109,6 +109,8 @@
 
 ## Bug Fixes - Seating Plan
 - [x] Fix seating plan showing guests from other events instead of current event only
+- [x] Fix persistent table creation error - missing eventId column in database
+- [x] Fix React hooks error in CoupleSeatingPlan - moved useUtils() to top level
 
 ## Couple Portal Implementation
 - [x] Design visual mockup for couple portal matching Manor By The Lake branding (teal/green, elegant serif typography, photography-first)

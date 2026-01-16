@@ -46,6 +46,8 @@ import CoupleNotes from "./pages/couple/CoupleNotes";
 import CoupleHotels from "./pages/couple/CoupleHotels";
 import CoupleWebsite from "./pages/couple/CoupleWebsite";
 import CoupleChecklist from "./pages/couple/CoupleChecklist";
+import CoupleSeatingPlan from "./pages/couple/CoupleSeatingPlan";
+import SeatingPlan from "./pages/events/SeatingPlan";
 import PublicRSVP from "./pages/PublicRSVP";
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
@@ -167,6 +169,9 @@ function Router() {
       <Route path="/events/:id/accommodations">
         {(params) => <ProtectedRoute component={Accommodations} params={params} />}
       </Route>
+      <Route path="/events/:id/seating-plan">
+        {(params) => <ProtectedRoute component={SeatingPlan} params={params} />}
+      </Route>
       <Route path="/events/:id/wedding-website">
         {(params) => <ProtectedRoute component={WeddingWebsite} params={params} />}
       </Route>
@@ -205,6 +210,9 @@ function Router() {
       </Route>
       <Route path="/couple/checklist">
         {() => <CoupleProtectedRoute component={CoupleChecklist} />}
+      </Route>
+      <Route path="/couple/seating-plan">
+        {() => <CoupleProtectedRoute component={CoupleSeatingPlan} />}
       </Route>
 
       {/* Root redirect */}

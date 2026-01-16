@@ -118,6 +118,14 @@ export default function EventDetail() {
       color: "text-rose-600",
       bgColor: "bg-rose-100",
     },
+    {
+      icon: Armchair,
+      title: "Seating Plan",
+      description: "Organize guest seating and manage table assignments",
+      path: `/events/${eventId}/seating-plan`,
+      color: "text-teal-600",
+      bgColor: "bg-teal-100",
+    },
   ];
 
   if (!event) {

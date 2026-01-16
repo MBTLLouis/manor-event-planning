@@ -96,6 +96,15 @@ export default function CoupleDashboard() {
       bgColor: "bg-yellow-50",
     },
     {
+      title: "Seating Plan",
+      description: "Organize guest seating",
+      icon: Users,
+      href: "/couple/seating-plan",
+      stat: "Manage tables",
+      color: "text-rose-600",
+      bgColor: "bg-rose-50",
+    },
+    {
       title: "Accommodations",
       description: "View room assignments",
       icon: Home,

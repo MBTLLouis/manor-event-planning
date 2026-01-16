@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import DashboardLayout from "@/components/DashboardLayout";
+import EmployeeLayout from "@/components/EmployeeLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,16 +191,16 @@ export default function SeatingPlan() {
 
   if (!eventId) {
     return (
-      <DashboardLayout>
+      <EmployeeLayout>
         <div className="text-center py-12">
           <p className="text-muted-foreground">Loading event details...</p>
         </div>
-      </DashboardLayout>
+      </EmployeeLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <EmployeeLayout>
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         <Button variant="ghost" className="mb-4" onClick={() => setLocation(`/events/${eventId}`)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -531,6 +531,6 @@ export default function SeatingPlan() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </EmployeeLayout>
   );
 }

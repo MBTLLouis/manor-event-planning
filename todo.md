@@ -786,3 +786,4 @@
 ## Navigation Fixes
 - [x] Add event breadcrumb/back button to SeatingPlan page
 - [x] Fix employee navigation bar in seating plan
+- [x] Fix DashboardLayout navigation not displaying in SeatingPlan - changed to EmployeeLayout

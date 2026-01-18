@@ -802,5 +802,6 @@
 - [ ] Make text scalable and readable on all devices
 
 
-## Current Bugs
-- [x] Login shows success message but doesn't redirect to dashboard - Fixed by waiting for auth state refetch before redirect
+### Current Bugs
+- [x] Login shows success message but doesn't redirect to dashboard - Fixed by using invalidate instead of refetch
+- [x] Login error after redirect fix - Fixed race condition by using invalidate and longer timeout

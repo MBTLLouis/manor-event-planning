@@ -803,5 +803,5 @@
 
 
 ### Current Bugs
-- [x] Login shows success message but doesn't redirect to dashboard - Fixed by using invalidate instead of refetch
-- [x] Login error after redirect fix - Fixed race condition by using invalidate and longer timeout
+- [x] Login shows success message but doesn't redirect to dashboard - Fixed by setting user data in cache before redirect
+- [x] Login error after redirect fix - Fixed by using setData instead of invalidate

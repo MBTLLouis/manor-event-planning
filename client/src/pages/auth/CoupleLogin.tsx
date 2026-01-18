@@ -15,12 +15,26 @@ export default function CoupleLogin() {
   const utils = trpc.useUtils();
   
   const loginMutation = trpc.auth.coupleLogin.useMutation({
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       toast.success("Login successful!");
-      // Invalidate the auth.me query to force a refetch on next access
-      await utils.auth.me.invalidate();
-      // Add a delay to ensure the cookie is set and recognized
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Create a user object from the couple login response
+      const coupleUser = {
+        id: data.eventId,
+        openId: `couple-event-${data.eventId}`,
+        name: "Couple",
+        email: null,
+        loginMethod: "couple" as const,
+        role: "couple" as const,
+        username: "",
+        password: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSignedIn: new Date(),
+      };
+      // Set the user data in the cache so the ProtectedRoute doesn't redirect
+      utils.auth.me.setData(undefined, coupleUser);
+      // Add a small delay to ensure navigation happens after state update
+      await new Promise(resolve => setTimeout(resolve, 100));
       setLocation("/couple/dashboard");
     },
     onError: (error) => {

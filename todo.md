@@ -787,3 +787,15 @@
 - [x] Add event breadcrumb/back button to SeatingPlan page
 - [x] Fix employee navigation bar in seating plan
 - [x] Fix DashboardLayout navigation not displaying in SeatingPlan - changed to EmployeeLayout
+
+
+## Mobile & Tablet Optimization
+- [x] Implement collapsible sidebar for screens < 768px (tablet portrait and mobile)
+- [x] Optimize padding and spacing for mobile (reduce from 32px to 16px on small screens)
+- [x] Make touch targets at least 44px for mobile accessibility
+- [ ] Hide non-essential columns in tables on mobile (show only key info)
+- [x] Stack cards vertically on mobile instead of grid layout
+- [x] Optimize dashboard grid: 1 col mobile, 2 col tablet, 4 col desktop
+- [ ] Make dialogs full-screen on mobile for better usability
+- [x] Add hamburger menu for mobile navigation
+- [x] Optimize font sizes for mobile readability

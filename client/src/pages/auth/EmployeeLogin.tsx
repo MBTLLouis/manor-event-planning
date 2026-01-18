@@ -15,12 +15,16 @@ export default function EmployeeLogin() {
   const utils = trpc.useUtils();
   
   const loginMutation = trpc.auth.login.useMutation({
-    onSuccess: async (data) => {
+    onSuccess: async () => {
       toast.success("Login successful!");
-      // Set the user data in the cache so the ProtectedRoute doesn't redirect
-      utils.auth.me.setData(undefined, data.user);
-      // Add a small delay to ensure navigation happens after state update
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Refetch the auth.me query to ensure auth state is updated before redirect
+      try {
+        await utils.auth.me.refetch();
+        // Add a small delay to ensure state is fully updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error("Failed to refetch auth state", error);
+      }
       setLocation("/dashboard");
     },
     onError: (error) => {

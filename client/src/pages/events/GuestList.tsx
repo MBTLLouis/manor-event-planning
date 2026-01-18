@@ -391,19 +391,18 @@ export default function GuestListEnhanced() {
 
 
   const GuestTable = ({ guestList }: { guestList: any[] }) => (
-    <div className="w-full overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-    <Table className="min-w-full">
+    <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap">Name</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden sm:table-cell">Email</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">Group</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap">RSVP</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden lg:table-cell">Type</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap hidden md:table-cell">Food</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap">Dietary</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap">Table</TableHead>
-          <TableHead className="text-xs sm:text-sm whitespace-nowrap">Actions</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Group</TableHead>
+          <TableHead>RSVP Status</TableHead>
+          <TableHead>Type</TableHead>
+          <TableHead>Food</TableHead>
+          <TableHead>Dietary</TableHead>
+          <TableHead>Table</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -416,9 +415,9 @@ export default function GuestListEnhanced() {
         ) : (
           guestList.map((guest) => (
             <TableRow key={guest.id}>
-              <TableCell className="font-medium text-xs sm:text-sm">{guest.name}</TableCell>
-              <TableCell className="text-xs sm:text-sm hidden sm:table-cell">{guest.email || "-"}</TableCell>
-              <TableCell className="text-xs sm:text-sm hidden md:table-cell">{guest.groupName || "-"}</TableCell>
+              <TableCell className="font-medium">{guest.name}</TableCell>
+              <TableCell>{guest.email || "-"}</TableCell>
+              <TableCell>{guest.groupName || "-"}</TableCell>
               <TableCell>
                 <Badge className={getRsvpStatusColor(guest.rsvpStatus)}>
                   {guest.rsvpStatus}
@@ -495,29 +494,26 @@ export default function GuestListEnhanced() {
         )}
       </TableBody>
     </Table>
-    </div>
   );
 
   return (
     <EmployeeLayout>
-      <div className="p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto">
-        <Button variant="ghost" className="mb-4 sm:mb-6 text-xs sm:text-sm" onClick={() => setLocation(`/events/${eventId}`)}>
-          <ArrowLeft className="w-4 h-4 mr-2 flex-shrink-0" />
-          <span className="hidden sm:inline">Back to Event Dashboard</span>
-          <span className="sm:hidden">Back</span>
+      <div className="p-8">
+        <Button variant="ghost" className="mb-6" onClick={() => setLocation(`/events/${eventId}`)}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Event Dashboard
         </Button>
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-2">
-          <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2 truncate">Guest List</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground truncate">{event?.title}</p>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Guest List</h1>
+            <p className="text-muted-foreground">{event?.title}</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
-                <Plus className="w-4 sm:w-5 h-4 sm:h-5 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Add Guest</span>
-                <span className="sm:hidden">Add</span>
+              <Button size="lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Add Guest
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -539,12 +535,12 @@ export default function GuestListEnhanced() {
           </Dialog>
         </div>
 
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               placeholder="Search by name, email, or group..."
-              className="pl-10 text-xs sm:text-sm"
+              className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

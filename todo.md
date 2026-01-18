@@ -799,3 +799,10 @@
 - [ ] Make dialogs full-screen on mobile for better usability
 - [x] Add hamburger menu for mobile navigation
 - [x] Optimize font sizes for mobile readability
+
+
+## Couple Navigation Fixes
+- [x] Make couple navigation responsive for mobile/tablet with collapsible menu
+- [x] Fix seating plan link to navigate to actual seating plan section (/couple/seating-plan)
+- [x] Verify all couple menu links navigate to correct sections
+- [x] Add hamburger menu for couple side on mobile

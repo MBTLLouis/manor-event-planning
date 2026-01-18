@@ -800,3 +800,7 @@
 - [ ] Verify orientation changes (portrait/landscape) work correctly
 - [ ] Ensure no horizontal scrolling on any screen size
 - [ ] Make text scalable and readable on all devices
+
+
+## Current Bugs
+- [x] Login shows success message but doesn't redirect to dashboard - Fixed by waiting for auth state refetch before redirect
